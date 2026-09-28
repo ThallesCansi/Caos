@@ -1,0 +1,56 @@
+variables:
+  t2m_c:
+    source: ERA5/t2m
+    unit: degC
+    kind: continuous
+    role: primary_dynamic
+
+  d2m_c:
+    source: ERA5/d2m
+    unit: degC
+    kind: continuous
+    role: intermediate
+
+  vpd_kpa:
+    source: derived_from_t2m_and_d2m
+    unit: kPa
+    kind: derived_continuous
+    role: primary_dynamic_candidate
+    caution: not statistically independent from temperature/dewpoint
+
+  surface_pressure_hpa:
+    source: ERA5/sp
+    unit: hPa
+    kind: continuous
+    role: secondary_dynamic
+
+  wind_speed_10m:
+    source: derived_from_u10_v10
+    unit: m/s
+    kind: derived_continuous
+    role: primary_dynamic_candidate
+
+  precip_mm_hour_ending:
+    source: ERA5/tp
+    unit: mm
+    kind: accumulated_intermittent
+    role: secondary_dynamic
+    time_semantics: accumulation for the hour ending at valid_time
+
+  forest_fraction:
+    source: MapBiomas
+    unit: fraction
+    role: disturbance_state
+    status: planned
+
+  deforested_area_km2:
+    source: PRODES
+    unit: km2
+    role: disturbance_state
+    status: planned
+
+  fire_pressure:
+    source: BDQueimadas
+    unit: TBD
+    role: disturbance_pressure
+    status: planned

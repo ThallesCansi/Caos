@@ -1,0 +1,2 @@
+experiment_id,date,status,config,git_commit,data_manifest,question,notes
+pilot-era5-deter-2024-08,,completed,configs/pilot.yaml,,,Validate ERA5/DETER acquisition,Imported from initial Jupyter pilot

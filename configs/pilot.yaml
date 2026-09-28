@@ -1,0 +1,40 @@
+experiment_id: pilot-era5-deter-2024-08
+
+spatial:
+  # [north, west, south, east]
+  area: [-1.0, -56.0, -4.0, -53.5]
+  pilot_point: [-2.5, -54.75]
+  working_crs: EPSG:4674
+  equal_area_crs: EPSG:6933
+
+time:
+  science_start: 2024-08-01
+  science_end: 2024-08-07
+  # Um dia adicional fecha corretamente o acumulado de precipitação do último dia.
+  download_end: 2024-08-08
+
+era5:
+  dataset: reanalysis-era5-single-levels
+  product_type: reanalysis
+  variables:
+    instant:
+      - 2m_temperature
+      - 2m_dewpoint_temperature
+      - surface_pressure
+      - 10m_u_component_of_wind
+      - 10m_v_component_of_wind
+    accum:
+      - total_precipitation
+  data_format: netcdf
+  download_format: unarchived
+
+terrabrasilis:
+  wfs_url: https://terrabrasilis.dpi.inpe.br/geoserver/deter-amz/wfs
+  preferred_layer_local_name: deter_amz
+  date_field_candidates:
+    - view_date
+    - date
+    - image_date
+    - detection_date
+  output_format: application/json
+  max_features_without_pagination: 100000

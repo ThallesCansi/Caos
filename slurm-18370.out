@@ -1,0 +1,49 @@
+
+CondaError: Run 'conda init' before 'conda activate'
+
+172.20.10.15
+[I 2026-09-28 16:35:08.038 ServerApp] Package notebook took 0.0000s to import
+[I 2026-09-28 16:35:08.722 ServerApp] Package jupyter_lsp took 0.6829s to import
+[W 2026-09-28 16:35:08.722 ServerApp] A `_jupyter_server_extension_points` function was not found in jupyter_lsp. Instead, a `_jupyter_server_extension_paths` function was found and will be used for now. This function name will be deprecated in future releases of Jupyter Server.
+[I 2026-09-28 16:35:08.967 ServerApp] Package jupyter_server_terminals took 0.2454s to import
+[I 2026-09-28 16:35:08.968 ServerApp] Package jupyterlab took 0.0000s to import
+[I 2026-09-28 16:35:11.225 ServerApp] Package notebook_shim took 0.0000s to import
+[W 2026-09-28 16:35:11.225 ServerApp] A `_jupyter_server_extension_points` function was not found in notebook_shim. Instead, a `_jupyter_server_extension_paths` function was found and will be used for now. This function name will be deprecated in future releases of Jupyter Server.
+[I 2026-09-28 16:35:17.920 ServerApp] Package panel.io.jupyter_server_extension took 6.6752s to import
+[I 2026-09-28 16:35:17.921 ServerApp] jupyter_lsp | extension was successfully linked.
+[I 2026-09-28 16:35:17.929 ServerApp] jupyter_server_terminals | extension was successfully linked.
+[I 2026-09-28 16:35:17.936 ServerApp] jupyterlab | extension was successfully linked.
+[I 2026-09-28 16:35:17.941 ServerApp] notebook | extension was successfully linked.
+[I 2026-09-28 16:35:24.545 ServerApp] notebook_shim | extension was successfully linked.
+[I 2026-09-28 16:35:24.545 ServerApp] panel.io.jupyter_server_extension | extension was successfully linked.
+[I 2026-09-28 16:35:24.880 ServerApp] notebook_shim | extension was successfully loaded.
+[I 2026-09-28 16:35:24.882 ServerApp] jupyter_lsp | extension was successfully loaded.
+[I 2026-09-28 16:35:24.883 ServerApp] jupyter_server_terminals | extension was successfully loaded.
+[I 2026-09-28 16:35:24.992 LabApp] JupyterLab extension loaded from /home/thalles24006/anaconda3/lib/python3.11/site-packages/jupyterlab
+[I 2026-09-28 16:35:24.992 LabApp] JupyterLab application directory is /home/thalles24006/anaconda3/share/jupyter/lab
+[I 2026-09-28 16:35:24.993 LabApp] Extension Manager is 'pypi'.
+[I 2026-09-28 16:35:24.995 ServerApp] jupyterlab | extension was successfully loaded.
+[I 2026-09-28 16:35:24.999 ServerApp] notebook | extension was successfully loaded.
+[I 2026-09-28 16:35:24.999 ServerApp] panel.io.jupyter_server_extension | extension was successfully loaded.
+Traceback (most recent call last):
+  File "/home/thalles24006/anaconda3/bin/jupyter-notebook", line 11, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/thalles24006/anaconda3/lib/python3.11/site-packages/jupyter_server/extension/application.py", line 618, in launch_instance
+    serverapp = cls.initialize_server(argv=args)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/thalles24006/anaconda3/lib/python3.11/site-packages/jupyter_server/extension/application.py", line 588, in initialize_server
+    serverapp.initialize(
+  File "/home/thalles24006/anaconda3/lib/python3.11/site-packages/traitlets/config/application.py", line 113, in inner
+    return method(app, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/thalles24006/anaconda3/lib/python3.11/site-packages/jupyter_server/serverapp.py", line 2609, in initialize
+    self.init_httpserver()
+  File "/home/thalles24006/anaconda3/lib/python3.11/site-packages/jupyter_server/serverapp.py", line 2432, in init_httpserver
+    self._find_http_port()
+  File "/home/thalles24006/anaconda3/lib/python3.11/site-packages/jupyter_server/serverapp.py", line 2479, in _find_http_port
+    sockets = bind_sockets(port, self.ip)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/thalles24006/anaconda3/lib/python3.11/site-packages/tornado/netutil.py", line 162, in bind_sockets
+    sock.bind(sockaddr)
+OSError: [Errno 99] Cannot assign requested address

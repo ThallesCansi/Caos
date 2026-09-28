@@ -1,0 +1,59 @@
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Credentials / environment
+.env
+.env.*
+!.env.example
+.cdsapirc
+*.pem
+*.key
+
+# marimo caches / exports
+.marimo/
+
+# Research data: NEVER commit raw or intermediate datasets
+/data/raw/*
+!/data/raw/.gitkeep
+/data/external/*
+!/data/external/.gitkeep
+/data/interim/*
+!/data/interim/.gitkeep
+/data/processed/*
+!/data/processed/.gitkeep
+/data/cache/*
+!/data/cache/.gitkeep
+
+# Typical large geoscience formats anywhere else
+*.nc
+*.nc4
+*.grib
+*.grib2
+*.tif
+*.tiff
+*.zarr/
+*.gpkg
+*.parquet
+*.feather
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+
+# Keep intentionally versioned small metadata tables despite parquet rule? Use CSV/YAML/JSON.
+
+# Generated reports: selectively version final artifacts
+reports/tmp/

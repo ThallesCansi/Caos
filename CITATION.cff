@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Uma Análise do Sistema Floresta-Atmosfera Amazônica sob a ótica da Teoria do Caos — código e dados derivados"
+message: "Se este repositório for reutilizado, cite o TCC e a versão do código correspondente."
+type: software
+authors:
+  - family-names: Ruas
+    given-names: Caio Marcelo Cavallari
+  - family-names: Cansi
+    given-names: Thalles José de Souza
+year: 2026
+license: MIT

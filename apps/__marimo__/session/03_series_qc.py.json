@@ -1,0 +1,35 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.16",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "bca9090bc461756e93c940a6f8d21878",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"qualificacao-das-series-temporais\">Qualifica\u00e7\u00e3o das s\u00e9ries temporais</h1>\n<span class=\"paragraph\">Para cada <code>series_id</code>, comparar:</span>\n<ol>\n<li>s\u00e9rie bruta;</li>\n<li>anomalia do ciclo diurno;</li>\n<li>anomalia sazonal;</li>\n<li>lacunas/regularidade;</li>\n<li>tend\u00eancia e autocorrela\u00e7\u00e3o;</li>\n<li>estabilidade ao variar a janela temporal.</li>\n</ol>\n<span class=\"paragraph\">A sa\u00edda deste est\u00e1gio \u00e9 uma tabela de <strong>elegibilidade para an\u00e1lise n\u00e3o linear</strong>, n\u00e3o ainda um resultado de caos.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

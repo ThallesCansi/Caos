@@ -1,0 +1,119 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.16",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "8ef65d59e3706ad73296aee8354aa4f7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "911e32ecfa4b0b57e832faf5593d9ace",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "fec9c1f376a2e9920f1a61c176eafb10",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"arquivos-locais\">Arquivos locais</h2>\n<ul>\n<li>ERA5 instant: <strong>1</strong> arquivo(s)</li>\n<li>ERA5 accum: <strong>1</strong> arquivo(s)</li>\n</ul>\n<span class=\"paragraph\">Se ambos forem zero, rode antes: <code>uv run amazon-chaos pilot --config configs/pilot.yaml</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "719199dc41b99831b6ce3ed1cecd22db",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "cff622d19a842568eb44ddef4224cf66",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "8cbb55e4513bb373f6462aaa9c3108b7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"qc-do-ponto-piloto\">QC do ponto piloto</h2></span><marimo-ui-element object-id='PKri-0' random-id='b6773dae-7ab8-f378-7ac4-d215935d84d2'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;_marimo_row_id&#92;&quot;:0,&#92;&quot;variable&#92;&quot;:&#92;&quot;t2m_c&#92;&quot;,&#92;&quot;n&#92;&quot;:192,&#92;&quot;n_nan&#92;&quot;:0,&#92;&quot;missing_fraction&#92;&quot;:0.0,&#92;&quot;min&#92;&quot;:25.720733642578125,&#92;&quot;mean&#92;&quot;:29.140100479125977,&#92;&quot;max&#92;&quot;:34.027984619140625,&#92;&quot;std&#92;&quot;:2.3046958446502686,&#92;&quot;n_unique&#92;&quot;:192},{&#92;&quot;_marimo_row_id&#92;&quot;:1,&#92;&quot;variable&#92;&quot;:&#92;&quot;d2m_c&#92;&quot;,&#92;&quot;n&#92;&quot;:192,&#92;&quot;n_nan&#92;&quot;:0,&#92;&quot;missing_fraction&#92;&quot;:0.0,&#92;&quot;min&#92;&quot;:19.791778564453125,&#92;&quot;mean&#92;&quot;:22.592193603515625,&#92;&quot;max&#92;&quot;:24.320098876953125,&#92;&quot;std&#92;&quot;:1.0842868089675903,&#92;&quot;n_unique&#92;&quot;:191},{&#92;&quot;_marimo_row_id&#92;&quot;:2,&#92;&quot;variable&#92;&quot;:&#92;&quot;vpd_kpa&#92;&quot;,&#92;&quot;n&#92;&quot;:192,&#92;&quot;n_nan&#92;&quot;:0,&#92;&quot;missing_fraction&#92;&quot;:0.0,&#92;&quot;min&#92;&quot;:0.48801231384277344,&#92;&quot;mean&#92;&quot;:1.3235949277877808,&#92;&quot;max&#92;&quot;:2.980151653289795,&#92;&quot;std&#92;&quot;:0.6944897174835205,&#92;&quot;n_unique&#92;&quot;:192},{&#92;&quot;_marimo_row_id&#92;&quot;:3,&#92;&quot;variable&#92;&quot;:&#92;&quot;surface_pressure_hpa&#92;&quot;,&#92;&quot;n&#92;&quot;:192,&#92;&quot;n_nan&#92;&quot;:0,&#92;&quot;missing_fraction&#92;&quot;:0.0,&#92;&quot;min&#92;&quot;:1001.1749877929688,&#92;&quot;mean&#92;&quot;:1005.0401000976562,&#92;&quot;max&#92;&quot;:1008.4481201171875,&#92;&quot;std&#92;&quot;:1.632219910621643,&#92;&quot;n_unique&#92;&quot;:191},{&#92;&quot;_marimo_row_id&#92;&quot;:4,&#92;&quot;variable&#92;&quot;:&#92;&quot;precip_mm_hour_ending&#92;&quot;,&#92;&quot;n&#92;&quot;:192,&#92;&quot;n_nan&#92;&quot;:0,&#92;&quot;missing_fraction&#92;&quot;:0.0,&#92;&quot;min&#92;&quot;:0.0,&#92;&quot;mean&#92;&quot;:0.0013758739223703742,&#92;&quot;max&#92;&quot;:0.080108642578125,&#92;&quot;std&#92;&quot;:0.0076812924817204475,&#92;&quot;n_unique&#92;&quot;:16},{&#92;&quot;_marimo_row_id&#92;&quot;:5,&#92;&quot;variable&#92;&quot;:&#92;&quot;wind_speed_10m&#92;&quot;,&#92;&quot;n&#92;&quot;:192,&#92;&quot;n_nan&#92;&quot;:0,&#92;&quot;missing_fraction&#92;&quot;:0.0,&#92;&quot;min&#92;&quot;:2.2337121963500977,&#92;&quot;mean&#92;&quot;:3.2389297485351562,&#92;&quot;max&#92;&quot;:4.783967018127441,&#92;&quot;std&#92;&quot;:0.5602376461029053,&#92;&quot;n_unique&#92;&quot;:192}]&quot;' data-total-rows='6' data-total-columns='9' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-field-types='[[&quot;variable&quot;,[&quot;string&quot;,&quot;str&quot;]],[&quot;n&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;n_nan&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;missing_fraction&quot;,[&quot;number&quot;,&quot;float64&quot;]],[&quot;min&quot;,[&quot;number&quot;,&quot;float64&quot;]],[&quot;mean&quot;,[&quot;number&quot;,&quot;float64&quot;]],[&quot;max&quot;,[&quot;number&quot;,&quot;float64&quot;]],[&quot;std&quot;,[&quot;number&quot;,&quot;float64&quot;]],[&quot;n_unique&quot;,[&quot;integer&quot;,&quot;int64&quot;]]]' data-selection='&quot;multi&quot;' data-show-filters='true' data-show-download='true' data-show-search='true' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-hidden-columns='[]' data-has-stable-row-id='true' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Regularidade: <code>{'n_timestamps': 192, 'monotonic_increasing': True, 'duplicates': 0, 'unexpected_steps': 0, 'modal_step': Timedelta('0 days 01:00:00')}</code></span></span></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "a10660efe35a00e24c30c2dd2bcd7412",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "ab45c9b14b5a895c183f4d0c4b3d92b9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"deter-na-caixa-piloto-area-apos-clipping\">DETER na caixa piloto \u2014 \u00e1rea ap\u00f3s clipping</h2></span><marimo-ui-element object-id='SFPL-0' random-id='315562cf-2d27-51fb-1c2c-61da6350274e'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;Index0&#92;&quot;:2,&#92;&quot;_marimo_row_id&#92;&quot;:0,&#92;&quot;classname&#92;&quot;:&#92;&quot;CS_GEOMETRICO&#92;&quot;,&#92;&quot;n_alerts&#92;&quot;:7,&#92;&quot;area_km2&#92;&quot;:37.419269698420386},{&#92;&quot;Index0&#92;&quot;:3,&#92;&quot;_marimo_row_id&#92;&quot;:1,&#92;&quot;classname&#92;&quot;:&#92;&quot;DEGRADACAO&#92;&quot;,&#92;&quot;n_alerts&#92;&quot;:14,&#92;&quot;area_km2&#92;&quot;:15.489820883158423},{&#92;&quot;Index0&#92;&quot;:1,&#92;&quot;_marimo_row_id&#92;&quot;:2,&#92;&quot;classname&#92;&quot;:&#92;&quot;CS_DESORDENADO&#92;&quot;,&#92;&quot;n_alerts&#92;&quot;:11,&#92;&quot;area_km2&#92;&quot;:8.665574721559098},{&#92;&quot;Index0&#92;&quot;:0,&#92;&quot;_marimo_row_id&#92;&quot;:3,&#92;&quot;classname&#92;&quot;:&#92;&quot;CICATRIZ_DE_QUEIMADA&#92;&quot;,&#92;&quot;n_alerts&#92;&quot;:11,&#92;&quot;area_km2&#92;&quot;:3.4124225036953395},{&#92;&quot;Index0&#92;&quot;:4,&#92;&quot;_marimo_row_id&#92;&quot;:4,&#92;&quot;classname&#92;&quot;:&#92;&quot;DESMATAMENTO_CR&#92;&quot;,&#92;&quot;n_alerts&#92;&quot;:22,&#92;&quot;area_km2&#92;&quot;:2.7251256532399313}]&quot;' data-total-rows='5' data-total-columns='3' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-field-types='[[&quot;classname&quot;,[&quot;string&quot;,&quot;str&quot;]],[&quot;n_alerts&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;area_km2&quot;,[&quot;number&quot;,&quot;float64&quot;]]]' data-selection='&quot;multi&quot;' data-show-filters='true' data-show-download='true' data-show-search='true' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[[&quot;Index0&quot;,[&quot;integer&quot;,&quot;int64&quot;]]]' data-hidden-columns='[]' data-has-stable-row-id='true' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "KYjZ",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    }
+  ]
+}

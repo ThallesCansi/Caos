@@ -1,0 +1,55 @@
+datasets:
+  ERA5:
+    role: climate_dynamic_backbone
+    institution: ECMWF / Copernicus Climate Change Service
+    access: Climate Data Store API
+    dataset_id: reanalysis-era5-single-levels
+    temporal_role: hourly_time_series
+    raw_formats: [NetCDF]
+    notes:
+      - Separate instantaneous and accumulated variables during acquisition.
+      - Preserve raw files and request metadata.
+
+  ERA5_Land:
+    role: optional_surface_land_complement
+    institution: ECMWF / Copernicus Climate Change Service
+    access: Climate Data Store API
+    status: candidate
+
+  PRODES:
+    role: consolidated_structural_deforestation
+    institution: INPE
+    access: TerraBrasilis
+    status: planned
+
+  DETER:
+    role: recent_disturbance_alerts
+    institution: INPE
+    access: TerraBrasilis WFS
+    status: pilot_working
+    notes:
+      - Discover layer with GetCapabilities; do not hard-code historical deter_public.
+      - Prefer GeoJSON over Shapefile to avoid DBF field-name truncation.
+      - Do not interpret alert count as official annual deforestation rate.
+
+  MapBiomas:
+    role: historical_land_cover_forest_fraction_fragmentation
+    institution: MapBiomas
+    access: download_or_earth_engine
+    status: planned
+
+  BDQueimadas:
+    role: fire_pressure
+    institution: INPE
+    access: BDQueimadas
+    status: planned
+
+  IBGE:
+    role: territorial_and_socioeconomic_context
+    institution: IBGE
+    status: contextual
+
+  FUNAI:
+    role: indigenous_territories_context
+    institution: FUNAI
+    status: contextual

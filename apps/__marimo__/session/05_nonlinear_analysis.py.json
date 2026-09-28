@@ -1,0 +1,41 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.16",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "cc70fcbcc41b7174b8de5faa56ee7221",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"analise-nao-linear\">An\u00e1lise n\u00e3o linear</h1>\n<span class=\"paragraph\"><strong>N\u00e3o preencher com resultados finais antes de F0\u2013F4 estarem conclu\u00eddas.</strong></span>\n<span class=\"paragraph\">Este est\u00e1gio receber\u00e1 s\u00e9ries j\u00e1 qualificadas e registrar\u00e1:</span>\n<ul>\n<li>m\u00e9todo/grade para <code>tau</code>;</li>\n<li>m\u00e9todo/grade para <code>m</code>;</li>\n<li>reconstru\u00e7\u00e3o do espa\u00e7o de fases;</li>\n<li>maior expoente de Lyapunov e sensibilidade de par\u00e2metros;</li>\n<li>recurrence plots/RQA;</li>\n<li>s\u00e9ries substitutas;</li>\n<li>intervalos/bootstrap quando apropriado;</li>\n<li>configura\u00e7\u00e3o e <code>experiment_id</code> associados.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RntN",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    }
+  ]
+}

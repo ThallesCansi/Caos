@@ -1,0 +1,48 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.16",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "903e2fa414cb107a42cf219d3c661665",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "b2e261a0c4bcddfa29a0d576bfb218d1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "75412264878ddd006ebc5f71f9319766",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"tcc-dinamica-nao-linear-florestaatmosfera\">TCC \u2014 Din\u00e2mica n\u00e3o linear floresta\u2013atmosfera</h1>\n<span class=\"paragraph\"><strong>Objetivo:</strong> Investigar a din\u00e2mica n\u00e3o linear do sistema floresta-atmosfera amaz\u00f4nico, utilizando conceitos e m\u00e9todos da Teoria do Caos e dos sistemas din\u00e2micos complexos para analisar poss\u00edveis sinais de instabilidade associados a perturba\u00e7\u00f5es na cobertura vegetal, como desmatamento, queimadas e degrada\u00e7\u00e3o florestal.</span>\n<h2 id=\"fluxo-de-trabalho\">Fluxo de trabalho</h2>\n<span class=\"paragraph\"><strong>perturba\u00e7\u00e3o independente \u2192 s\u00e9ries clim\u00e1ticas \u2192 QC \u2192 controles sint\u00e9ticos \u2192 embedding \u2192 descritores \u2192 surrogates \u2192 compara\u00e7\u00e3o espacial \u2192 interpreta\u00e7\u00e3o socioespacial</strong></span>\n<span class=\"paragraph\">O projeto n\u00e3o tratar\u00e1 um expoente de Lyapunov positivo isolado como prova de caos ou tipping point.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

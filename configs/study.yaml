@@ -1,0 +1,52 @@
+project:
+  objective: >-
+    Investigar a dinâmica não linear do sistema floresta-atmosfera amazônico,
+    utilizando conceitos e métodos da Teoria do Caos e dos sistemas dinâmicos
+    complexos para analisar possíveis sinais de instabilidade associados a
+    perturbações na cobertura vegetal, como desmatamento, queimadas e degradação florestal.
+
+analysis_design:
+  status: design_approved_implementation_in_progress
+  climate_backbone: ERA5
+  primary_temporal_resolution: daily
+  archive_temporal_resolution: hourly
+  science_period: [2001, 2024]
+  future_period: [1985, 2024]
+  seasonal_scope: full_year
+  spatial_unit: ERA5_grid_cell
+  active_pilot_config: configs/tapajos_2024.yaml
+  spatial_unit_candidate: ERA5_grid_cell
+  comparison_design: matched_disturbance_gradient
+  primary_dynamic_variables:
+    - t2m_c
+    - vpd_kpa
+    - wind_speed_10m
+  secondary_variables:
+    - precip_mm_hour_ending
+    - surface_pressure_hpa
+  disturbance_roles:
+    PRODES: consolidated_deforestation
+    MapBiomas: historical_land_cover_and_forest_fraction
+    BDQueimadas: fire_pressure
+    DETER: recent_disturbance_alerts
+    MapBiomas_Fogo: burned_area_and_annual_recurrence
+
+preprocessing_variants:
+  - raw
+  - diurnal_anomaly
+  - seasonal_anomaly
+
+nonlinear:
+  phase_space_reconstruction: true
+  largest_lyapunov: true
+  recurrence: true
+  correlation_dimension: candidate
+  surrogate_tests: required
+  parameter_sensitivity: required
+  synthetic_controls: required
+  final_minimum_sample_size: determine_by_convergence_experiment
+
+interpretation:
+  positive_lyapunov_is_proof_of_chaos: false
+  mathematical_descriptor_alone_is_tipping_point_evidence: false
+  causal_claims_from_spatial_association: false
