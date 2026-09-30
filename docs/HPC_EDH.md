@@ -26,7 +26,8 @@ Depois disso, atualizações de código podem vir por `git pull` no HPC (o repos
 
 ```bash
 cd ~/Caos && git init -q && git remote add origin https://github.com/ThallesCansi/Caos \
-  && git fetch origin && git reset --hard origin/main
+  && git fetch origin && git reset --hard origin/main \
+  && git branch -m main && git branch -u origin/main
 ```
 
 `reset --hard` substitui os arquivos versionados pela versão do GitHub; faça isso só depois de enviar (push) as mudanças locais.
