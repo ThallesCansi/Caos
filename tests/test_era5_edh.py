@@ -110,6 +110,19 @@ def test_download_matches_mirror_and_resumes(tmp_path):
     np.testing.assert_array_equal(raw.t2m.values, expected.values)
 
 
+def test_partial_period_reads_support_day_from_full_month(tmp_path):
+    cfg = small_config()
+    mirror(tmp_path / "edh.zarr")
+    root = tmp_path / "raw"
+    download_edh(cfg, "2024-01-01", "2024-01-03", root,
+                 lambda: open_edh(str(tmp_path / "edh.zarr")), report=lambda _: None)
+    raw = open_downloaded(cfg, "2024-01-01", "2024-01-01", root, source="edh")
+    assert raw.sizes["time"] == 48
+    assert str(raw.time.values[-1]).startswith("2024-01-02T23")
+    with pytest.raises(FileNotFoundError, match="Aquisição pendente"):
+        open_downloaded(cfg, "2024-01-01", "2024-01-10", root, source="edh")
+
+
 def test_compare_detects_identical_and_changed_values(tmp_path):
     cfg = small_config()
     source = mirror(tmp_path / "edh.zarr")

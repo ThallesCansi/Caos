@@ -20,6 +20,7 @@ CONFIG=${CONFIG:-configs/xingu_1990_2024.yaml}
 START=${START:-1990-01-01}
 END=${END:-2024-12-31}
 VERIFY=${VERIFY:-1}
+DOWNLOAD=${DOWNLOAD:-1}
 PROCESS=${PROCESS:-1}
 WORKERS=${WORKERS:-${SLURM_CPUS_PER_TASK:-16}}
 
@@ -68,10 +69,12 @@ trap on_timeout USR1
 # Em segundo plano para que o aviso de fim de tempo (USR1) seja tratado durante a execução.
 run() { "$@" & CHILD=$!; wait "$CHILD"; CHILD=""; }
 
-STEP="download do Earth Data Hub"
-if [[ $VERIFY == 1 ]]; then verify=--verify; else verify=--no-verify; fi
-run $PY -m amazon_chaos.pilot_cli edh-download "$START" "$END" \
-  --config "$CONFIG" --workers "$WORKERS" "$verify"
+if [[ $DOWNLOAD == 1 ]]; then
+  STEP="download do Earth Data Hub"
+  if [[ $VERIFY == 1 ]]; then verify=--verify; else verify=--no-verify; fi
+  run $PY -m amazon_chaos.pilot_cli edh-download "$START" "$END" \
+    --config "$CONFIG" --workers "$WORKERS" "$verify"
+fi
 
 if [[ $PROCESS == 1 ]]; then
   STEP="séries diárias"

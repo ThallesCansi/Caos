@@ -222,14 +222,35 @@ def open_job_files(files):
     return xr.merge(arrays, join="exact")
 
 
+def covering_files(config, job, root="data/raw"):
+    """Arquivos validados do job ou de um mês baixado que contenha todos os seus dias.
+
+    O dia UTC de apoio de um período parcial (ex.: 1º/jan do ano seguinte) é um job próprio,
+    mas o download de um período maior já traz o mês inteiro.
+    """
+    directory = job_directory(config, job, root)
+    files = cached_files(directory, job)
+    if files is not None:
+        return files
+    same = {k: v for k, v in job["request"].items() if k != "day"}
+    for manifest in sorted(directory.parent.glob(f"{job['month']}_*/manifest.json")):
+        other = json.loads(manifest.read_text())["job"]
+        if (
+            other["dataset"] == job["dataset"]
+            and other["group"] == job["group"]
+            and {k: v for k, v in other["request"].items() if k != "day"} == same
+            and set(job["request"]["day"]) <= set(other["request"]["day"])
+        ):
+            return cached_files(manifest.parent, other)
+    raise FileNotFoundError(f"Aquisição pendente: {directory}")
+
+
 def open_downloaded(config, start, end, root="data/raw", source="cds"):
     groups = {}
     for job in plan_for_source(config, start, end, source):
-        directory = job_directory(config, job, root)
-        files = cached_files(directory, job)
-        if files is None:
-            raise FileNotFoundError(f"Aquisição pendente: {directory}")
-        groups.setdefault(job["group"], []).append(open_job_files(files))
+        ds = open_job_files(covering_files(config, job, root))
+        ds = ds.sel(time=request_times(job["request"]))
+        groups.setdefault(job["group"], []).append(ds)
     combined = [
         xr.concat(items, dim="time", data_vars="all", coords="minimal", compat="equals").sortby(
             "time"

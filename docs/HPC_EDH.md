@@ -72,7 +72,7 @@ Os dois jobs podem rodar ao mesmo tempo (diretórios separados). Não rode duas 
 
 **2b. Sem Slurm** (nó de login): `tmux new -s era5`, depois `bash scripts/hpc/era5_edh.sbatch` (mesmas variáveis); `Ctrl-b d` desanexa; `tmux attach -t era5` volta.
 
-Variáveis: `CONFIG`, `START`, `END`, `VERIFY=1|0`, `PROCESS=1|0` (gera `daily_<ano>.nc` mascarado pela bacia após o download), `WORKERS` (downloads simultâneos; padrão = CPUs do job). Se o limite de tempo da partição for menor que 24 h, ajuste `#SBATCH --time`: o job avisa 10 min antes do fim e basta reenviar.
+Variáveis: `CONFIG`, `START`, `END`, `VERIFY=1|0`, `DOWNLOAD=1|0` (0 pula o download e só processa o que já está validado), `PROCESS=1|0` (gera `daily_<ano>.nc` mascarado pela bacia após o download), `WORKERS` (downloads simultâneos; padrão = CPUs do job). Se o limite de tempo da partição for menor que 24 h, ajuste `#SBATCH --time`: o job avisa 10 min antes do fim e basta reenviar.
 
 ## 3. Mensagens no Telegram
 
