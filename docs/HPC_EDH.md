@@ -2,7 +2,7 @@
 
 O CDS entrega poucos MB por requisição e cada uma espera 20–60 min na fila; o plano 1990–2024 levaria semanas. O [Earth Data Hub](https://earthdatahub.destine.eu/collections/era5/datasets/era5-single-levels-atmosphere) (DestinE) espelha o mesmo ERA5 horário em Zarr, organizado para séries longas (blocos de 45 dias × 15° × 15°), sem fila. O comando `edh-download` lê o recorte ano a ano e grava um NetCDF por mês com as seis variáveis, **os mesmos dias, horas UTC e grade das requisições CDS**, validado pelas mesmas regras e mais uma: nenhum valor ausente em nenhuma célula ou hora. Cada mês tem manifesto com SHA-256; reenviar o job retoma do último mês validado.
 
-**Igualdade com o CDS.** Antes do período completo, o job baixa do EDH os anos que já têm meses CDS em `data/raw/<experimento>/era5`, compara valor a valor (mesmas horas e células) e **para** se alguma variável divergir além de arredondamento de float32 (`rtol=1e-6`). A notificação informa, por variável, a porcentagem de valores idênticos e a diferença máxima.
+**Precisão.** O EDH **não é bit a bit igual** ao CDS: guarda cada valor com ~10 bits de mantissa (erro relativo ≤ 0,05%, sem viés; até 0,125 K na temperatura horária). Números e consequências para as análises não lineares estão na [decisão D-007](DECISIONS.md). Antes do período completo, o job baixa do EDH os anos que já têm meses CDS em `data/raw/<experimento>/era5`, compara valor a valor (mesmas horas e células) e **para** se alguma variável divergir além do dobro desse arredondamento; hora, grade ou convenção trocadas são rejeitadas. A notificação informa, por variável, a diferença máxima absoluta e relativa e o viés.
 
 ## 1. Preparar (uma vez)
 

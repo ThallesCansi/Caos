@@ -29,7 +29,15 @@ def small_config():
     return cfg
 
 
-def mirror(path, drop_hour=None):
+def bitround(values, keep=10):
+    """Arredonda a mantissa float32 a `keep` bits, como a compressão do EDH."""
+    bits = values.astype("float32").view("uint32")
+    drop = 23 - keep
+    half = np.uint32(1 << (drop - 1))
+    return ((bits + half) & ~np.uint32((1 << drop) - 1)).view("float32")
+
+
+def mirror(path, drop_hour=None, keep_bits=None):
     """Recorte do formato EDH: latitude decrescente, longitude 0–360, float32."""
     times = pd.date_range("2023-12-31", "2024-01-05 23:00", freq="h")
     if drop_hour is not None:
@@ -49,7 +57,11 @@ def mirror(path, drop_hour=None):
         coords={"valid_time": times, "latitude": lats, "longitude": lons,
                 "number": 0, "surface": 0.0},
     )
-    ds.chunk({"valid_time": 48, "latitude": 8, "longitude": 8}).to_zarr(
+    stored = ds.copy()
+    if keep_bits:
+        for name in UNITS:
+            stored[name].values = bitround(ds[name].values, keep_bits)
+    stored.chunk({"valid_time": 48, "latitude": 8, "longitude": 8}).to_zarr(
         path, zarr_format=3, consolidated=True
     )
     return ds
@@ -120,6 +132,21 @@ def test_compare_detects_identical_and_changed_values(tmp_path):
     manifest_path.write_text(json.dumps(manifest))
     stats = compare_with_cds(cfg, root)
     assert not stats["t2m"]["ok"] and stats["d2m"]["ok"]
+
+
+def test_compare_accepts_edh_rounding_only(tmp_path):
+    cfg = small_config()
+    source = mirror(tmp_path / "edh.zarr", keep_bits=10)
+    root = tmp_path / "raw"
+    download_plan(cfg, "2024-01-01", "2024-01-01", root, MirrorCDS(source))
+    download_edh(cfg, "2024-01-01", "2024-01-01", root,
+                 lambda: open_edh(str(tmp_path / "edh.zarr")), report=lambda _: None)
+    stats = compare_with_cds(cfg, root)
+    assert all(r["ok"] for r in stats.values())
+    assert all(r["identical"] < r["values"] for r in stats.values())
+    assert all(0 < r["max_rel_diff"] <= 2**-11 for r in stats.values())
+    with xr.open_dataset(next((root / cfg["experiment_id"] / "edh").rglob("*.nc"))) as ds:
+        assert "10 bits" in ds.attrs["edh_precision"]
 
 
 def test_missing_hour_is_rejected(tmp_path):

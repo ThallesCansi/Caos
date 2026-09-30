@@ -6,7 +6,7 @@ from pathlib import Path
 import typer
 
 from amazon_chaos.config import load_config
-from amazon_chaos.io.era5_edh import compare_with_cds, download_edh, open_edh
+from amazon_chaos.io.era5_edh import EDH_RTOL, compare_with_cds, download_edh, open_edh
 from amazon_chaos.io.era5_monthly import (
     cached_files,
     download_plan,
@@ -82,8 +82,8 @@ def edh_download(
                      report=report)
         stats = compare_with_cds(cfg)
         lines = [
-            f"{'✅' if r['ok'] else '❌'} {name}: {100 * r['identical'] / r['values']:.2f}% "
-            f"idênticos · dif. máx. {r['max_abs_diff']:.3g}"
+            f"{'✅' if r['ok'] else '❌'} {name}: dif. máx. {r['max_abs_diff']:.3g} "
+            f"(relativa {r['max_rel_diff']:.1e}; limite {EDH_RTOL:.1e}) · viés {r['bias']:+.1e}"
             for name, r in stats.items()
         ]
         compared = sorted(set().union(*(r["months"] for r in stats.values())))
@@ -92,7 +92,9 @@ def edh_download(
                    + "\n".join(lines))
             raise typer.Exit(1)
         report(f"🔬 Conferência com o CDS ({len(compared)} meses): tudo certo!\n"
-               + "\n".join(lines) + "\nSeguindo para o período completo. 🚀")
+               + "\n".join(lines)
+               + "\nDiferenças dentro da compressão conhecida do EDH (~10 bits)."
+               + "\nSeguindo para o período completo. 🚀")
     download_edh(cfg, start, end, open_dataset=opener, report=report)
     files = [cached_files(job_directory(cfg, j), j) for j in jobs]
     if any(f is None for f in files):

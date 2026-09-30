@@ -5,6 +5,9 @@ blocos em paralelo, sem a fila do CDS. Cada mês é gravado em NetCDF com as sei
 os mesmos dias/horas UTC e a mesma grade das requisições CDS, validado por `validate_files`
 e registrado em manifesto com SHA-256. `compare_with_cds` confere os valores contra os
 meses já baixados do CDS antes do download integral.
+
+O espelho não é bit a bit igual ao CDS: guarda o float32 com a mantissa arredondada a ~10
+bits (erro relativo ≤ 2⁻¹¹ ≈ 4,9e-4, sem viés), medido em jan/1990 e jan/2024 (D-007).
 """
 
 import json
@@ -33,6 +36,10 @@ from amazon_chaos.provenance import sha256_file
 
 EDH_URL = "https://data.earthdatahub.destine.eu/era5/era5-single-levels-atmosphere-v0.zarr"
 NETWORK_ERRORS = (OSError, TimeoutError, aiohttp.ClientError)
+# Dobro do erro de arredondamento a 10 bits: aceita a compressão do espelho e ainda barra
+# hora, grade ou convenção trocadas (1 K em 300 K já é 3,3e-3).
+EDH_RTOL = 2**-10
+EDH_PRECISION = "mantissa float32 arredondada a ~10 bits no EDH; erro relativo <= 2**-11"
 
 
 def open_edh(url=EDH_URL, token=None, concurrency=16):
@@ -92,6 +99,7 @@ def write_month(month, directory, job, url=EDH_URL):
     for variable in month.variables.values():
         variable.encoding = {}
     month.attrs["edh_source_url"] = url
+    month.attrs["edh_precision"] = EDH_PRECISION
     temporary = directory / "fields.tmp.nc"
     month.to_netcdf(
         temporary, encoding={n: {"zlib": True, "complevel": 4} for n in month.data_vars}
@@ -184,7 +192,7 @@ def download_edh(
     return by_year
 
 
-def compare_with_cds(config, root="data/raw", rtol=1e-6, atol=1e-7):
+def compare_with_cds(config, root="data/raw", rtol=EDH_RTOL, atol=1e-7):
     """Compara cada mês CDS validado com as mesmas horas e células do EDH."""
     base = Path(root) / config["experiment_id"]
     edh = {}
@@ -203,16 +211,25 @@ def compare_with_cds(config, root="data/raw", rtol=1e-6, atol=1e-7):
         for name in [NAMES[v] for v in job["request"]["variable"]]:
             a, b = cds[name].values, mirror[name].values
             row = stats.setdefault(
-                name, {"months": set(), "values": 0, "identical": 0, "max_abs_diff": 0.0}
+                name,
+                {"months": set(), "values": 0, "identical": 0, "max_abs_diff": 0.0,
+                 "max_rel_diff": 0.0, "bias": 0.0},
             )
             row["months"].add(job["month"])
             row["values"] += a.size
             row["identical"] += int(np.sum((a == b) | (np.isnan(a) & np.isnan(b))))
-            diff = np.abs(a.astype("float64") - b.astype("float64"))
+            signed = b.astype("float64") - a.astype("float64")
+            diff = np.abs(signed)
+            nonzero = a != 0
             row["max_abs_diff"] = max(row["max_abs_diff"], float(np.nanmax(diff)))
+            row["max_rel_diff"] = max(
+                row["max_rel_diff"], float(np.nanmax(diff[nonzero] / np.abs(a[nonzero])))
+            )
+            row["bias"] += float(np.nansum(signed))
             row["ok"] = row.get("ok", True) and bool(
                 np.allclose(a, b, rtol=rtol, atol=atol, equal_nan=True)
             )
     for row in stats.values():
         row["months"] = sorted(row["months"])
+        row["bias"] /= row["values"]
     return stats
