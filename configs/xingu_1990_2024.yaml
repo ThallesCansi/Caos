@@ -1,0 +1,30 @@
+experiment_id: xingu-era5-1990-2024
+region_name: Bacia do Rio Xingu
+region_slug: xingu_1990_2024
+spatial:
+  area: [-1.25, -55.75, -15.0, -50.25]  # envelope da BHB250, nível 3, cod_otto 642
+  grid_degrees: 0.25
+  pilot_point: [-3.25, -52.25]
+  equal_area_crs: EPSG:6933
+  basin_source: data/external/xingu/bacia_ibge_bhb250_2021.geojson
+time:
+  science_start: 2001-01-01
+  science_end: 2024-12-31
+  archive_start: 1990-01-01
+  utc_offset_hours: -3
+  test_start: 2024-01-01
+  test_end: 2024-01-31
+era5:
+  dataset: reanalysis-era5-single-levels
+  product_type: reanalysis
+  data_format: netcdf
+  download_format: unarchived
+  variables:
+    instant:
+      - 2m_temperature
+      - 2m_dewpoint_temperature
+      - surface_pressure
+      - 10m_u_component_of_wind
+      - 10m_v_component_of_wind
+    accum:
+      - total_precipitation

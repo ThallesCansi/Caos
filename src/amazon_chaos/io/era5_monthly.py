@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import cdsapi
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -26,6 +27,8 @@ NAMES = {
     "10m_v_component_of_wind": "v10",
     "total_precipitation": "tp",
 }
+# Espelho Zarr do ERA5 horário (DestinE Earth Data Hub); ver docs/HPC_EDH.md.
+EDH_DATASET = "earthdatahub:era5-single-levels-atmosphere-v0"
 
 
 def plan_requests(config, start, end):
@@ -54,6 +57,38 @@ def plan_requests(config, start, end):
     return jobs
 
 
+def plan_edh_requests(config, start, end):
+    """Um job por mês com as seis variáveis e os mesmos dias, horas e grade do plano CDS."""
+    variables = [v for group in config["era5"]["variables"].values() for v in group]
+    months = {}
+    for job in plan_requests(config, start, end):
+        months.setdefault(job["month"], job["request"])
+    jobs = []
+    for month, request in months.items():
+        payload = {"dataset": EDH_DATASET, "request": {**request, "variable": variables}}
+        key = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:20]
+        jobs.append({**payload, "key": key, "month": month, "group": "edh"})
+    return jobs
+
+
+def plan_for_source(config, start, end, source="cds"):
+    if source not in {"cds", "edh"}:
+        raise ValueError(f"Fonte desconhecida: {source}")
+    return plan_edh_requests(config, start, end) if source == "edh" else plan_requests(
+        config, start, end
+    )
+
+
+def request_times(req):
+    return pd.DatetimeIndex(
+        [
+            f"{req['year'][0]}-{req['month'][0]}-{day} {hour}"
+            for day in req["day"]
+            for hour in req["time"]
+        ]
+    )
+
+
 def validate_files(files, job):
     opened = []
     try:
@@ -67,13 +102,7 @@ def validate_files(files, job):
         if set(names) - set(ds.data_vars):
             raise ValueError("Missing requested variables")
         time_name = infer_time_name(ds)
-        expected = pd.DatetimeIndex(
-            [
-                f"{req['year'][0]}-{req['month'][0]}-{day} {hour}"
-                for day in req["day"]
-                for hour in req["time"]
-            ]
-        )
+        expected = request_times(req)
         actual = pd.DatetimeIndex(ds[time_name].values)
         if not actual.equals(expected):
             raise ValueError("Time coverage differs from request")
@@ -88,11 +117,14 @@ def validate_files(files, job):
             values = ds[name].values
             if not np.isfinite(values).any():
                 raise ValueError(f"Entire variable missing: {name}")
+        missing = {n: int((~np.isfinite(ds[n].values)).sum()) for n in names}
+        if job["group"] in {"all", "edh"} and any(missing.values()):
+            raise ValueError(f"Requisição combinada contém valores ausentes: {missing}")
         return {
             "n_hours": len(actual),
             "n_cells": len(lats) * len(lons),
             "variables": names,
-            "missing_values": {n: int((~np.isfinite(ds[n].values)).sum()) for n in names},
+            "missing_values": missing,
         }
     finally:
         for ds in opened:
@@ -100,12 +132,10 @@ def validate_files(files, job):
 
 
 def job_directory(config, job, root="data/raw"):
-    return (
-        Path(root)
-        / config["experiment_id"]
-        / "era5"
-        / f"{job['month']}_{job['group']}_{job['key']}"
-    )
+    base = Path(root) / config["experiment_id"]
+    if job["dataset"] == EDH_DATASET:
+        return base / "edh" / f"{job['month']}_{job['key']}"
+    return base / "era5" / f"{job['month']}_{job['group']}_{job['key']}"
 
 
 def cached_files(directory, job):
@@ -179,23 +209,27 @@ def download_plan(config, start, end, root="data/raw", client=None):
     return result
 
 
-def open_downloaded(config, start, end, root="data/raw"):
+def open_job_files(files):
+    arrays = []
+    for path in files:
+        with xr.open_dataset(path) as source:
+            ds = source.load()
+        for name in ["number", "expver", "surface"]:
+            if name in ds.coords and name not in ds.dims:
+                ds = ds.drop_vars(name)
+        name = infer_time_name(ds)
+        arrays.append(ds.rename({name: "time"}) if name != "time" else ds)
+    return xr.merge(arrays, join="exact")
+
+
+def open_downloaded(config, start, end, root="data/raw", source="cds"):
     groups = {}
-    for job in plan_requests(config, start, end):
+    for job in plan_for_source(config, start, end, source):
         directory = job_directory(config, job, root)
         files = cached_files(directory, job)
         if files is None:
             raise FileNotFoundError(f"Aquisição pendente: {directory}")
-        arrays = []
-        for path in files:
-            with xr.open_dataset(path) as source:
-                ds = source.load()
-            for name in ["number", "expver", "surface"]:
-                if name in ds.coords and name not in ds.dims:
-                    ds = ds.drop_vars(name)
-            name = infer_time_name(ds)
-            arrays.append(ds.rename({name: "time"}) if name != "time" else ds)
-        groups.setdefault(job["group"], []).append(xr.merge(arrays, join="exact"))
+        groups.setdefault(job["group"], []).append(open_job_files(files))
     combined = [
         xr.concat(items, dim="time", data_vars="all", coords="minimal", compat="equals").sortby(
             "time"
@@ -205,13 +239,41 @@ def open_downloaded(config, start, end, root="data/raw"):
     return xr.merge(combined, join="exact", compat="no_conflicts")
 
 
-def process_period(config, start, end):
-    raw = open_downloaded(config, start, end)
+def mask_to_basin(daily, config):
+    """Mask cells outside the basin and keep fractions for area-aware summaries."""
+    source = Path(config["spatial"]["basin_source"])
+    if not source.exists():
+        raise FileNotFoundError(f"Máscara da bacia pendente: {source}")
+    cells = gpd.read_file(
+        Path("data/processed") / config["experiment_id"] / "basin_grid.geojson"
+    )
+    fraction = (
+        cells.pivot(index="latitude", columns="longitude", values="basin_fraction")
+        .reindex(index=daily.latitude.values, columns=daily.longitude.values)
+        .fillna(0)
+    )
+    weights = xr.DataArray(
+        fraction.to_numpy(),
+        coords={"latitude": daily.latitude, "longitude": daily.longitude},
+        dims=("latitude", "longitude"),
+        name="basin_fraction",
+    )
+    masked = daily.where(weights > 0)
+    masked["basin_fraction"] = weights
+    return masked
+
+
+def process_period(config, start, end, source="cds"):
+    raw = open_downloaded(config, start, end, source=source)
     hourly = derive_hourly(raw)
     daily = daily_statistics(hourly, start, end, config["time"]["utc_offset_hours"])
+    if "basin_source" in config.get("spatial", {}):
+        daily = mask_to_basin(daily, config)
     out = Path("data/processed") / config["experiment_id"]
     out.mkdir(parents=True, exist_ok=True)
     target = out / f"daily_{start}_{end}.nc"
-    daily.attrs["request_keys"] = ",".join(j["key"] for j in plan_requests(config, start, end))
+    jobs = plan_for_source(config, start, end, source)
+    daily.attrs["request_keys"] = ",".join(j["key"] for j in jobs)
+    daily.attrs["era5_source"] = jobs[0]["dataset"]
     daily.to_netcdf(target)
     return target

@@ -1,0 +1,28 @@
+experiment_id: tapajos-era5-1990-2024
+region_name: Baixo Tapajós
+spatial:
+  area: [-2.25, -56.0, -3.75, -54.25]  # [N,W,S,E]; mesma caixa do piloto tapajos_2024
+  grid_degrees: 0.25
+  pilot_point: [-2.75, -55.0]
+  equal_area_crs: EPSG:6933
+time:
+  science_start: 2001-01-01
+  science_end: 2024-12-31
+  archive_start: 1990-01-01
+  utc_offset_hours: -3
+  test_start: 2024-01-01
+  test_end: 2024-01-31
+era5:
+  dataset: reanalysis-era5-single-levels
+  product_type: reanalysis
+  data_format: netcdf
+  download_format: unarchived
+  variables:
+    instant:
+      - 2m_temperature
+      - 2m_dewpoint_temperature
+      - surface_pressure
+      - 10m_u_component_of_wind
+      - 10m_v_component_of_wind
+    accum:
+      - total_precipitation

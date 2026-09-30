@@ -1,8 +1,8 @@
 # TCC — Dinâmica não linear do sistema floresta–atmosfera amazônico
 
-## Piloto Jupyter do Baixo Tapajós
+## Cadernos Jupyter: Xingu e Baixo Tapajós
 
-Comece por [03_Piloto_Tapajos_2024.ipynb](03_Piloto_Tapajos_2024.ipynb): mapa do recorte, aquisição documentada, qualidade e séries diárias de janeiro de 2024. O notebook lê os dados locais; as funções auxiliares ficam nos módulos Python.
+Para Xingu, consulte [04_Bacia_Xingu_1990_2024.ipynb](04_Bacia_Xingu_1990_2024.ipynb) e o [guia de aquisição](docs/XINGU.md). O piloto anterior está em [03_Piloto_Tapajos_2024.ipynb](03_Piloto_Tapajos_2024.ipynb): mapa do recorte, aquisição documentada, qualidade e séries diárias de janeiro de 2024. O notebook lê os dados locais; as funções auxiliares ficam nos módulos Python.
 
 Configuração: `configs/tapajos_2024.yaml`. Consulte [como executar o piloto](docs/PILOTO_TAPAJOS_COMO_EXECUTAR.md) e o [desenho metodológico](docs/DESENHO_ESTUDO_2001_2024.md). O roteiro abaixo descreve a infraestrutura anterior ERA5/DETER e marimo, preservada para reprodução.
 

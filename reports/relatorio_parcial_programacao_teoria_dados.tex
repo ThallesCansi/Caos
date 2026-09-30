@@ -1,0 +1,161 @@
+% Relatório parcial — parte matemática, computacional e de dados.
+% Adaptado do template institucional enviado como main.tex.
+% Para usar o fundo institucional, coloque fundo_acompanhamento.png em reports/.
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{times}
+\usepackage[top=2.75cm,left=3cm,bottom=2.55cm,right=2cm,headheight=12pt,headsep=5pt]{geometry}
+\usepackage{setspace,ragged2e,microtype,graphicx,eso-pic,caption,titlesec,hyperref,float}
+\usepackage[table]{xcolor}
+\usepackage{array,tabularx,enumitem,amssymb,booktabs}
+\setstretch{1.15}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\pagestyle{empty}
+\titleformat{\section}{\normalfont\bfseries\fontsize{12}{14}\selectfont}{}{0pt}{}
+\titlespacing*{\section}{0pt}{0.55cm}{0.15cm}
+\titleformat{\subsection}{\normalfont\bfseries\fontsize{12}{14}\selectfont}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{0.3cm}{0.1cm}
+\IfFileExists{fundo_acompanhamento.png}{%
+  \AddToShipoutPictureBG{\AtPageLowerLeft{%
+    \includegraphics[width=\paperwidth,height=\paperheight]{fundo_acompanhamento.png}}}}{}
+\definecolor{concluida}{RGB}{198,239,206}
+\definecolor{andamento}{RGB}{255,235,156}
+\definecolor{naoiniciada}{RGB}{255,199,206}
+\newcommand{\feito}{\cellcolor{concluida}X}
+\newcommand{\fazendo}{\cellcolor{andamento}X}
+\newcommand{\pendente}{\cellcolor{naoiniciada}X}
+\newcommand{\figdir}{figures/tapajos_2024/}
+
+\begin{document}
+\vspace*{0.25cm}
+\begin{center}
+RELATÓRIO DE ACOMPANHAMENTO DE PROJETO FINAL
+\end{center}
+\vspace{0.45cm}
+
+Título do projeto: Uma Análise do Sistema Floresta-Atmosfera Amazônica sob a Ótica da Teoria do Caos
+
+\vspace{0.45cm}
+Pesquisadores principais: Caio Marcelo Cavallari Ruas e Thalles José de Souza Cansi\\
+Colaboradores: Rafael Anis Shaikhzadeh Santos e Julia Guedes Almeida dos Santos\\
+Supervisor: Vinicius Francisco Wasques\\
+Co-supervisor: Não se aplica.
+
+\section*{INTRODUÇÃO E JUSTIFICATIVA DO PROJETO}
+
+A floresta amazônica participa ativamente da formação das condições atmosféricas da região. A vegetação influencia a circulação de água e energia, enquanto a chuva, a temperatura, a umidade e os ventos também condicionam o funcionamento da floresta. Como essas relações envolvem realimentações e ocorrem em várias escalas de tempo e espaço, nem sempre uma mudança ambiental produz uma resposta simples ou proporcional. O projeto de TCC procura investigar essas relações com ideias da teoria dos sistemas dinâmicos e da Teoria do Caos, tendo como interesse principal possíveis sinais de instabilidade associados a perturbações na cobertura vegetal.
+
+A proposta original combina uma análise quantitativa com uma interpretação histórica e socioespacial da Amazônia. Neste relatório parcial, a descrição se concentra na primeira frente: o estudo dos conceitos matemáticos, a construção dos procedimentos computacionais e o exame inicial das bases ambientais. Essa delimitação corresponde à divisão atual do trabalho entre os integrantes da dupla; a outra frente será incorporada ao documento conjunto.
+
+Até aqui, a atividade se organizou em duas perguntas práticas. Primeiro, como transformar bases distintas em séries temporais confiáveis e comparáveis? Segundo, em que condições medidas de dinâmica não linear podem ser interpretadas com cuidado em dados ambientais? Para enfrentar essas perguntas, foram feitos exercícios com modelos matemáticos conhecidos e pilotos curtos com dados reais. O trabalho ainda não chegou à comparação histórica entre áreas mais e menos perturbadas. Justamente por isso, a etapa atual é importante: ela permite reconhecer limitações dos dados e ajustar o método antes de produzir conclusões sobre a floresta-atmosfera amazônica.
+
+\section*{CONTRIBUIÇÕES}
+
+Na parte tratada neste relatório, as atividades incluíram a elaboração de cadernos Jupyter para estudar sistemas dinâmicos, a programação de rotinas para aquisição e tratamento de dados climáticos e ambientais, a verificação de qualidade das séries e a produção de mapas e gráficos. O laboratório matemático serviu para compreender o comportamento dos métodos antes de aplicá-los a observações reais. Os pilotos com ERA5 e DETER permitiram testar a leitura, a organização espacial e temporal e a interpretação inicial dos dados. O caderno do Baixo Tapajós reuniu essas etapas em um recorte regional mais definido.
+
+A atribuição dessas tarefas a cada pesquisador principal e colaborador, assim como a descrição das contribuições na vertente de humanidades, precisa ser completada em conjunto pela equipe antes da entrega institucional. Esta versão registra as atividades verificáveis nos cadernos e no código, sem presumir uma divisão individual que não está documentada nesses materiais.
+
+% Completar com a dupla: contribuições individuais de Caio, Thalles, Julia e Rafael.
+
+\section*{OBJETIVOS}
+
+O objetivo geral aprovado para o projeto é investigar a dinâmica não linear do sistema floresta-atmosfera amazônico, utilizando conceitos e métodos da Teoria do Caos e dos sistemas dinâmicos complexos para analisar possíveis sinais de instabilidade associados a perturbações na cobertura vegetal, como desmatamento, queimadas e degradação florestal. O trabalho busca compreender a Amazônia também como um território habitado e atravessado por processos históricos, políticos, econômicos, culturais e cosmológicos.
+
+O objetivo geral permanece. Houve, porém, um detalhamento da estratégia de trabalho: antes de estudar a série histórica, foram definidos testes curtos de aquisição, processamento e controle de qualidade. O Baixo Tapajós foi escolhido como recorte inicial, e a análise climática principal foi planejada em resolução diária, preservando os dados horários originais. Esse ajuste metodológico responde à necessidade de conhecer a cobertura e a natureza das bases antes de aplicar ferramentas de análise não linear. Assim, na pergunta do template sobre modificações de hipóteses, métodos, cronograma ou objetivos, a resposta é sim quanto ao detalhamento dos métodos; não houve mudança do objetivo geral.
+
+\subsection*{Objetivos específicos}
+
+O quadro abaixo retoma os objetivos da proposta e indica o estágio que os materiais técnicos permitem verificar. A situação da interpretação socioespacial deverá ser atualizada com a parte redigida pela dupla.
+
+\small
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\textwidth}{|X|p{3.15cm}|}\hline
+Objetivo específico da proposta & Situação nesta etapa\\\hline
+Revisar a literatura sobre Teoria do Caos, sistemas dinâmicos complexos e interações floresta-atmosfera na Amazônia. & Em andamento\\\hline
+Selecionar e organizar bases ambientais, climáticas e socioespaciais relacionadas aos distúrbios florestais. & Em andamento\\\hline
+Construir séries temporais ambientais e avaliar qualidade, continuidade e sazonalidade. & Em andamento nos pilotos\\\hline
+Estimar o maior expoente de Lyapunov e aplicar métodos de análise não linear. & Exercícios sintéticos realizados; dados reais pendentes\\\hline
+Identificar regiões afetadas por desmatamento, queimadas ou degradação para comparar níveis de perturbação. & Recorte definido; comparação pendente\\\hline
+Interpretar os resultados à luz do contexto socioespacial amazônico. & A integrar com a dupla\\\hline
+\end{tabularx}
+\normalsize
+
+\section*{CRONOGRAMA}
+
+O cronograma aprovado organiza o projeto de agosto a dezembro de 2026. A tabela conserva suas atividades e meses previstos. As cores assinalam o estágio aproximado da parte matemática e computacional no momento deste relatório: verde para trabalho já realizado, amarelo para trabalho em andamento e vermelho para atividade ainda prevista. Uma atividade pode continuar em meses seguintes mesmo quando já produziu entregas parciais.
+
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{|X|c|c|c|c|c|}\hline
+Atividade & Ago. & Set. & Out. & Nov. & Dez.\\\hline
+Levantamento e análise bibliográfica & \feito & \fazendo & & \pendente & \\\hline
+Definição do referencial teórico e metodológico & \feito & \fazendo & & & \\\hline
+Levantamento, análise e organização das bases & & \fazendo & & & \\\hline
+Desenvolvimento do modelo e da abordagem analítica & & \fazendo & \pendente & & \\\hline
+Análise e interpretação dos resultados & & & \pendente & \pendente & \\\hline
+Redação da monografia & & \fazendo & \pendente & \pendente & \\\hline
+Revisão e ajustes finais do texto & & & & \pendente & \\\hline
+Defesa da tese & & & & & \pendente\\\hline
+\end{tabularx}
+\normalsize
+
+\section*{METODOLOGIA}
+
+O ponto de partida matemático foi um laboratório em Jupyter sobre sistemas dinâmicos não lineares. Nele, um modelo contínuo de duas variáveis representa, de maneira didática, a disponibilidade de umidade \(m\) e a condição da vegetação \(v\). A evolução dessas variáveis é descrita por
+\[
+\dot m=P+\alpha v-\beta m,
+\qquad
+\dot v=v\left[r(1-v)\frac{m}{h+m}-d\right].
+\]
+O modelo não pretende reproduzir quantitativamente a Amazônia. Sua função é permitir que conceitos como equilíbrio, estabilidade e realimentação sejam estudados em um sistema cujas equações são conhecidas. A análise da matriz jacobiana identifica quando pequenas perturbações se dissipam ou crescem nas proximidades de um equilíbrio; as simulações mostram como essa leitura aparece nas trajetórias.
+
+O mesmo caderno apresenta um mapa discreto com memória, no qual o estado seguinte depende do estado atual e do anterior. Variar seus parâmetros permite observar pontos fixos, ciclos e mudanças de comportamento. Como a equação é conhecida, o maior expoente de Lyapunov pode ser calculado pelo crescimento de pequenas perturbações ao longo da trajetória. Em seguida, o caderno utiliza apenas uma série gerada pelo próprio mapa e reconstrói um espaço de estados com valores defasados. Esse exercício aproxima a situação dos dados climáticos, para os quais não se conhece uma equação completa. Também foram explorados séries com sazonalidade e ruído, uma série estocástica AR(1), séries substitutas e gráficos de recorrência. A finalidade desses controles é mostrar as condições em que um indicador pode ser enganoso.
+
+A preparação dos dados reais começou com dois cadernos sobre ERA5 e DETER. O ERA5 fornece campos meteorológicos em uma grade espacial; no piloto foram utilizados temperatura e ponto de orvalho a 2 metros, pressão na superfície, componentes do vento a 10 metros e precipitação. A leitura separou variáveis instantâneas da precipitação acumulada, que pode ser entregue em um arquivo distinto. Foram conferidos os eixos de tempo, latitude e longitude antes de combinar os conjuntos. A partir dos campos originais foram calculadas grandezas mais fáceis de interpretar, como temperatura em graus Celsius, velocidade do vento e déficit de pressão de vapor. A precipitação exigiu cuidado próprio: cada valor horário representa uma acumulação encerrada no horário indicado, e a soma diária deve respeitar esse intervalo.
+
+No serviço TerraBrasilis, os alertas DETER foram tratados como feições geográficas com data e classe, não como uma série consolidada de desmatamento. Os cadernos consultam a descrição do serviço para descobrir a camada e o campo de data publicados, contam os registros antes da aquisição e recortam os polígonos à área do piloto. A linha do tempo de alertas foi apresentada ao lado do clima apenas para exploração descritiva, pois a data de detecção de um alerta não estabelece, por si só, a data exata da perturbação nem uma relação causal com o estado atmosférico.
+
+O piloto regional seguinte delimitou uma caixa no Baixo Tapajós, próxima a Santarém, Belterra e Mojuí dos Campos. O caderno \texttt{03\_Piloto\_Tapajos\_2024.ipynb} usa dados horários de janeiro de 2024 e calcula resumos diários de temperatura, umidade, déficit de pressão de vapor, vento e chuva para a grade ERA5. Ele explicita a passagem da hora ao dia, confere a quantidade de horas válidas e distingue uma célula individual de uma média regional. A escala diária foi escolhida como referência para o estudo posterior de 2001--2024. Essa extensão ainda depende da aquisição e auditoria da série histórica e da integração com medidas de cobertura, desmatamento e fogo.
+
+\section*{RESULTADOS OBTIDOS ATÉ O MOMENTO}
+
+O primeiro resultado é metodológico. No laboratório sintético, foi possível acompanhar como a estabilidade de um equilíbrio muda com os parâmetros e como trajetórias inicialmente próximas podem se separar. Em um regime demonstrativo do mapa com memória, o expoente calculado a partir da equação foi de cerca de \(0{,}290\) por iteração, enquanto a estimativa obtida apenas da série reconstruída ficou em torno de \(0{,}284\) por iteração. A proximidade entre os valores é um teste útil em um sistema conhecido. Ela não garante que a mesma estimativa será confiável em uma série ambiental: no próprio laboratório, um ajuste exploratório aplicado a uma série AR(1) estocástica também produziu inclinação positiva. Por isso, o projeto não tratará um valor positivo isolado como prova de caos na Amazônia.
+
+No piloto de agosto de 2024, os arquivos ERA5 reuniram 192 horários, de 1 a 8 de agosto, para permitir o fechamento dos sete dias científicos de 1 a 7 de agosto, inclusive da precipitação. Na célula examinada, a sequência apresentou passos regulares de uma hora e não teve valores ausentes nas variáveis verificadas. A consulta ao DETER encontrou 1.635 alertas no intervalo solicitado; 65 intersectaram a caixa espacial do piloto. Esses totais mostram que o fluxo de consulta e recorte funcionou nesse exemplo. Eles não são uma taxa regional de desmatamento, e a comparação gráfica com o clima não permite atribuir uma causa aos alertas.
+
+O piloto do Baixo Tapajós trouxe um recorte mais adequado à pergunta de pesquisa. A área foi representada por 56 pontos da grade ERA5, e janeiro de 2024 gerou 31 dias locais de análise, ou 1.736 combinações de célula e dia. Nas dez variáveis para as quais o caderno registra a contagem de horas, cada combinação apresentou 24 valores válidos. Os mapas e as séries tornaram visível a diferença entre acompanhar uma célula e resumir a área de estudo. A Figura 1 situa o recorte e a grade; a Figura 2 mostra parte das séries diárias produzidas.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth]{\figdir 01_regiao_grade.png}
+\caption{Localização do recorte do Baixo Tapajós e pontos da grade ERA5 utilizados no piloto. Fonte: caderno \texttt{03\_Piloto\_Tapajos\_2024.ipynb}.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth]{\figdir 04_series_diarias.png}
+\caption{Séries diárias apresentadas no piloto climático de janeiro de 2024. Fonte: caderno \texttt{03\_Piloto\_Tapajos\_2024.ipynb}.}
+\end{figure}
+
+Na célula selecionada para demonstrar os cálculos, as médias diárias de janeiro foram aproximadamente \(27{,}6\,^\circ\mathrm{C}\) para temperatura, \(79{,}2\%\) para umidade relativa, \(0{,}80\,\mathrm{kPa}\) para déficit de pressão de vapor e \(2{,}84\,\mathrm{m/s}\) para velocidade do vento. Esses valores descrevem apenas aquela célula e aquele mês. Eles servem para conferir unidades e procedimentos, mas não caracterizam o clima de todo o Baixo Tapajós nem uma tendência de longo prazo.
+
+Em conjunto, os cadernos demonstram que já existe um caminho funcional desde a obtenção dos dados até tabelas e figuras interpretáveis. O projeto ainda não produziu a série integrada de 2001--2024, nem comparou sistematicamente células com níveis distintos de perturbação. Também não estimou indicadores não lineares nas séries reais com os controles necessários. Assim, não há neste momento resultado empírico que permita afirmar perda de resiliência, comportamento caótico ou aproximação de uma transição crítica na região estudada.
+
+\section*{PRÓXIMAS ETAPAS}
+
+A próxima etapa é ampliar o piloto climático para um período mais longo e integrar, na mesma grade, informações de cobertura vegetal, desmatamento e fogo. Antes da comparação entre células, será necessário registrar a disponibilidade de cada fonte, conferir lacunas e unidades e definir medidas de perturbação que antecedam a janela climática analisada. Com as séries organizadas, a equipe poderá examinar sazonalidade, variação temporal e diferenças entre áreas comparáveis. Os métodos não lineares serão aplicados somente às séries que tiverem extensão e qualidade suficientes, com testes em dados sintéticos e séries substitutas para orientar a interpretação.
+
+\small
+\begin{tabularx}{\textwidth}{|X|p{2.2cm}|X|}\hline
+Atividade planejada & Período & Resultado esperado\\\hline
+Ampliar e conferir as séries climáticas & Out. 2026 & Séries diárias documentadas e relatório de qualidade\\\hline
+Integrar cobertura, desmatamento e fogo & Out.--nov. 2026 & Indicadores de perturbação por célula e período\\\hline
+Comparar células e avaliar métodos não lineares & Nov. 2026 & Análises com controles e limites de interpretação registrados\\\hline
+Consolidar texto e figuras com a dupla & Nov.--dez. 2026 & Relatório final integrado e revisado\\\hline
+\end{tabularx}
+\normalsize
+
+\end{document}

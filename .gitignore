@@ -57,3 +57,7 @@ Thumbs.db
 
 # Generated reports: selectively version final artifacts
 reports/tmp/
+
+# Slurm / execução no HPC
+logs/
+slurm-*.out
