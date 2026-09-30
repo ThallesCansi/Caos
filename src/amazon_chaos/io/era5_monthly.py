@@ -29,6 +29,9 @@ NAMES = {
 }
 # Espelho Zarr do ERA5 horário (DestinE Earth Data Hub); ver docs/HPC_EDH.md.
 EDH_DATASET = "earthdatahub:era5-single-levels-atmosphere-v0"
+# Margem do CDS (0,05 K) + arredondamento de t2m e d2m no EDH (até 0,125 K cada; D-007).
+# Com 0,05 K, horas saturadas do EDH viravam lacunas de umidade.
+EDH_DEWPOINT_TOLERANCE_K = 0.05 + 2 * 0.125
 
 
 def plan_requests(config, start, end):
@@ -286,7 +289,7 @@ def mask_to_basin(daily, config):
 
 def process_period(config, start, end, source="cds"):
     raw = open_downloaded(config, start, end, source=source)
-    hourly = derive_hourly(raw)
+    hourly = derive_hourly(raw, EDH_DEWPOINT_TOLERANCE_K if source == "edh" else 0.05)
     daily = daily_statistics(hourly, start, end, config["time"]["utc_offset_hours"])
     if "basin_source" in config.get("spatial", {}):
         daily = mask_to_basin(daily, config)
@@ -296,5 +299,6 @@ def process_period(config, start, end, source="cds"):
     jobs = plan_for_source(config, start, end, source)
     daily.attrs["request_keys"] = ",".join(j["key"] for j in jobs)
     daily.attrs["era5_source"] = jobs[0]["dataset"]
+    daily.attrs["dewpoint_tolerance_k"] = hourly.attrs["dewpoint_tolerance_k"]
     daily.to_netcdf(target)
     return target

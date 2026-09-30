@@ -72,6 +72,18 @@ def test_daily_local_precipitation_and_saturated_humidity():
     assert np.allclose(daily.q_gkg_mean, 14.67, atol=0.03)
 
 
+def test_dewpoint_tolerance_absorbs_edh_rounding_only():
+    from amazon_chaos.preprocess.daily import derive_hourly
+
+    raw = hourly_fixture()
+    raw["d2m"] = raw.t2m + 0.28  # margem CDS + arredondamento do EDH (0,05 + 2 × 0,125 K)
+    assert derive_hourly(raw).humidity_flag.all()
+    edh = derive_hourly(raw, dewpoint_tolerance_k=0.3)
+    assert not edh.humidity_flag.any() and np.allclose(edh.rh_pct, 100)
+    raw["d2m"] = raw.t2m + 0.35
+    assert derive_hourly(raw, dewpoint_tolerance_k=0.3).humidity_flag.all()
+
+
 def test_daily_missing_hours_never_become_zero_rain_or_complete_means():
     from amazon_chaos.preprocess.daily import daily_statistics, derive_hourly
 

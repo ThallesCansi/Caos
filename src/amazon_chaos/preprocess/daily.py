@@ -22,7 +22,7 @@ def check_units(ds):
             raise ValueError(f"Unexpected units for {var}: {ds[var].attrs.get('units')}")
 
 
-def derive_hourly(ds):
+def derive_hourly(ds, dewpoint_tolerance_k=0.05):
     check_units(ds)
     missing = set(UNITS) - set(ds.data_vars)
     if missing:
@@ -33,7 +33,7 @@ def derive_hourly(ds):
     td = raw.d2m - 273.15
     es = saturation_vapor_pressure_kpa(t)
     ea = saturation_vapor_pressure_kpa(td)
-    bad = (td > t + 0.05) | (raw.sp <= ea * 1000)
+    bad = (td > t + dewpoint_tolerance_k) | (raw.sp <= ea * 1000)
     out = xr.Dataset(
         {
             "t2m_c": t,
@@ -66,6 +66,7 @@ def derive_hourly(ds):
         out[var].attrs = {"units": unit}
     out.precip_mm.attrs["time_semantics"] = "hour ending at time (UTC)"
     out.attrs["time_zone"] = "UTC"
+    out.attrs["dewpoint_tolerance_k"] = dewpoint_tolerance_k
     return out
 
 
