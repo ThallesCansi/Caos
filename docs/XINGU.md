@@ -25,7 +25,7 @@ Na raiz do projeto, com `.venv` sincronizado e termos do produto aceitos no CDS,
 ```bash
 export CDSAPI_RC=../.cdsapirc
 uv run python scripts/prepare_xingu.py
-uv run python scripts/build_xingu_notebook.py
+uv run python scripts/build_region_notebooks.py xingu --execute
 uv run python -m amazon_chaos.pilot_cli plan 2024-01-01 2024-01-31 --config configs/xingu_1990_2024.yaml
 uv run python -m amazon_chaos.pilot_cli download 2024-01-01 2024-01-31 --config configs/xingu_1990_2024.yaml
 uv run python -m amazon_chaos.pilot_cli process 2024-01-01 2024-01-31 --config configs/xingu_1990_2024.yaml
@@ -60,3 +60,7 @@ find data/raw/xingu-era5-1990-2024/era5 -name manifest.json | wc -l
 ```
 
 O plano histórico original tem 842 requisições; o teste de janeiro/2024 criou duas requisições parciais extras para o dia UTC de apoio. Se o terminal com o processo integral for encerrado ou a conexão cair, o comando integral na seção anterior retoma os manifestos validados. Para uma mudança futura ao plano combinado, primeiro validar todos os campos, horários e unidades contra os downloads separados já disponíveis e encerrar o processo antigo antes de reiniciar; não rodar duas instâncias históricas no mesmo diretório ao mesmo tempo.
+
+## Caderno 1990–2024 (01/10/2026)
+
+O arquivo completo (421 meses, Earth Data Hub) foi processado em séries diárias e explorado no `04_Bacia_Xingu_1990_2024.ipynb`, gerado por `scripts/build_region_notebooks.py`. A cartografia de contexto (biomas IBGE, TIs FUNAI, UCs ICMBio, rios e localidades Natural Earth) está em `data/external/xingu/contexto`, com URL, data e SHA-256 por camada. Pelo mapa de biomas do IBGE, a bacia é 93% Amazônia e 7% Cerrado; TIs e UCs federais cobrem 53% da área (sem dupla contagem).

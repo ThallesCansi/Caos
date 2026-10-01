@@ -45,8 +45,7 @@ def fetch_context(config, directory="data/external/tapajos"):
         (
             "rios",
             "Natural Earth 1:50m — contexto, não máscara de água",
-            "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/"
-            "ne_50m_rivers_lake_centerlines.geojson",
+            "https://naciscdn.org/naturalearth/50m/physical/ne_50m_rivers_lake_centerlines.zip",
             {},
         ),
         (
@@ -180,6 +179,7 @@ def plot_region(config, context=None):
         xlabel="Longitude (°)",
         ylabel="Latitude (°)",
     )
+    ax.grid(False)
     ax.set_title(f"Baixo Tapajós · {len(grid)} pontos ERA5 · grade de 0,25°", loc="left", pad=14)
     handles = [
         Line2D([], [], color="#b63034", lw=2, label="Recorte do estudo"),

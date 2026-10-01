@@ -2,7 +2,14 @@
 
 ## Cadernos Jupyter: Xingu e Baixo Tapajós
 
-Para Xingu, consulte [04_Bacia_Xingu_1990_2024.ipynb](04_Bacia_Xingu_1990_2024.ipynb) e o [guia de aquisição](docs/XINGU.md). O piloto anterior está em [03_Piloto_Tapajos_2024.ipynb](03_Piloto_Tapajos_2024.ipynb): mapa do recorte, aquisição documentada, qualidade e séries diárias de janeiro de 2024. O notebook lê os dados locais; as funções auxiliares ficam nos módulos Python.
+Os cadernos principais cobrem **1990–2024** com ERA5 horário (Earth Data Hub, ver [HPC_EDH.md](docs/HPC_EDH.md)):
+
+- [04_Bacia_Xingu_1990_2024.ipynb](04_Bacia_Xingu_1990_2024.ipynb) — bacia inteira (BHB250/IBGE), 779 células;
+- [05_Baixo_Tapajos_1990_2024.ipynb](05_Baixo_Tapajos_1990_2024.ipynb) — caixa do Baixo Tapajós, 56 células.
+
+Ambos seguem o mesmo roteiro: onde estamos (mapa de situação, biomas, TIs e UCs), qualidade dos dados, climatologia 1991–2020, mapas por célula, tendências, anomalias e extremos, arquivo 1990–2000 × janela 2001–2024 e uma primeira reconstrução do espaço de fases. São gerados e executados por `uv run python scripts/build_region_notebooks.py --execute`; os resumos pesados ficam em `amazon_chaos.regional` (cache em `data/processed/<experimento>/summary_1990_2024.nc`) e as figuras em `reports/figures/<recorte>/`. A cartografia de contexto é baixada explicitamente por `amazon_chaos.atlas.fetch_basin_context` e `pilot_maps.fetch_context`.
+
+O piloto anterior está em [03_Piloto_Tapajos_2024.ipynb](03_Piloto_Tapajos_2024.ipynb): mapa do recorte, aquisição documentada, qualidade e séries diárias de janeiro de 2024. Os notebooks leem os dados locais; as funções auxiliares ficam nos módulos Python.
 
 Configuração: `configs/tapajos_2024.yaml`. Consulte [como executar o piloto](docs/PILOTO_TAPAJOS_COMO_EXECUTAR.md) e o [desenho metodológico](docs/DESENHO_ESTUDO_2001_2024.md). O roteiro abaixo descreve a infraestrutura anterior ERA5/DETER e marimo, preservada para reprodução.
 
