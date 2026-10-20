@@ -7,7 +7,9 @@
   "src/amazon_chaos/preprocess/daily.py": "22a52916229b2d88f2cb63e4d433f2ecfbe993fecb69489e0a21a09cfcd355cc",
   "src/amazon_chaos/nonlinear/synthetic.py": "dbc6134e9aed4cf32ad54f7d64d870a8d7e63142867a39dcdd84e608323e0c43",
   "src/amazon_chaos/nonlinear/embedding.py": "4a79d68d68d4d39d475e8962fd56c5f22aa8012969789105f82fd115898c9465",
-  "uv.lock": "afa34389b76346f46e895ae0acfd2d9ce8ae10b6a646ce1ea73ee3e9a7d6e282",
+  "uv.lock": "26686f77563b7dd5b942ef84432b58294411dfd44b053190839b37de888043af",
   "configs/xingu_1990_2024.yaml": "532667c4b51d3630c293b98c62f9901ac3b0ce9dfff98a0e592eddb3093a2a3d",
-  "configs/tapajos_1990_2024.yaml": "f4d3fe72820afe28f02d2ae6d3cd02452a5eda148e4f4d36439f1257d27bc8f9"
+  "configs/tapajos_1990_2024.yaml": "f4d3fe72820afe28f02d2ae6d3cd02452a5eda148e4f4d36439f1257d27bc8f9",
+  "data/processed/xingu-era5-1990-2024/summary_1990_2024.nc": "08ce3b165be48453ad25e654e5795fdcd471676b3376308235675c714ae8b9ad",
+  "data/processed/tapajos-era5-1990-2024/summary_1990_2024.nc": "4898f716b11945cec702c811cc203a3ffa79eb3c70ef9658afae371f4080ece7"
 }

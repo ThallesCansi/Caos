@@ -88,7 +88,7 @@
     "xarray": "2026.7.0",
     "nbclient": "0.11.0"
   },
-  "python": "3.11.9",
-  "git_head": "43a44d3fbf82afc8c3c7cdae8919a972befb07af",
+  "python": "3.11.14",
+  "git_head": "3eb8123ede2fc7aa82c833cba2c5ea0af40863cf",
   "quick_validation_only": false
 }
