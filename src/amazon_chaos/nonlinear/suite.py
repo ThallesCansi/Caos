@@ -49,6 +49,14 @@ def spec_hash(spec: dict, keys: tuple[str, ...] | None = None) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:10]
 
 
+BATCH_KEYS = ("series", "embedding", "descriptors", "surrogates", "ews")
+
+
+def batch_hash(spec: dict) -> str:
+    """Hash só do que entra no cálculo por célula: famílias, células e exposição não o mudam."""
+    return spec_hash(spec, BATCH_KEYS)
+
+
 def gate_hash(spec: dict) -> str:
     """Hash só do que o gate usa: mudar séries, famílias ou exposição não o invalida."""
     return spec_hash(spec, GATE_KEYS)

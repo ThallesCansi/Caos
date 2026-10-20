@@ -33,7 +33,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/xingu/completude.csv",
     "tex": "reports/tables/03_clima/xingu/completude.tex",
-    "commit": "22045dd+modificado"
+    "commit": "2c59538"
   },
   {
     "name": "normais_mensais",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/xingu/normais_mensais.csv",
     "tex": "reports/tables/03_clima/xingu/normais_mensais.tex",
-    "commit": "22045dd+modificado"
+    "commit": "2c59538+modificado"
   },
   {
     "name": "tendencias",
@@ -51,6 +51,6 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/xingu/tendencias.csv",
     "tex": "reports/tables/03_clima/xingu/tendencias.tex",
-    "commit": "22045dd+modificado"
+    "commit": "2c59538+modificado"
   }
 ]

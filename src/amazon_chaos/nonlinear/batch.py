@@ -25,6 +25,7 @@ import xarray as xr
 
 from amazon_chaos import regions
 from amazon_chaos.nonlinear.suite import (
+    batch_hash,
     descriptor_values,
     ews_test,
     gate_hash,
@@ -38,7 +39,7 @@ NORMAL = ("1991-01-01", "2020-12-31")
 
 
 def output_dir(cfg, spec) -> Path:
-    return regions.processed_dir(cfg) / "descritores" / spec_hash(spec)
+    return regions.processed_dir(cfg) / "descritores" / batch_hash(spec)
 
 
 def load_cubes(cfg, variables=VARIABLES) -> dict[str, xr.DataArray]:
@@ -127,7 +128,7 @@ def run(cfg, spec, *, workers=None, block=25, report=print, limit=None) -> Path:
     blocks = [cells.iloc[i:i + block] for i in range(0, len(cells), block)]
     todo = [k for k in range(len(blocks)) if not (out / f"bloco_{k:04d}.parquet").exists()]
     report(f"🧮 Descritores · {cfg['name']}: {len(cells)} células em {len(blocks)} blocos "
-           f"({len(blocks) - len(todo)} já prontos) · pré-registro {spec_hash(spec)}")
+           f"({len(blocks) - len(todo)} já prontos) · lote {batch_hash(spec)}")
     if todo:
         cubes = load_cubes(cfg)
         workers = workers or os.cpu_count()
@@ -162,7 +163,8 @@ def run(cfg, spec, *, workers=None, block=25, report=print, limit=None) -> Path:
     table.to_parquet(target)
     (out / "execucao.json").write_text(json.dumps({
         "region": cfg["slug"], "cells": len(cells), "rows": len(table),
-        "errors": int((table.descriptor == "erro").sum()), "spec_hash": spec_hash(spec),
+        "errors": int((table.descriptor == "erro").sum()), "batch_hash": batch_hash(spec),
+        "spec_hash": spec_hash(spec), "spec_version": spec["version"],
         "gate_hash": gate_hash(spec), "commit": _commit(),
         "finished_utc": datetime.now(UTC).isoformat(timespec="seconds"),
     }, indent=2))

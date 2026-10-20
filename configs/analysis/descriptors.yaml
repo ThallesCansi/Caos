@@ -1,11 +1,24 @@
 # Pré-registro da análise não linear (D-010; docs/metodologia.md §8).
 #
-# Tudo o que pode ser escolhido está aqui. CONGELADO em 20/10/2026, num commit próprio,
-# depois da revisão do gate F4 (execução 1c2fb37657) e ANTES de qualquer cálculo nos dados
-# reais. Mudanças depois disso geram a versão 2, e as duas são relatadas.
-version: 1
+# Tudo o que pode ser escolhido está aqui. A versão 1 foi CONGELADA em 20/10/2026 (tag
+# prereg-v1), depois da revisão do gate F4 (execução 1c2fb37657) e antes de qualquer cálculo
+# nos dados reais. Cada mudança posterior gera uma versão nova, registrada abaixo, e todas
+# são relatadas.
+version: 2
 status: congelado
 frozen_on: 2026-10-20
+amendments:
+  - version: 2
+    date: 2026-10-20
+    change: cells.min_basin_fraction = 0.5
+    reason: >-
+      O ERA5 dá uma série para a célula inteira, mas a perturbação de uma célula de borda é
+      medida só na fração dentro da bacia; e 80 células cortadas pelo divisor Xingu–Tapajós
+      entrariam nas duas regiões (pseudorreplicação). Exigir ≥ 50% da célula dentro da bacia
+      resolve os dois problemas (668 células no Xingu, 654 no Tapajós, nenhuma repetida).
+    decided_before: >-
+      Qualquer análise de perturbação × dinâmica (caderno 08). Não altera o cálculo por
+      célula, só a seleção.
 
 series:
   variables: [t2m, vpd]            # anomalias diárias: análise primária
@@ -82,6 +95,7 @@ families:
 # Células que entram na comparação espacial (caderno 08). As demais ficam nos mapas.
 cells:
   min_land_fraction: 0.5                # terra observada (MapBiomas 2000) / área da célula
+  min_basin_fraction: 0.5               # v2: parte da célula dentro da bacia / área da célula
 
 # Perturbação (features.disturbance; caderno 04). Definida sem olhar os descritores.
 disturbance:

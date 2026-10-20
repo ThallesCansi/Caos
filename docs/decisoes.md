@@ -90,6 +90,8 @@ A caixa antiga (`configs/regions/tapajos_caixa.yaml`, `tapajos-era5-1990-2024`) 
 - exposição principal: 1 − floresta em 2000 (MapBiomas), com PRODES como sensibilidade (o PRODES não vê o Cerrado);
 - células com menos de 50% de terra observada ficam fora da comparação.
 
+**Versão 2, 20/10/2026**, antes de qualquer análise de perturbação × dinâmica. Na comparação entre células, só entram as que têm pelo menos 50% da área dentro da bacia. Motivo: o ERA5 dá uma única série para a célula inteira, mas a perturbação de uma célula de borda é medida só na parte dentro da bacia; e 80 células cortadas pelo divisor entre Xingu e Tapajós entrariam nas duas regiões. Ficam 668 células no Xingu e 654 no Tapajós, sem repetição. A mudança não altera nenhum cálculo por célula: o lote é identificado só pelas seções que o afetam (`batch_hash`).
+
 ## D-011 — Checagem do ERA5 com MODIS LST
 
 **Status:** aceito em 20/10/2026.
