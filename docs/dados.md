@@ -6,7 +6,7 @@ Este documento reúne o catálogo de fontes, a cobertura real de cada uma, a org
 
 | Fonte | Papel | Acesso | Cobertura e restrições | Estado |
 |---|---|---|---|---|
-| **ERA5** horário, single levels (ECMWF/C3S) | séries climáticas | CDS (`cdsapi`) ou espelho Zarr do **Earth Data Hub** (D-007) | 1940–hoje; 0,25° interpolado de cerca de 31 km nativos; reanálise com **vegetação fixa** (D-011) | Xingu e caixa do Tapajós 1990–2024 baixados e processados |
+| **ERA5** horário, single levels (ECMWF/C3S) | séries climáticas | CDS (`cdsapi`) ou espelho Zarr do **Earth Data Hub** (D-007) | 1940–hoje; 0,25° interpolado de cerca de 31 km nativos; reanálise com **vegetação fixa** (D-011) | Xingu, bacia e caixa do Tapajós 1990–2024 baixados e processados |
 | **BHB250** (IBGE/ANA, 2021) | limites das bacias | geoftp do IBGE | nível 3. Xingu: `cod_otto=642`, 508.627 km², 93% Amazônia e 7% Cerrado. Tapajós: `cod_otto=644`, 493.153 km², 80% Amazônia e 20% Cerrado | Xingu (642) e Tapajós (644) prontos (D-009) |
 | **PRODES** (INPE/TerraBrasilis) | desmatamento, fonte principal | download dos vetores e da máscara | incrementos de 1988–2007 **agregados**; anuais de 2008 em diante; ano agosto–julho | planejado |
 | **DETER** (INPE/TerraBrasilis) | degradação e alertas recentes | WFS (`io/terrabrasilis.py`) | alertas desde 2016 na Amazônia; data de detecção ≠ data de ocorrência; não é taxa oficial | funcionou no piloto |
@@ -28,7 +28,7 @@ Classes MapBiomas usadas: floresta {3, 6}; agropecuária {9, 14, 15, 18, 19, 20,
 As variáveis derivadas estão em [`configs/variables.yaml`](../configs/variables.yaml).
 
 - **Earth Data Hub:** precisão reduzida conhecida (mantissa de cerca de 10 bits, até 0,125 K na temperatura horária). O download só segue se coincidir com os meses CDS dentro de uma tolerância relativa de 2⁻¹⁰. Os números estão em D-007.
-- **Volume:** Xingu 1990–2024 ocupa cerca de 2,4 GB brutos e 2,5 GB processados (1.288 pontos pedidos, 779 na bacia). A caixa do Tapajós ocupa 139 MB e 98 MB (56 pontos). A bacia do Tapajós pede 1.431 pontos, então o volume esperado é parecido com o do Xingu.
+- **Volume:** Xingu 1990–2024 ocupa cerca de 2,4 GB brutos e 2,5 GB processados (1.288 pontos pedidos, 779 na bacia). A caixa do Tapajós ocupa 139 MB e 98 MB (56 pontos). Tapajós (bacia) 1990–2024, baixado em 20/10/2026 em 35 min no HPC: 2,6 GB brutos (ficam no HPC) e 1,2 GB processados, 762 células sem nenhuma célula-ano incompleta.
 - **Organização:** um NetCDF por mês, com manifesto e SHA-256. Os diários são gravados ano a ano e mascarados pela bacia.
 
 ## 3. Organização em disco
@@ -48,7 +48,7 @@ reports/
   registro_experimentos.csv    uma linha por execução relevante
 ```
 
-Experimentos: `xingu-era5-1990-2024`, `tapajos-bacia-era5-1990-2024` (download pendente) e `tapajos-era5-1990-2024` (caixa antiga).
+Experimentos: `xingu-era5-1990-2024`, `tapajos-bacia-era5-1990-2024` e `tapajos-era5-1990-2024` (caixa antiga).
 
 ## 4. Contratos
 

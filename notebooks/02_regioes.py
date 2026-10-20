@@ -91,7 +91,7 @@ def summary_row(d):
         "Amazônia (%)": round(100 * d["biomes"].get("Amazônia", 0)),
         "Cerrado (%)": round(100 * d["biomes"].get("Cerrado", 0)),
         "TIs ou UCs (%)": round(100 * d["protected"].get("tis_ou_ucs", float("nan"))),
-        "Meses EDH baixados": f"{d['months']}/421",
+        "Brutos EDH locais (meses)": f"{d['months']}/421",
         "Anos diários": f"{d['daily']}/35",
     }
 
@@ -137,16 +137,18 @@ def region_panel(slug, d):
         "Limites atuais, para contexto: não medem cobertura florestal nem sua história.",
         region=slug,
     )
-    status = []
-    if d["months"] < 421:
-        status.append(nb.caveat(
-            f"**ERA5 ainda não baixado** ({d['months']} de 421 meses). No HPC:\n\n"
-            f"```bash\nsbatch --export=ALL,REGION={slug} scripts/hpc/era5.sbatch\n```", "warn"))
-    elif d["daily"] < 35:
-        status.append(nb.caveat(f"Brutos completos; faltam séries diárias ({d['daily']}/35).",
-                                "warn"))
+    if d["daily"] == 35:
+        status = [nb.caveat("ERA5 1990–2024 completo: séries diárias e resumo regional locais. "
+                            f"Brutos locais: {d['months']}/421 meses (os completos ficam no HPC).",
+                            "success")]
+    elif d["months"] == 421:
+        status = [nb.caveat(f"Brutos completos; faltam séries diárias ({d['daily']}/35).",
+                            "warn")]
     else:
-        status.append(nb.caveat("ERA5 1990–2024 completo: brutos e séries diárias.", "success"))
+        status = [nb.caveat(
+            f"**Séries diárias ausentes** ({d['daily']}/35). Se o ERA5 já foi processado no "
+            f"HPC: `make pull REGION={slug}`. Senão, no HPC:\n\n"
+            f"```bash\nsbatch --export=ALL,REGION={slug} scripts/hpc/era5.sbatch\n```", "warn")]
     cells = (d["cells"].drop(columns="geometry")
              .assign(area_km2=lambda t: t.area_km2.round(1),
                      weight_km2=lambda t: t.weight_km2.round(1)))

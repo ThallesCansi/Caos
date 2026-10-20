@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/02_regioes/tapajos/mapa.png",
     "pdf": "reports/figures/02_regioes/tapajos/mapa.pdf",
-    "commit": "5ae568a+modificado"
+    "commit": "912567a+modificado"
   },
   {
     "name": "mapa",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "png": "reports/figures/02_regioes/xingu/mapa.png",
     "pdf": "reports/figures/02_regioes/xingu/mapa.pdf",
-    "commit": "5ae568a+modificado"
+    "commit": "912567a+modificado"
   }
 ]
