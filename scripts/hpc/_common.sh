@@ -1,7 +1,8 @@
 # Cabeçalho comum dos jobs do HPC; incluído com `source scripts/hpc/_common.sh`.
 #
-# Define: PY, REGION, EXP, LOG, STEP, notify, run. Trata erro (aviso com as últimas
-# linhas do log) e fim de tempo do Slurm (USR1, 10 min antes; reenviar retoma).
+# Define: PY, REGION, EXP, LOG, STEP, notify, run (jobs sem região: NEEDS_REGION=0).
+# Trata erro (aviso com as últimas linhas do log) e fim de tempo do Slurm (USR1,
+# 10 min antes; reenviar retoma).
 # Guia: docs/hpc.md
 set -Eeuo pipefail
 
@@ -13,7 +14,9 @@ if [[ -z ${SLURM_JOB_ID:-} ]]; then
   exec > >(tee -a "$LOG") 2>&1  # execução direta (tmux no nó de login)
 fi
 
-: "${REGION:?defina REGION, por exemplo: sbatch --export=ALL,REGION=xingu $0}"
+if [[ ${NEEDS_REGION:-1} == 1 ]]; then
+  : "${REGION:?defina REGION, por exemplo: sbatch --export=ALL,REGION=xingu $0}"
+fi
 
 set -a
 [[ -f ~/.edh_env ]] && source ~/.edh_env
@@ -22,7 +25,8 @@ set +a
 
 PY=.venv/bin/python
 export _TYPER_STANDARD_TRACEBACK=1 PYTHONUNBUFFERED=1
-EXP=$($PY -c "from amazon_chaos.config import load_region; print(load_region('$REGION')['experiment_id'])")
+EXP=${REGION:+$($PY -c "from amazon_chaos.config import load_region; print(load_region('$REGION')['experiment_id'])")}
+EXP=${EXP:-$JOB_NAME}
 WHERE="job ${SLURM_JOB_ID:-local} em $(hostname -s)"
 STEP="preparação"
 CHILD=""

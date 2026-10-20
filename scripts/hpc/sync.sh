@@ -5,6 +5,7 @@
 #   scripts/hpc/sync.sh code                   # git push local + git pull e setup no HPC
 #   scripts/hpc/sync.sh pull <região> [--raw]  # traz os processados (e os brutos, com --raw)
 #   scripts/hpc/sync.sh push-external <região> # envia limite e grade, se o HPC não tiver rede
+#   scripts/hpc/sync.sh pull-gate              # traz os resultados do gate F4
 #
 # HPC_HOST (padrão: hpc, alias do ~/.ssh/config) e HPC_DIR (padrão: Caos, relativo à home).
 set -euo pipefail
@@ -36,6 +37,10 @@ case ${1:-} in
       mkdir -p "data/raw/$exp"
       "${RSYNC[@]}" "$HOST:$DIR/data/raw/$exp/" "data/raw/$exp/"
     fi
+    ;;
+  pull-gate)
+    mkdir -p data/processed/gate
+    "${RSYNC[@]}" "$HOST:$DIR/data/processed/gate/" data/processed/gate/
     ;;
   push-external)
     region=${2:?região}; exp=$(exp_of "$region")

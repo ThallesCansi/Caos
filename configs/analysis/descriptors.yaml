@@ -1,0 +1,66 @@
+# Pré-registro da análise não linear (D-010; docs/metodologia.md §8).
+#
+# Tudo o que pode ser escolhido está aqui. Este arquivo é CONGELADO (status: congelado,
+# num commit próprio) depois da revisão do gate F4 e ANTES de qualquer cálculo nos dados
+# reais. Mudanças depois disso geram a versão 2, e as duas são relatadas.
+version: 1
+status: rascunho
+
+series:
+  variables: [t2m, vpd]            # anomalias diárias: análise primária
+  exploratory: [precip]            # intermitente: só métodos ordinais, exploratório
+  transform: anomaly               # regional.anomalies: normal 1991–2020, suavização de 31 dias
+  period: [2001-01-01, 2024-12-31] # 8.766 dias
+  windows:                         # comparação longitudinal (docs/metodologia.md §9)
+    - [2001-01-01, 2012-12-31]
+    - [2013-01-01, 2024-12-31]
+
+embedding:
+  # τ: menor entre o 1º mínimo local da AMI e o 1º τ com AMI < AMI(0)/e
+  delay: {max_lag: 60}
+  # m: menor m com fração de falsos vizinhos < threshold (Kennel et al., 1992)
+  dimension: {max_dimension: 8, threshold: 0.05}
+  # janela de Theiler w = max(minimum, τ·m)
+  theiler: {minimum: 10}
+  # robustez (caderno 07): todos os descritores também em τ·{0,5; 2} e m ± 1
+  sensitivity: {delay_factors: [0.5, 2.0], dimension_offsets: [-1, 1]}
+
+# Estatísticas de teste. `alternative` é a direção esperada para dinâmica determinística
+# não linear em relação às substitutas lineares; fixada antes de ver os dados reais.
+descriptors:
+  lyapunov:      {fit: [0, 5], alternative: two-sided}   # Rosenstein, passos 0–5
+  rqa_det:       {rate: 0.05, lmin: 2, alternative: greater}
+  rqa_lam:       {rate: 0.05, vmin: 2, alternative: two-sided}  # direção incerta: mapas < fluxos
+  d2:            {window: [1.0e-4, 1.0e-2], alternative: less}
+  pe_entropy:    {order: 5, delay: 1, alternative: less}
+  pe_complexity: {order: 5, delay: 1, alternative: greater}
+  asymmetry:     {lag: 1, alternative: absolute}
+  prediction:    {neighbors: 5, train_fraction: 0.6, horizon: 1, alternative: less}
+
+surrogates:
+  method: IAAFT
+  per_cell: 39                     # mínimo para α = 0,05 bilateral com p de Monte Carlo
+  max_iter: 200
+  seed: 20261020
+  alpha: 0.05
+
+# Sinais precoces: tratados à parte, nunca como evidência de caos.
+ews:
+  window_fraction: 0.5
+  bandwidth: 365                   # suavização gaussiana (dias) antes dos indicadores
+  alternative: greater
+  surrogates: 39
+
+# Gate F4: controles sintéticos com os MESMOS parâmetros e regras acima.
+gate:
+  positive: [logistic, henon, lorenz]
+  negative: [white, ar1, sine_noise, seasonal_trend]
+  lengths: [2048, 8766]
+  noise: [0.0, 0.2]                # ruído de observação, em desvios-padrão da série
+  repetitions: 10
+  seed: 20261020
+  # Um descritor passa se, em n = 8766 com ruído 0,2: poder ≥ power em pelo menos
+  # positives_required controles positivos E taxa de rejeição ≤ size em white e ar1
+  # (a hipótese nula é verdadeira neles). sine_noise e seasonal_trend são relatados como
+  # alertas: seasonal_trend viola a estacionariedade, como os dados climáticos podem violar.
+  criterion: {power: 0.8, positives_required: 2, size: 0.2, size_controls: [white, ar1]}

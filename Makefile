@@ -4,7 +4,7 @@ REGIONS ?= xingu tapajos
 NOTEBOOKS_BY_REGION := 03_clima
 HTML := reports/html
 
-.PHONY: help sync test check notebooks overleaf pull hpc-status hpc-code
+.PHONY: help sync test check notebooks overleaf pull pull-gate hpc-status hpc-code
 
 help:  ## lista os alvos
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
@@ -39,6 +39,9 @@ overleaf:  ## copia figuras e tabelas finais para reports/overleaf (nomes estáv
 
 pull:  ## traz do HPC os processados de REGION (ex.: make pull REGION=tapajos)
 	scripts/hpc/sync.sh pull $(REGION)
+
+pull-gate:  ## traz do HPC os resultados do gate F4
+	scripts/hpc/sync.sh pull-gate
 
 hpc-status:  ## commit, fila e espaço em disco no HPC
 	scripts/hpc/sync.sh status

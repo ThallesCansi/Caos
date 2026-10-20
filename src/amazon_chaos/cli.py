@@ -2,6 +2,7 @@
 
     amazon-chaos region list | prepare <região>
     amazon-chaos era5 plan | download | edh | process | summarize <região> ...
+    amazon-chaos gate run [--quick]
     amazon-chaos manifest <pasta>
     amazon-chaos notify "mensagem"
 
@@ -24,7 +25,9 @@ app = typer.Typer(no_args_is_help=True, help="TCC Caos — floresta–atmosfera 
 region_app = typer.Typer(no_args_is_help=True, help="Limites, grade ERA5 e contexto")
 era5_app = typer.Typer(no_args_is_help=True, help="ERA5 horário → séries diárias")
 app.add_typer(region_app, name="region")
+gate_app = typer.Typer(no_args_is_help=True, help="Gate F4: descritores em controles sintéticos")
 app.add_typer(era5_app, name="era5")
+app.add_typer(gate_app, name="gate")
 
 Region = Annotated[str, typer.Argument(help="slug em configs/regions/ (ex.: xingu)")]
 Start = Annotated[str, typer.Argument(help="primeiro dia, AAAA-MM-DD")]
@@ -165,6 +168,26 @@ def era5_summarize(region: Region, first: int = 1990, last: int = 2024) -> None:
     cfg = load_region(region)
     summarize(cfg, first, last, progress=lambda year: typer.echo(f"{year} ✓"))
     typer.echo(f"data/processed/{cfg['experiment_id']}/summary_{first}_{last}.nc")
+
+
+# ── gate F4 ─────────────────────────────────────────────────────────────────
+
+
+@gate_app.command("run")
+def gate_run(
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos os núcleos")] = None,
+    quick: Annotated[bool, typer.Option(help="versão mínima, só para testar o código")] = False,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Descritores pré-registrados × controles sintéticos, contra substitutas IAAFT."""
+    from amazon_chaos.nonlinear.gate import run_gate
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    report = reporter(notify)
+    spec = load_spec()
+    report(f"🧪 Gate F4 iniciado (pré-registro v{spec['version']}, {spec['status']})")
+    out = run_gate(spec, workers=workers, quick=quick, progress=typer.echo)
+    report(f"✅ Gate F4 concluído: {out}\nNa máquina local: make pull-gate")
 
 
 # ── utilidades ──────────────────────────────────────────────────────────────
