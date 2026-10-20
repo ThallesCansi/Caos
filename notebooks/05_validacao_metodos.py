@@ -17,7 +17,7 @@ with app.setup:
     from amazon_chaos.nonlinear.gate import GATE_DIR, rejection_rates, verdict
     from amazon_chaos.nonlinear.lyapunov import rosenstein
     from amazon_chaos.nonlinear.ordinal import complexity_entropy
-    from amazon_chaos.nonlinear.suite import embedding_parameters, load_spec, spec_hash
+    from amazon_chaos.nonlinear.suite import embedding_parameters, gate_hash, load_spec
     from amazon_chaos.nonlinear.synthetic import NEGATIVE, POSITIVE, control
     from amazon_chaos.viz import COLORS
 
@@ -44,7 +44,7 @@ def _():
         outputs=["`reports/figures/05_validacao_metodos/`",
                  "`reports/tables/05_validacao_metodos/`"],
         status=f"Pré-registro **v{SPEC['version']}**, estado **{SPEC['status']}**, hash "
-               f"`{spec_hash(SPEC)}`.",
+               f"`{gate_hash(SPEC)}`.",
     )
     return
 
@@ -82,7 +82,7 @@ def _():
 @app.function
 def latest_run():
     """A execução completa do pré-registro atual; senão, a mais recente (avisando)."""
-    target = GATE_DIR / spec_hash(SPEC)
+    target = GATE_DIR / gate_hash(SPEC)
     if (target / "descritores.csv").exists():
         return target, True
     runs = sorted(GATE_DIR.glob("*/descritores.csv"), key=lambda p: p.stat().st_mtime)
@@ -93,7 +93,7 @@ def latest_run():
 def _():
     run_dir, current = latest_run()
     mo.stop(run_dir is None, nb.missing(
-        [GATE_DIR / spec_hash(SPEC)],
+        [GATE_DIR / gate_hash(SPEC)],
         "sbatch scripts/hpc/gate.sbatch   # no HPC; depois, localmente: make pull-gate"))
     results = pd.read_csv(run_dir / "descritores.csv")
     run_spec = json.loads((run_dir / "spec.json").read_text())
@@ -107,7 +107,7 @@ def _():
                                 "permitem p ≤ 0,05. Nada aqui é resultado.", "danger"))
     if not current:
         _notes.append(nb.caveat(f"Esta execução (`{run_dir.name}`) não corresponde ao "
-                                f"pré-registro atual (`{spec_hash(SPEC)}`).", "warn"))
+                                f"pré-registro atual (`{gate_hash(SPEC)}`).", "warn"))
     mo.vstack([*_notes, nb.stats({
         "Séries": execution["series"], "Linhas": len(results),
         "Erros": int((results.descriptor == "erro").sum()), "Commit": execution["commit"],
@@ -284,13 +284,64 @@ def _(ews, execution):
     return
 
 
+@app.function
+def plot_standardization(table):
+    variants = ["anomalia", "padronizada", "padronizada+sem tendência"]
+    names = ["lyapunov", "rqa_det", "d2", "pe_complexity"]
+    fig, axes = plt.subplots(1, 4, figsize=(16, 4), sharey=True, layout="constrained")
+    for ax, kind in zip(axes, ["seasonal_trend", "sine_noise", "ar1", "lorenz"], strict=True):
+        part = table[table.controle == kind].pivot(index="descritor", columns="variante",
+                                                    values="taxa").loc[names, variants]
+        x = np.arange(len(names))
+        for k, (variant, color) in enumerate(zip(variants, ["#b0523b", COLORS["ink"],
+                                                             COLORS["muted"]], strict=True)):
+            ax.bar(x + (k - 1) * 0.27, part[variant], 0.27, color=color, label=variant)
+        ax.set_xticks(x, [NAMES[n].split(" (")[0] for n in names], rotation=30, ha="right",
+                      fontsize=8)
+        ax.set_title(CONTROL_NAMES[kind] + (" (poder)" if kind == "lorenz" else
+                                            " (falso positivo)"), fontsize=10)
+        ax.axhline(0.2, color=COLORS["muted"], ls=":", lw=1)
+    axes[0].set_ylabel("taxa de rejeição")
+    axes[0].legend(fontsize=8)
+    fig.suptitle("Padronizar pela variância sazonal elimina o falso positivo da RQA; o Lyapunov "
+                 "continua vulnerável", fontsize=12, x=0.02, ha="left")
+    return fig
+
+
+@app.cell(hide_code=True)
+def _(execution):
+    _run, _ = latest_run()
+    _path = _run / "padronizacao.csv" if _run else None
+    _out = [mo.md("## Variância sazonal: o alerta e a correção\n\nNo controle sazonal com "
+                  "tendência, Lyapunov e RQA·DET rejeitam H0 sem haver caos. As anomalias "
+                  "climáticas também têm variância sazonal (a estação seca é mais variável). "
+                  "Testamos três tratamentos com 10 repetições, n = 8766 e ruído 0,2 "
+                  "(`amazon_chaos.nonlinear.gate.standardization_check`).")]
+    if _path is not None and _path.exists():
+        _table = pd.read_csv(_path)
+        _out.append(book.figure(plot_standardization(_table), "padronizacao",
+                                "Taxa de rejeição de H0 com a anomalia simples, a anomalia "
+                                "padronizada pelo desvio sazonal e a padronizada sem "
+                                "tendência; pontilhado: tamanho máximo aceito.",
+                                overleaf=not execution["quick"]))
+    _f = SPEC.get("families", {})
+    _out.append(mo.md(
+        "**Decisão pré-registrada (D-010).** Séries em anomalia padronizada, sem remoção de "
+        "tendência. Família primária: " + ", ".join(NAMES[n] for n in _f.get("primary", []))
+        + ". Secundária: " + ", ".join(NAMES[n] for n in _f.get("secondary", []))
+        + ". Exploratória: " + ", ".join(NAMES[n] for n in _f.get("exploratory", []))
+        + " (falso positivo sob variância sazonal mesmo depois de padronizar)."))
+    mo.vstack(_out)
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     nb.caveat(
-        f"**Próximo passo: congelar o pré-registro.** Com este gate revisado, o arquivo "
-        f"`configs/analysis/descriptors.yaml` (hoje `{SPEC['status']}`) passa a `congelado` num "
-        "commit próprio, antes de qualquer cálculo nos dados reais (D-010). Ajustes depois disso "
-        "geram a versão 2, e as duas versões são relatadas.", "neutral")
+        f"**Pré-registro {SPEC['status']}** (v{SPEC['version']}, "
+        f"{SPEC.get('frozen_on', 'sem data')}). Toda mudança daqui em diante gera a versão 2, e "
+        "as duas versões são relatadas (D-010).",
+        "success" if SPEC["status"] == "congelado" else "neutral")
     return
 
 

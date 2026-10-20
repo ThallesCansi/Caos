@@ -39,10 +39,19 @@ def load_spec(path: str | Path | None = None) -> dict:
     return load_config(Path(path) if path else project_root() / SPEC_PATH)
 
 
-def spec_hash(spec: dict) -> str:
-    """Identificador curto e estável do pré-registro (independe de comentários)."""
-    text = json.dumps(spec, sort_keys=True, default=str)
+GATE_KEYS = ("embedding", "descriptors", "surrogates", "ews", "gate")
+
+
+def spec_hash(spec: dict, keys: tuple[str, ...] | None = None) -> str:
+    """Identificador curto e estável do pré-registro (ou só das seções `keys`)."""
+    part = {k: spec[k] for k in keys} if keys else spec
+    text = json.dumps(part, sort_keys=True, default=str)
     return hashlib.sha256(text.encode()).hexdigest()[:10]
+
+
+def gate_hash(spec: dict) -> str:
+    """Hash só do que o gate usa: mudar séries, famílias ou exposição não o invalida."""
+    return spec_hash(spec, GATE_KEYS)
 
 
 def embedding_parameters(x: np.ndarray, spec: dict) -> dict[str, int]:

@@ -15,6 +15,7 @@ from amazon_chaos.regional import (  # noqa: E402
     longest_run,
     mann_kendall,
     regional_frame,
+    standardized_anomalies,
     summarize,
     theil_sen,
 )
@@ -91,3 +92,15 @@ def test_mann_kendall_correction_widens_p_under_autocorrelation():
     assert ratio > 1 and p > kendalltau(years, noise).pvalue
     _, p_iid, ratio_iid = mann_kendall(rng.normal(size=len(years)), years)
     assert 0 < p_iid <= 1 and ratio_iid >= 1 - 1e-9
+
+
+def test_standardized_anomalies_remove_seasonal_variance():
+    days = pd.date_range("1991-01-01", "2024-12-31")
+    rng = np.random.default_rng(1)
+    season = 2 + np.sin(2 * np.pi * days.dayofyear / 365.25)  # desvio sazonal de 1 a 3
+    series = pd.Series(25 + 3 * np.cos(2 * np.pi * days.dayofyear / 365.25)
+                       + season * rng.normal(size=len(days)), index=days)
+    z, sd = standardized_anomalies(series)
+    by_month = z.groupby(z.index.month).std()
+    assert by_month.between(0.9, 1.1).all()
+    assert sd.max() / sd.min() > 2

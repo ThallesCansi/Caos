@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import binomtest
 
-from amazon_chaos.nonlinear.suite import ews_test, spec_hash, surrogate_suite
+from amazon_chaos.nonlinear.suite import ews_test, gate_hash, surrogate_suite
 from amazon_chaos.nonlinear.synthetic import ar1, control
 
 GATE_DIR = Path("data/processed/gate")
@@ -89,7 +89,7 @@ def run_gate(spec: dict, workers: int | None = None, quick: bool = False,
         spec["gate"].update(lengths=[1024], noise=[0.0], repetitions=2)
         spec["surrogates"]["per_cell"] = 9
         spec["ews"]["surrogates"] = 9
-    out = GATE_DIR / (("quick_" if quick else "") + spec_hash(spec))
+    out = GATE_DIR / (("quick_" if quick else "") + gate_hash(spec))
     out.mkdir(parents=True, exist_ok=True)
     work = tasks(spec)
     workers = workers or os.cpu_count()
@@ -107,11 +107,53 @@ def run_gate(spec: dict, workers: int | None = None, quick: bool = False,
     ews.to_csv(out / "ews.csv", index=False)
     (out / "spec.json").write_text(json.dumps(spec, ensure_ascii=False, indent=2, default=str))
     (out / "execucao.json").write_text(json.dumps({
-        "commit": _git_commit(), "hash": spec_hash(spec), "quick": quick,
+        "commit": _git_commit(), "hash": gate_hash(spec), "quick": quick,
         "workers": workers, "series": len(work),
         "finished_utc": datetime.now(UTC).isoformat(timespec="seconds"),
     }, indent=2))
     return out
+
+
+def _seasonal_variants(x, period=365, smooth=15):
+    """Anomalia (sem média sazonal), padronizada (÷ desvio sazonal) e padronizada sem tendência."""
+    from scipy.ndimage import gaussian_filter1d
+
+    phase = np.arange(len(x)) % period
+    anomaly = x - pd.Series(x).groupby(phase).transform("mean").to_numpy()
+    var = pd.Series(anomaly**2).groupby(phase).mean().to_numpy()
+    standardized = anomaly / np.sqrt(gaussian_filter1d(var, smooth, mode="wrap"))[phase]
+    t = np.arange(len(x))
+    detrended = standardized - np.polyval(np.polyfit(t, standardized, 1), t)
+    return {"anomalia": anomaly, "padronizada": standardized,
+            "padronizada+sem tendência": detrended}
+
+
+def _standardization_task(spec, kind, rep, names):
+    x = control(kind, 8766, seed=1000 + rep, noise=0.2)
+    rows = []
+    for variant, series in _seasonal_variants(x).items():
+        result = surrogate_suite(series, spec, n_surrogates=39, seed=rep, names=names)
+        rows += [{"controle": kind, "variante": variant, "descritor": k,
+                  "rejeita": p <= spec["surrogates"]["alpha"]} for k, p in result.pvalues.items()]
+    return rows
+
+
+def standardization_check(spec: dict, workers: int | None = None, repetitions: int = 10,
+                          names=("d2", "lyapunov", "pe_complexity", "rqa_det")) -> pd.DataFrame:
+    """Falso positivo por variância sazonal: anomalia × padronizada × sem tendência.
+
+    Reproduz o teste que motivou a anomalia padronizada no pré-registro (D-010):
+    `padronizacao.csv` na pasta do gate. Leva cerca de 1 h em 10 núcleos.
+    """
+    jobs = [(k, r) for k in ["seasonal_trend", "sine_noise", "lorenz", "ar1"]
+            for r in range(repetitions)]
+    with ProcessPoolExecutor(workers or os.cpu_count()) as pool:
+        parts = pool.map(_standardization_task, *zip(*[(spec, k, r, list(names))
+                                                        for k, r in jobs], strict=True))
+        rows = [row for part in parts for row in part]
+    frame = pd.DataFrame(rows)
+    return (frame.groupby(["controle", "variante", "descritor"]).rejeita
+            .agg(taxa="mean", repeticoes="size").reset_index())
 
 
 def rejection_rates(results: pd.DataFrame, alpha: float) -> pd.DataFrame:

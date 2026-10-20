@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/ews_calibracao.csv",
     "tex": "reports/tables/05_validacao_metodos/ews_calibracao.tex",
-    "commit": "fa4ec00"
+    "commit": "3f1689b+modificado"
   },
   {
     "name": "veredito",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/veredito.csv",
     "tex": "reports/tables/05_validacao_metodos/veredito.tex",
-    "commit": "fa4ec00"
+    "commit": "3f1689b+modificado"
   }
 ]

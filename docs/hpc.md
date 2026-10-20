@@ -121,4 +121,5 @@ No nó de login, `tmux new -s era5` e depois `REGION=xingu bash scripts/hpc/era5
 | `spatial.area de … deveria ser […]` | a caixa do YAML não é o envelope do limite; copie o valor sugerido |
 | TIs da FUNAI com erro de certificado | o servidor omite o intermediário TLS; o código o obtém pelo endereço AIA (`regions.MISSING_INTERMEDIATE`); se o certificado mudar, atualize o endereço |
 | job pendente com `QOSMaxCpuPerUserLimit` | pediu mais que 16 CPUs (somando os jobs em execução): reduza `--cpus-per-task` |
+| `ssh hpc` trava sem erro (o direto funciona) | conexão compartilhada (ControlMaster) presa, por exemplo depois de cair a VPN: `ssh -O exit hpc` ou apague `~/.ssh/cm-*` |
 | nó sem rede (timeout no `NETWORK=1`) | rode no nó de login, dentro do `tmux` (§6) |

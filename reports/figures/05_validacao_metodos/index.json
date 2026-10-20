@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/comprimento_ruido.png",
     "pdf": "reports/figures/05_validacao_metodos/comprimento_ruido.pdf",
-    "commit": "fa4ec00"
+    "commit": "3f1689b+modificado"
   },
   {
     "name": "diagnosticos",
@@ -15,7 +15,16 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/diagnosticos.png",
     "pdf": "reports/figures/05_validacao_metodos/diagnosticos.pdf",
-    "commit": "fa4ec00"
+    "commit": "3f1689b+modificado"
+  },
+  {
+    "name": "padronizacao",
+    "region": null,
+    "caption": "Taxa de rejeição de H0 com a anomalia simples, a anomalia padronizada pelo desvio sazonal e a padronizada sem tendência; pontilhado: tamanho máximo aceito.",
+    "overleaf": true,
+    "png": "reports/figures/05_validacao_metodos/padronizacao.png",
+    "pdf": "reports/figures/05_validacao_metodos/padronizacao.pdf",
+    "commit": "3f1689b+modificado"
   },
   {
     "name": "taxas_rejeicao",
@@ -24,6 +33,6 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/taxas_rejeicao.png",
     "pdf": "reports/figures/05_validacao_metodos/taxas_rejeicao.pdf",
-    "commit": "fa4ec00"
+    "commit": "3f1689b+modificado"
   }
 ]

@@ -139,6 +139,28 @@ def anomalies(series, base=("1991-01-01", "2020-12-31"), window=31):
     return series - smooth.reindex(series.index.dayofyear).to_numpy(), smooth
 
 
+def _circular_smooth(doy, window):
+    padded = pd.concat([doy.iloc[-window:], doy, doy.iloc[:window]])
+    smooth = padded.rolling(window, center=True).mean().iloc[window:-window]
+    smooth.index = doy.index
+    return smooth
+
+
+def standardized_anomalies(series, base=("1991-01-01", "2020-12-31"), window=31):
+    """Anomalia dividida pelo desvio-padrão sazonal do período de referência (D-010).
+
+    O desvio de cada dia do ano é a raiz da média circular suavizada (`window` dias) das
+    anomalias ao quadrado na referência. Sem isso, a variância maior na estação seca faz
+    Lyapunov e RQA "detectarem" estrutura que é só sazonalidade (gate F4). A tendência não
+    é removida.
+    """
+    anomaly, _ = anomalies(series, base, window)
+    reference = anomaly.loc[base[0]:base[1]] ** 2
+    doy = reference.groupby(reference.index.dayofyear).mean().reindex(range(1, 367))
+    sd = np.sqrt(_circular_smooth(doy.interpolate(limit_direction="both"), window))
+    return anomaly / sd.reindex(series.index.dayofyear).to_numpy(), sd
+
+
 def mann_kendall(values, years, alpha=0.05):
     """Mann–Kendall com correção de autocorrelação de Hamed e Rao (1998).
 

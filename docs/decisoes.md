@@ -82,6 +82,14 @@ A caixa antiga (`configs/regions/tapajos_caixa.yaml`, `tapajos-era5-1990-2024`) 
 
 **Gate:** um descritor só é interpretado nos dados reais depois de separar os controles positivos (Lorenz, logístico) dos negativos (AR(1), ruído, seno com ruído) contra substitutas, no caderno `05_validacao_metodos`.
 
+**Versão 1, congelada em 20/10/2026** (gate `1c2fb37657`). Os 8 descritores passaram no critério, mas no AR(1) com variância sazonal e tendência Lyapunov e RQA·DET rejeitaram H0 em 100% e 80% das repetições. Padronizar a anomalia pelo desvio-padrão sazonal levou o DET a 0% sem perder poder no Lorenz; o Lyapunov ficou em 60%. Decisões aprovadas:
+- séries em **anomalia padronizada**, sem remover tendência;
+- família primária: entropia de permutação, complexidade, erro de previsão e RQA·DET;
+- secundária: D2, LAM e assimetria;
+- **Lyapunov apenas exploratório**, com ressalva explícita;
+- exposição principal: 1 − floresta em 2000 (MapBiomas), com PRODES como sensibilidade (o PRODES não vê o Cerrado);
+- células com menos de 50% de terra observada ficam fora da comparação.
+
 ## D-011 — Checagem do ERA5 com MODIS LST
 
 **Status:** aceito em 20/10/2026.
