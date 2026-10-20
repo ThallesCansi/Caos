@@ -1,6 +1,24 @@
 [
   {
     "name": "celulas",
+    "region": "tapajos",
+    "caption": "Métricas de perturbação por célula (todas as fontes).",
+    "overleaf": false,
+    "csv": "reports/tables/04_perturbacao/tapajos/celulas.csv",
+    "tex": "reports/tables/04_perturbacao/tapajos/celulas.tex",
+    "commit": "5ebcf55+modificado"
+  },
+  {
+    "name": "concordancia",
+    "region": "tapajos",
+    "caption": "Bacia do Rio Tapajós: correlação de postos entre métricas de fontes diferentes. Células vizinhas não são independentes: o p é só indicativo.",
+    "overleaf": true,
+    "csv": "reports/tables/04_perturbacao/tapajos/concordancia.csv",
+    "tex": "reports/tables/04_perturbacao/tapajos/concordancia.tex",
+    "commit": "5ebcf55+modificado"
+  },
+  {
+    "name": "celulas",
     "region": "tapajos_caixa",
     "caption": "Métricas de perturbação por célula (todas as fontes).",
     "overleaf": false,
@@ -16,5 +34,23 @@
     "csv": "reports/tables/04_perturbacao/tapajos_caixa/concordancia.csv",
     "tex": "reports/tables/04_perturbacao/tapajos_caixa/concordancia.tex",
     "commit": "4ecdcae"
+  },
+  {
+    "name": "celulas",
+    "region": "xingu",
+    "caption": "Métricas de perturbação por célula (todas as fontes).",
+    "overleaf": false,
+    "csv": "reports/tables/04_perturbacao/xingu/celulas.csv",
+    "tex": "reports/tables/04_perturbacao/xingu/celulas.tex",
+    "commit": "5ebcf55+modificado"
+  },
+  {
+    "name": "concordancia",
+    "region": "xingu",
+    "caption": "Bacia do Rio Xingu: correlação de postos entre métricas de fontes diferentes. Células vizinhas não são independentes: o p é só indicativo.",
+    "overleaf": true,
+    "csv": "reports/tables/04_perturbacao/xingu/concordancia.csv",
+    "tex": "reports/tables/04_perturbacao/xingu/concordancia.tex",
+    "commit": "5ebcf55+modificado"
   }
 ]

@@ -1,6 +1,33 @@
 [
   {
     "name": "concordancia",
+    "region": "tapajos",
+    "caption": "Bacia do Rio Tapajós: concordância entre fontes independentes de perturbação, célula a célula (ρ de Spearman).",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/tapajos/concordancia.png",
+    "pdf": "reports/figures/04_perturbacao/tapajos/concordancia.pdf",
+    "commit": "5ebcf55+modificado"
+  },
+  {
+    "name": "mapas",
+    "region": "tapajos",
+    "caption": "Bacia do Rio Tapajós: floresta (MapBiomas, 2000 e 2024), desmatamento PRODES acumulado e de 2013–2024, degradação DETER, densidade de focos (BDQueimadas), frequência de fogo (MapBiomas) e agropecuária, por célula ERA5. Frações sobre a área terrestre observada.",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/tapajos/mapas.png",
+    "pdf": "reports/figures/04_perturbacao/tapajos/mapas.pdf",
+    "commit": "5ebcf55+modificado"
+  },
+  {
+    "name": "series_anuais",
+    "region": "tapajos",
+    "caption": "Bacia do Rio Tapajós: focos de fogo por ano (2003–2024) e desmatamento anual PRODES (2008–2024) dentro da região.",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/tapajos/series_anuais.png",
+    "pdf": "reports/figures/04_perturbacao/tapajos/series_anuais.pdf",
+    "commit": "5ebcf55+modificado"
+  },
+  {
+    "name": "concordancia",
     "region": "tapajos_caixa",
     "caption": "Baixo Tapajós (caixa): concordância entre fontes independentes de perturbação, célula a célula (ρ de Spearman).",
     "overleaf": true,
@@ -25,5 +52,32 @@
     "png": "reports/figures/04_perturbacao/tapajos_caixa/series_anuais.png",
     "pdf": "reports/figures/04_perturbacao/tapajos_caixa/series_anuais.pdf",
     "commit": "4ecdcae"
+  },
+  {
+    "name": "concordancia",
+    "region": "xingu",
+    "caption": "Bacia do Rio Xingu: concordância entre fontes independentes de perturbação, célula a célula (ρ de Spearman).",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/xingu/concordancia.png",
+    "pdf": "reports/figures/04_perturbacao/xingu/concordancia.pdf",
+    "commit": "5ebcf55+modificado"
+  },
+  {
+    "name": "mapas",
+    "region": "xingu",
+    "caption": "Bacia do Rio Xingu: floresta (MapBiomas, 2000 e 2024), desmatamento PRODES acumulado e de 2013–2024, degradação DETER, densidade de focos (BDQueimadas), frequência de fogo (MapBiomas) e agropecuária, por célula ERA5. Frações sobre a área terrestre observada.",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/xingu/mapas.png",
+    "pdf": "reports/figures/04_perturbacao/xingu/mapas.pdf",
+    "commit": "5ebcf55"
+  },
+  {
+    "name": "series_anuais",
+    "region": "xingu",
+    "caption": "Bacia do Rio Xingu: focos de fogo por ano (2003–2024) e desmatamento anual PRODES (2008–2024) dentro da região.",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/xingu/series_anuais.png",
+    "pdf": "reports/figures/04_perturbacao/xingu/series_anuais.pdf",
+    "commit": "5ebcf55+modificado"
   }
 ]
