@@ -72,8 +72,8 @@ extend-exclude = ["legacy"]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
-# No Marimo, a última expressão de uma célula é a saída exibida.
-"notebooks/*.py" = ["B018"]
+# No Marimo, a última expressão de uma célula é a saída exibida (B018).
+"notebooks/*.py" = ["B018", "E501"]  # tabelas em Markdown são longas
 
 [tool.coverage.run]
 source = ["amazon_chaos"]

@@ -16,8 +16,8 @@ Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e 
 | `01_laboratorio` | sistemas dinâmicos conhecidos (teoria, interativo) | pronto |
 | `02_regioes` | limites, grade ERA5, contexto territorial | pronto |
 | `03_clima` | atlas climático de 1990–2024 (`--region`) | pronto |
-| `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula e checagem MODIS | a fazer |
-| `05_validacao_metodos` | gate dos descritores em sistemas sintéticos | a fazer |
+| `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula (MODIS pendente) | pronto |
+| `05_validacao_metodos` | gate dos descritores em sistemas sintéticos | pronto (aguarda revisão) |
 | `06_surrogates` | testes FT/IAAFT | a migrar (antigo 06) |
 | `07_descritores` | descritores por célula, robustez, EWS | a fazer |
 | `08_gradiente` | perturbação × dinâmica | a fazer |

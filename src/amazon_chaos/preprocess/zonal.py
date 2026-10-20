@@ -100,7 +100,8 @@ def polygon_areas(polygons: gpd.GeoDataFrame, cells: gpd.GeoDataFrame,
                   by: str | None = None, crs: str = "EPSG:6933") -> pd.DataFrame:
     """Área (km²) de polígonos (PRODES, DETER) dentro de cada célula, opcionalmente por `by`."""
     cols = ["geometry"] + ([by] if by else [])
-    parts = gpd.overlay(polygonal(polygons[cols]).to_crs(crs), cells[["cell_id", "geometry"]].to_crs(crs),
+    parts = gpd.overlay(polygonal(polygons[cols]).to_crs(crs),
+                        cells[["cell_id", "geometry"]].to_crs(crs),
                         how="intersection", keep_geom_type=True)
     parts["km2"] = parts.area / 1e6
     keys = ["cell_id"] + ([by] if by else [])

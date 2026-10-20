@@ -1,0 +1,20 @@
+[
+  {
+    "name": "celulas",
+    "region": "tapajos_caixa",
+    "caption": "Métricas de perturbação por célula (todas as fontes).",
+    "overleaf": false,
+    "csv": "reports/tables/04_perturbacao/tapajos_caixa/celulas.csv",
+    "tex": "reports/tables/04_perturbacao/tapajos_caixa/celulas.tex",
+    "commit": "4ecdcae"
+  },
+  {
+    "name": "concordancia",
+    "region": "tapajos_caixa",
+    "caption": "Baixo Tapajós (caixa): correlação de postos entre métricas de fontes diferentes. Células vizinhas não são independentes: o p é só indicativo.",
+    "overleaf": true,
+    "csv": "reports/tables/04_perturbacao/tapajos_caixa/concordancia.csv",
+    "tex": "reports/tables/04_perturbacao/tapajos_caixa/concordancia.tex",
+    "commit": "4ecdcae"
+  }
+]
