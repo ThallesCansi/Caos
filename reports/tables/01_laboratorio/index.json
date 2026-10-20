@@ -1,0 +1,11 @@
+[
+  {
+    "name": "pontos_fixos",
+    "region": null,
+    "caption": "Mapa com memória: ponto fixo, raio espectral da Jacobiana e maior expoente de Lyapunov pela dinâmica tangente, para alguns valores de μ.",
+    "overleaf": true,
+    "csv": "reports/tables/01_laboratorio/pontos_fixos.csv",
+    "tex": "reports/tables/01_laboratorio/pontos_fixos.tex",
+    "commit": "d85fba0+modificado"
+  }
+]

@@ -129,3 +129,25 @@ def test_ews_detects_slowing_down():
     assert trends["ar1"] > 0.8 and trends["variance"] > 0.8
     frame = indicators(x, 500)
     assert frame.ar1.iloc[-1] > frame.ar1.iloc[600]
+
+
+def test_moisture_vegetation_threshold_matches_stability_change():
+    from amazon_chaos.nonlinear.models import MoistureVegetation
+
+    model = MoistureVegetation()
+    assert model.critical_p == pytest.approx(0.8 * 0.45 * 0.25 / (1.6 - 0.45))
+    bare_stable, vegetated, _ = model.equilibria([model.critical_p * 0.8,
+                                                  model.critical_p * 1.2])
+    assert bare_stable.tolist() == [True, False]
+    assert np.isnan(vegetated[0]) and vegetated[1] > 0
+
+
+def test_memory_map_lyapunov_from_equation_matches_rosenstein():
+    from amazon_chaos.nonlinear.models import MemoryMap
+
+    model = MemoryMap()
+    assert model.lyapunov(7.0) < 0  # ponto fixo estável
+    exact = model.lyapunov(11.5)
+    series = model.simulate(11.5, n=5500, discard=1000)[:, 0]
+    estimate = rosenstein(series, 3, 1, theiler=20, fit=(1, 8)).exponent
+    assert exact > 0.2 and estimate == pytest.approx(exact, rel=0.15)

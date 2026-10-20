@@ -13,7 +13,7 @@ Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e 
 | Caderno | Etapa | Estado |
 |---|---|---|
 | `00_inicio` | visão geral, situação dos dados e cronograma | pronto |
-| `01_laboratorio` | sistemas dinâmicos conhecidos (teoria) | a migrar |
+| `01_laboratorio` | sistemas dinâmicos conhecidos (teoria, interativo) | pronto |
 | `02_regioes` | limites, grade ERA5, contexto territorial | pronto |
 | `03_clima` | atlas climático de 1990–2024 (`--region`) | pronto |
 | `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula e checagem MODIS | a fazer |

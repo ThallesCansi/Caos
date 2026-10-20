@@ -1,0 +1,47 @@
+[
+  {
+    "name": "bifurcacao_lyapunov",
+    "region": null,
+    "caption": "Mapa com memória: diagrama de bifurcação em μ e maior expoente de Lyapunov pela dinâmica tangente (Benettin). λ₁ > 0 coincide com as bandas aperiódicas.",
+    "overleaf": true,
+    "png": "reports/figures/01_laboratorio/bifurcacao_lyapunov.png",
+    "pdf": "reports/figures/01_laboratorio/bifurcacao_lyapunov.pdf",
+    "commit": "d85fba0+modificado"
+  },
+  {
+    "name": "contaminacao",
+    "region": null,
+    "caption": "Rosenstein em três séries: dinâmica determinística limpa, a mesma com sazonalidade e 5% de ruído, e um AR(1) estocástico. O AR(1) também produz inclinação positiva, mas sem trecho linear (R² baixo): λ positivo não prova caos.",
+    "overleaf": true,
+    "png": "reports/figures/01_laboratorio/contaminacao.png",
+    "pdf": "reports/figures/01_laboratorio/contaminacao.pdf",
+    "commit": "d85fba0+modificado"
+  },
+  {
+    "name": "recorrencia",
+    "region": null,
+    "caption": "Gráficos de recorrência (m = 3, τ = 1, taxa de recorrência de 8%) da série determinística, de uma substituta FT dela e de um AR(1). A substituta mantém o espectro, mas perde as diagonais longas.",
+    "overleaf": true,
+    "png": "reports/figures/01_laboratorio/recorrencia.png",
+    "pdf": "reports/figures/01_laboratorio/recorrencia.pdf",
+    "commit": "d85fba0+modificado"
+  },
+  {
+    "name": "sensibilidade_rosenstein",
+    "region": null,
+    "caption": "Mapa com memória (μ = 11.5): separação exponencial de trajetórias próximas e estimativa de Rosenstein a partir apenas da série reconstruída (m = 3, τ = 1, Theiler 20, ajuste nos passos 1–8).",
+    "overleaf": true,
+    "png": "reports/figures/01_laboratorio/sensibilidade_rosenstein.png",
+    "pdf": "reports/figures/01_laboratorio/sensibilidade_rosenstein.pdf",
+    "commit": "d85fba0+modificado"
+  },
+  {
+    "name": "troca_estabilidade",
+    "region": null,
+    "caption": "Modelo umidade–vegetação: equilíbrios em função da entrada de umidade P. Abaixo de P_c = βdh/(r − d) só o estado sem vegetação é estável; acima, o equilíbrio vegetado assume (bifurcação transcrítica).",
+    "overleaf": true,
+    "png": "reports/figures/01_laboratorio/troca_estabilidade.png",
+    "pdf": "reports/figures/01_laboratorio/troca_estabilidade.pdf",
+    "commit": "d85fba0+modificado"
+  }
+]
