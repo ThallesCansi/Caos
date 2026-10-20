@@ -60,3 +60,29 @@ def test_polygonal_handles_mixed_collections_and_invalid_polygons():
     out = polygonal(frame)
     assert set(out.geom_type) == {"Polygon"} and out.k.tolist() == [1, 1, 2, 3]
     assert out.area.sum() == pytest.approx(2.5)
+
+
+def test_cell_lst_filters_quality_and_averages_by_cell(tmp_path, monkeypatch):
+    import xarray as xr
+
+    from amazon_chaos.features import lst
+
+    cells = build_grid([-3.0, -56.0, -3.25, -55.75])
+    monkeypatch.setattr(lst.regions, "cells", lambda cfg: cells)
+    lat = np.arange(-2.88, -3.37, -0.01)[:48]
+    lon = np.arange(-56.12, -55.63, 0.01)[:48]
+    times = pd.to_datetime(["2001-07-04", "2001-07-12", "2001-01-01"])
+    day = np.full((3, len(lat), len(lon)), 300.15)
+    day[1] = 310.15  # composição com QC ruim: precisa ser descartada
+    qc = np.zeros((3, len(lat), len(lon)), dtype="uint8")
+    qc[1] = 0b11000010
+    ds = xr.Dataset({"LST_Day_1km": (("time", "lat", "lon"), day),
+                     "LST_Night_1km": (("time", "lat", "lon"), day - 10),
+                     "QC_Day": (("time", "lat", "lon"), qc),
+                     "QC_Night": (("time", "lat", "lon"), qc)},
+                    coords={"time": times, "lat": lat, "lon": lon})
+    ds.to_netcdf(tmp_path / "lst.nc")
+    clim, dry = lst.cell_lst({"experiment_id": "x"}, [tmp_path / "lst.nc"])
+    assert np.allclose(clim.lst_dia_c.dropna(), 27.0)
+    assert np.allclose(clim.lst_noite_c.dropna(), 17.0)
+    assert list(dry.columns) == [2001] and np.allclose(dry[2001].dropna(), 27.0)

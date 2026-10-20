@@ -3,6 +3,8 @@
     amazon-chaos region list | prepare <região>
     amazon-chaos era5 plan | download | edh | process | summarize <região> ...
     amazon-chaos disturbance fetch | build <região>
+    amazon-chaos descriptors run <região>
+    amazon-chaos modis fetch | build <região>
     amazon-chaos gate run [--quick]
     amazon-chaos manifest <pasta>
     amazon-chaos notify "mensagem"
@@ -28,9 +30,14 @@ era5_app = typer.Typer(no_args_is_help=True, help="ERA5 horário → séries di�
 app.add_typer(region_app, name="region")
 disturbance_app = typer.Typer(no_args_is_help=True,
                               help="Perturbação por célula: PRODES, DETER, BDQueimadas, MapBiomas")
+descriptors_app = typer.Typer(no_args_is_help=True,
+                              help="Descritores pré-registrados por célula, com substitutas")
+modis_app = typer.Typer(no_args_is_help=True, help="MODIS LST pelo AppEEARS (checagem D-011)")
 gate_app = typer.Typer(no_args_is_help=True, help="Gate F4: descritores em controles sintéticos")
 app.add_typer(era5_app, name="era5")
 app.add_typer(disturbance_app, name="disturbance")
+app.add_typer(descriptors_app, name="descriptors")
+app.add_typer(modis_app, name="modis")
 app.add_typer(gate_app, name="gate")
 
 Region = Annotated[str, typer.Argument(help="slug em configs/regions/ (ex.: xingu)")]
@@ -199,6 +206,61 @@ def disturbance_build(region: Region) -> None:
     target = out_dir(cfg) / "celulas.parquet"
     table.to_parquet(target)
     typer.echo(f"{len(table)} células × {table.shape[1]} colunas em {target}")
+
+
+# ── descritores por célula ──────────────────────────────────────────────────
+
+
+@descriptors_app.command("run")
+def descriptors_run(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    block: Annotated[int, typer.Option(help="células por bloco gravado")] = 25,
+    limit: Annotated[int | None, typer.Option(help="só as primeiras N células (teste)")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Lote retomável; exige o pré-registro congelado."""
+    from amazon_chaos.nonlinear.batch import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    target = run(load_region(region), load_spec(), workers=workers, block=block,
+                 report=reporter(notify), limit=limit)
+    typer.echo(target)
+
+
+# ── MODIS ───────────────────────────────────────────────────────────────────
+
+
+@modis_app.command("fetch")
+def modis_fetch(
+    region: Region,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Envia o pedido ao AppEEARS (ou retoma), espera o processamento e baixa os arquivos."""
+    from amazon_chaos.io import appeears
+
+    cfg, report = load_region(region), reporter(notify)
+    token = appeears.login()
+    task = appeears.submit(cfg, token)
+    report(f"🛰️ MODIS LST · {cfg['name']}: pedido {task[:8]} no AppEEARS; aviso quando ficar "
+           "pronto (o servidor pode levar horas)")
+    appeears.wait(task, token, report=report)
+    files = appeears.download(cfg, task, appeears.login(), report=typer.echo)
+    report(f"✅ MODIS LST · {cfg['name']}: {len(files)} arquivos baixados")
+
+
+@modis_app.command("build")
+def modis_build(region: Region) -> None:
+    """Climatologia do LST por célula e LST diurno da estação seca por ano."""
+    from amazon_chaos.features.disturbance import out_dir
+    from amazon_chaos.features.lst import cell_lst
+
+    cfg = load_region(region)
+    clim, dry = cell_lst(cfg)
+    clim.to_parquet(out_dir(cfg) / "modis_lst.parquet")
+    dry = dry.set_axis(dry.columns.map(str), axis=1)
+    dry.to_parquet(out_dir(cfg) / "modis_lst_seca_anual.parquet")
+    typer.echo(f"{len(clim)} células · {clim.lst_dia_c.notna().sum()} com LST")
 
 
 # ── gate F4 ─────────────────────────────────────────────────────────────────

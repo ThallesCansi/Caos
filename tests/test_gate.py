@@ -48,3 +48,23 @@ def test_verdict_applies_preregistered_criterion():
                      for r in range(10)]
     result = verdict(rejection_rates(pd.DataFrame(rows), 0.05), spec).set_index("descriptor")
     assert result.passa.to_dict() == {"bom": True, "fraco": False, "frouxo": False}
+
+
+def test_batch_cell_task_produces_tests_ews_and_sensitivity():
+    import numpy as np
+
+    from amazon_chaos.nonlinear.batch import cell_task
+
+    spec = load_spec()
+    spec = {**spec, "surrogates": {**spec["surrogates"], "per_cell": 3},
+            "ews": {**spec["ews"], "surrogates": 3},
+            "series": {**spec["series"], "period": ["2001-01-01", "2004-12-31"],
+                       "windows": [["2001-01-01", "2002-12-31"]]}}
+    days = pd.date_range("1990-01-01", "2004-12-31")
+    rng = np.random.default_rng(0)
+    series = {"t2m": pd.Series(25 + np.sin(2 * np.pi * days.dayofyear / 365.25)
+                               + rng.normal(size=len(days)), index=days)}
+    table = cell_task(spec, "ERA5_teste", series)
+    assert set(table.kind) == {"teste", "ews", "sensibilidade"}
+    assert set(table.window) == {"2001_2004", "2001_2002"}
+    assert (table.descriptor != "erro").all()

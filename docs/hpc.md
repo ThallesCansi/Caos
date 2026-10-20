@@ -106,7 +106,25 @@ As etapas são: limite e grade (`region prepare --no-context`) → download → 
 
 ## 5. Demais etapas em lote
 
-Os jobs da perturbação (`disturbance.sbatch`) e dos descritores (`descriptors.sbatch`, em vetor de jobs por bloco de células) usam o mesmo cabeçalho (`scripts/hpc/_common.sh`) e a mesma variável `REGION`. Eles entram nas Etapas 2 e 3 do plano.
+Todos usam o cabeçalho comum (`scripts/hpc/_common.sh`: avisos no Telegram, tempo esgotado e retomada) e a variável `REGION`:
+
+| Job | O que faz | Duração aproximada |
+|---|---|---|
+| `disturbance.sbatch` | PRODES, DETER, BDQueimadas e MapBiomas por célula | minutos a 1 h (4 CPUs) |
+| `gate.sbatch` (sem `REGION`) | gate F4 em controles sintéticos | 30 min (16 CPUs) |
+| `descriptors.sbatch` | descritores pré-registrados por célula, com substitutas | ~6 h por bacia (16 CPUs) |
+| `modis.sbatch` | pedido ao AppEEARS, espera, download e LST por célula | horas, quase sem CPU |
+
+Como a cota é de 16 CPUs, encadeie os jobs grandes:
+
+```bash
+j=$(sbatch --parsable --export=ALL,REGION=xingu scripts/hpc/descriptors.sbatch)
+sbatch --export=ALL,REGION=tapajos --dependency=afterany:$j scripts/hpc/descriptors.sbatch
+```
+
+O `descriptors.sbatch` grava blocos de 25 células à medida que terminam, e reenviá-lo continua do primeiro bloco que falta. Ele só roda com o pré-registro congelado.
+
+**MODIS:** o `~/.netrc` precisa ter a linha `machine urs.earthdata.nasa.gov login <usuário> password <senha>`, com permissão 600. O AppEEARS faz login com usuário e senha, não com o token de download do Earthdata.
 
 ## 6. Sem Slurm
 
