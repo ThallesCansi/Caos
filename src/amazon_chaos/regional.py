@@ -139,12 +139,45 @@ def anomalies(series, base=("1991-01-01", "2020-12-31"), window=31):
     return series - smooth.reindex(series.index.dayofyear).to_numpy(), smooth
 
 
+def mann_kendall(values, years, alpha=0.05):
+    """Mann–Kendall com correção de autocorrelação de Hamed e Rao (1998).
+
+    A variância de S é inflada pelo fator n/n* calculado com as autocorrelações
+    significativas (|ρ_k| > z_{1−α/2}/√n) dos postos dos resíduos da tendência de Sen.
+    Devolve (S, p bilateral, n/n*). Sem a correção, anos autocorrelacionados (ENSO,
+    variabilidade decenal) tornam o p otimista.
+    """
+    from scipy.stats import norm, theilslopes
+
+    ok = np.isfinite(values)
+    x, t = np.asarray(values, float)[ok], np.asarray(years, float)[ok]
+    order = np.argsort(t)
+    x, t = x[order], t[order]
+    n = len(x)
+    s = float(np.sum(np.triu(np.sign(x[None, :] - x[:, None]), 1)))
+    _, ties = np.unique(x, return_counts=True)
+    var0 = (n * (n - 1) * (2 * n + 5) - np.sum(ties * (ties - 1) * (2 * ties + 5))) / 18
+    slope = theilslopes(x, t)[0]
+    residual = x - slope * t
+    ranks = pd.Series(residual).rank().to_numpy()
+    ranks = ranks - ranks.mean()
+    limit = norm.ppf(1 - alpha / 2) / np.sqrt(n)
+    total = 0.0
+    for k in range(1, n - 2):
+        rho = float(np.sum(ranks[:-k] * ranks[k:]) / np.sum(ranks**2))
+        if abs(rho) > limit:
+            total += (n - k) * (n - k - 1) * (n - k - 2) * rho
+    ratio = max(1 + 2 * total / (n * (n - 1) * (n - 2)), 1e-6)
+    z = (s - np.sign(s)) / np.sqrt(var0 * ratio)
+    return s, float(2 * norm.sf(abs(z))), float(ratio)
+
+
 def theil_sen(values, years):
-    """Inclinação de Theil–Sen por década e p-valor de Mann–Kendall (sem correção serial)."""
-    from scipy.stats import kendalltau, theilslopes
+    """Inclinação de Theil–Sen por década e p de Mann–Kendall corrigido (Hamed e Rao)."""
+    from scipy.stats import theilslopes
 
     ok = np.isfinite(values)
     if ok.sum() < 8:
         return np.nan, np.nan
     slope = theilslopes(values[ok], years[ok])[0]
-    return 10 * slope, kendalltau(years[ok], values[ok]).pvalue
+    return 10 * slope, mann_kendall(values, years)[1]

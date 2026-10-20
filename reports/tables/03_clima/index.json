@@ -1,0 +1,56 @@
+[
+  {
+    "name": "completude",
+    "region": "tapajos",
+    "caption": "Célula-dias com as 24 horas válidas, 1990–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/03_clima/tapajos/completude.csv",
+    "tex": "reports/tables/03_clima/tapajos/completude.tex",
+    "commit": "22045dd+modificado"
+  },
+  {
+    "name": "normais_mensais",
+    "region": "tapajos",
+    "caption": "Bacia do Rio Tapajós: normais mensais 1991–2020 (médias regionais; chuva em mm/mês).",
+    "overleaf": true,
+    "csv": "reports/tables/03_clima/tapajos/normais_mensais.csv",
+    "tex": "reports/tables/03_clima/tapajos/normais_mensais.tex",
+    "commit": "22045dd+modificado"
+  },
+  {
+    "name": "tendencias",
+    "region": "tapajos",
+    "caption": "Bacia do Rio Tapajós: tendências de Theil–Sen por década e p de Mann–Kendall com correção de Hamed e Rao, em 1990–2024 e 2001–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/03_clima/tapajos/tendencias.csv",
+    "tex": "reports/tables/03_clima/tapajos/tendencias.tex",
+    "commit": "22045dd+modificado"
+  },
+  {
+    "name": "completude",
+    "region": "xingu",
+    "caption": "Célula-dias com as 24 horas válidas, 1990–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/03_clima/xingu/completude.csv",
+    "tex": "reports/tables/03_clima/xingu/completude.tex",
+    "commit": "22045dd+modificado"
+  },
+  {
+    "name": "normais_mensais",
+    "region": "xingu",
+    "caption": "Bacia do Rio Xingu: normais mensais 1991–2020 (médias regionais; chuva em mm/mês).",
+    "overleaf": true,
+    "csv": "reports/tables/03_clima/xingu/normais_mensais.csv",
+    "tex": "reports/tables/03_clima/xingu/normais_mensais.tex",
+    "commit": "22045dd+modificado"
+  },
+  {
+    "name": "tendencias",
+    "region": "xingu",
+    "caption": "Bacia do Rio Xingu: tendências de Theil–Sen por década e p de Mann–Kendall com correção de Hamed e Rao, em 1990–2024 e 2001–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/03_clima/xingu/tendencias.csv",
+    "tex": "reports/tables/03_clima/xingu/tendencias.tex",
+    "commit": "22045dd+modificado"
+  }
+]

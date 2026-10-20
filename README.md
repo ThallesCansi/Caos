@@ -15,7 +15,7 @@ Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e 
 | `00_inicio` | visão geral, situação dos dados e cronograma | pronto |
 | `01_laboratorio` | sistemas dinâmicos conhecidos (teoria) | a migrar |
 | `02_regioes` | limites, grade ERA5, contexto territorial | pronto |
-| `03_clima` | atlas climático de 1990–2024 | a migrar (antigos 04 e 05) |
+| `03_clima` | atlas climático de 1990–2024 (`--region`) | pronto |
 | `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula e checagem MODIS | a fazer |
 | `05_validacao_metodos` | gate dos descritores em sistemas sintéticos | a fazer |
 | `06_surrogates` | testes FT/IAAFT | a migrar (antigo 06) |

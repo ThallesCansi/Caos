@@ -13,6 +13,7 @@ from amazon_chaos.regional import (  # noqa: E402
     VARIABLES,
     anomalies,
     longest_run,
+    mann_kendall,
     regional_frame,
     summarize,
     theil_sen,
@@ -76,3 +77,17 @@ def test_summarize_weights_and_cache(tmp_path):
     assert int(summary.longest_dry_spell.sel(year=2000, latitude=-2.25, longitude=-56)) == 366
     assert float(summary.cell_precip.sel(latitude=-2.5, longitude=-55.75).isel(month=0)) == 62
     assert summarize(cfg, 2000, 2001, root=tmp_path).identical(summary)
+
+
+def test_mann_kendall_correction_widens_p_under_autocorrelation():
+    from scipy.stats import kendalltau
+
+    rng = np.random.default_rng(3)
+    years = np.arange(1990, 2025, dtype=float)
+    noise = np.zeros(len(years))
+    for i in range(1, len(years)):  # AR(1) forte, sem tendência
+        noise[i] = 0.8 * noise[i - 1] + rng.normal()
+    s, p, ratio = mann_kendall(noise, years)
+    assert ratio > 1 and p > kendalltau(years, noise).pvalue
+    _, p_iid, ratio_iid = mann_kendall(rng.normal(size=len(years)), years)
+    assert 0 < p_iid <= 1 and ratio_iid >= 1 - 1e-9
