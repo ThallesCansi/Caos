@@ -19,7 +19,7 @@ def data_root() -> Path:
 
 def ensure_data_dirs() -> dict[str, Path]:
     root = data_root()
-    paths = {name: root / name for name in ["raw", "external", "interim", "processed", "cache"]}
+    paths = {name: root / name for name in ["raw", "external", "processed", "cache"]}
     for path in paths.values():
         path.mkdir(parents=True, exist_ok=True)
     return paths

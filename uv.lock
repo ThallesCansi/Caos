@@ -131,7 +131,6 @@ dependencies = [
     { name = "aiohttp" },
     { name = "cdsapi" },
     { name = "dask", extra = ["array"] },
-    { name = "earthengine-api" },
     { name = "fsspec" },
     { name = "geopandas" },
     { name = "ipykernel" },
@@ -169,13 +168,15 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
 ]
+gee = [
+    { name = "earthengine-api" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9" },
     { name = "cdsapi", specifier = ">=0.7.7" },
     { name = "dask", extras = ["array"], specifier = ">=2024.7" },
-    { name = "earthengine-api", specifier = ">=1.7.49" },
     { name = "fsspec", specifier = ">=2024.6" },
     { name = "geopandas", specifier = ">=1.0" },
     { name = "ipykernel", specifier = ">=6.29" },
@@ -208,6 +209,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=5" },
     { name = "ruff", specifier = ">=0.9" },
 ]
+gee = [{ name = "earthengine-api", specifier = ">=1.7.49" }]
 
 [[package]]
 name = "annotated-doc"

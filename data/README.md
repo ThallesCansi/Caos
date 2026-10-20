@@ -1,15 +1,10 @@
 # Dados locais
 
-Estas pastas fazem parte da arquitetura, mas seus conteúdos pesados não são versionados.
+O conteúdo destas pastas não é versionado. A organização e os contratos estão em [docs/dados.md](../docs/dados.md).
 
-- `raw/`: bytes originais das fontes; imutáveis.
-- `external/`: dados auxiliares externos.
-- `interim/`: recortes/conversões intermediárias.
-- `processed/`: dados harmonizados para análise.
-- `cache/`: artefatos descartáveis.
+- `external/<região>/`: limites, grade e cartografia de contexto, com `sources.json` (URL, data, SHA-256).
+- `raw/<experimento>/`: bytes originais das fontes, imutáveis, com manifesto por arquivo.
+- `processed/<experimento>/`: diários, resumos, perturbação e descritores por célula.
+- `cache/`: descartável.
 
-Depois de cada aquisição relevante, execute:
-
-```bash
-uv run amazon-chaos manifest data/raw --output metadata/manifests/raw_files.csv
-```
+Para guardar os dados fora do repositório (por exemplo, numa área de projeto do HPC), defina `AMAZON_CHAOS_DATA_DIR`.

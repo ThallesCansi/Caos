@@ -27,7 +27,7 @@ NAMES = {
     "10m_v_component_of_wind": "v10",
     "total_precipitation": "tp",
 }
-# Espelho Zarr do ERA5 horário (DestinE Earth Data Hub); ver docs/HPC_EDH.md.
+# Espelho Zarr do ERA5 horário (DestinE Earth Data Hub); ver docs/hpc.md.
 EDH_DATASET = "earthdatahub:era5-single-levels-atmosphere-v0"
 # Margem do CDS (0,05 K) + arredondamento de t2m e d2m no EDH (até 0,125 K cada; D-007).
 # Com 0,05 K, horas saturadas do EDH viravam lacunas de umidade.

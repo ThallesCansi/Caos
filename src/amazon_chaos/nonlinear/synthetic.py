@@ -21,7 +21,9 @@ def ar1(phi: float = 0.8, sigma: float = 1.0, n: int = 10_000, seed: int = 0) ->
     return x
 
 
-def periodic_signal(n: int = 10_000, period: int = 24, noise: float = 0.0, seed: int = 0) -> np.ndarray:
+def periodic_signal(
+    n: int = 10_000, period: int = 24, noise: float = 0.0, seed: int = 0
+) -> np.ndarray:
     rng = np.random.default_rng(seed)
     t = np.arange(n)
     return np.sin(2 * np.pi * t / period) + rng.normal(scale=noise, size=n)

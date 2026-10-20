@@ -1,0 +1,92 @@
+# Registro de decisões
+
+Decisões arquiteturais e científicas estáveis. Execuções de análise ficam em `reports/registro_experimentos.csv`.
+
+## D-001 — Marimo como ambiente interativo principal
+
+**Status:** aceito; consolidado em D-008.
+
+**Motivo:** notebooks em Python puro, execução reativa/determinística e melhor integração com Git.
+
+**Regra:** downloads e ETLs caros ficam fora dos notebooks reativos.
+
+## D-002 — uv para ambiente Python
+
+**Status:** aceito.
+
+**Motivo:** `pyproject.toml` + lockfile reproduzível e comandos consistentes.
+
+## D-003 — Dados pesados fora do Git
+
+**Status:** aceito.
+
+**Motivo:** o projeto pode atingir centenas de GB/1 TB; Git é usado para código, manifests, configs e resultados pequenos.
+
+## D-004 — GeoJSON/GeoParquet em vez de Shapefile no pipeline interno
+
+**Status:** aceito.
+
+**Motivo:** evitar truncamento de nomes de campos DBF e facilitar interoperabilidade moderna.
+
+## D-005 — Unidade espacial: célula ERA5
+
+**Status:** aceito em 20/10/2026.
+
+**Motivo:** grade comum para agregar perturbações e extrair séries climáticas. Cada célula é recortada pelo limite da região e ponderada pela área efetiva. Regiões maiores servem apenas para síntese e comunicação.
+
+## D-006 — Bacia do Xingu e arquivo ERA5 desde 1990
+
+**Status:** aceito para a nova região.
+
+**Recorte:** BHB250/IBGE-ANA, nível 3, bacia `cod_otto=642`; fração efetiva de célula ERA5 para integração espacial. O retângulo é somente a área de requisição CDS.
+
+**Tempo:** 2001–2024 continua a janela principal; 1990–2000 é arquivo anterior para sensibilidade temporal e condições antecedentes. O corte em 1990 é operacional. Não presumir cobertura equivalente em PRODES, DETER ou focos. Detalhes e custos: [dados.md](dados.md).
+
+## D-007 — ERA5 horário pelo Earth Data Hub
+
+**Status:** aceito em 30/09/2026 para Xingu e Baixo Tapajós 1990–2024, com precisão reduzida conhecida. Reavaliar a aquisição direta pelo CDS para as análises finais.
+
+**Motivo:** a fila do CDS (20–60 min por requisição mensal de poucos MB) tornava o arquivo 1990–2024 inviável. O espelho Zarr do Earth Data Hub é lido ano a ano, sem fila. Os arquivos mensais mantêm dias, horas UTC, grade e validação do fluxo CDS, e exigem ausência total de valores faltantes.
+
+**Precisão:** o EDH não é bit a bit igual ao CDS. Guarda o float32 com a mantissa arredondada a ~10 bits (CDS: 17–21), erro relativo ≤ 2⁻¹¹ ≈ 4,9e-4 e sem viés. Medido contra os meses CDS de jan/1990 e jan/2024 (1.288 células): diferença horária máxima de 0,125 K em t2m/d2m, 36 Pa em sp, 0,002 m/s no vento e 0,009 mm em tp. Nas séries diárias de jan/1990, RMS de 0,015 °C na temperatura média, 0,072 °C na máxima, 0,10 °C na amplitude térmica (~5% do desvio-padrão do campo), 0,11 p.p. na umidade relativa e 0,0009 mm na chuva. Irrelevante para médias e climatologia; **para descritores não lineares sensíveis a ruído (Lyapunov, recorrência), testar a sensibilidade contra meses CDS antes de concluir.** Cada NetCDF registra isso no atributo `edh_precision`.
+
+**Umidade:** o arredondamento faz o ponto de orvalho passar da temperatura em até 0,25 K (no CDS, no máximo 0,003 K), e a margem de 0,05 K anulava 1.493 horas no Xingu e 70 no Tapajós (1990–2024). Com EDH, a margem é 0,05 + 2 × 0,125 = 0,30 K: nenhuma hora anulada, e a umidade relativa dessas horas vale 100%. Atributo `dewpoint_tolerance_k` nas séries diárias.
+
+**Trava:** o download integral só prossegue se os meses CDS já validados coincidirem com o EDH com tolerância relativa 2⁻¹⁰, o dobro do arredondamento, que ainda rejeita hora, grade ou convenção trocadas (um deslocamento de 1 h é rejeitado). Execução: [hpc.md](hpc.md).
+
+**CDS direto (para depois):** o CDS recusa por custo pedidos de 6 variáveis × 6 meses e aceita 6 variáveis × 4 meses (testado em 30/09/2026), ou seja, ~106 requisições por região contra 842.
+
+## D-008 — Marimo substitui os cadernos Jupyter
+
+**Status:** aceito em 20/10/2026.
+
+**Motivo:** os cadernos 03–06 eram gerados por scripts de 400 a 850 linhas, e os demais tinham lógica inline duplicada. Em Marimo, cada caderno é um arquivo Python versionável. Um mesmo caderno serve a todas as regiões (`-- --region <slug>`), e a lógica científica vive em `src/amazon_chaos`.
+
+**Regra:** os cadernos não baixam dados nem fazem cálculo pesado; leem o que o CLI e os jobs em lote produziram. Os Jupyter ficam em `legacy/jupyter/` e na tag `v0-jupyter`, só para auditoria.
+
+## D-009 — Tapajós por sub-bacia BHB250
+
+**Status:** aceito em 20/10/2026; o recorte exato é aprovado no mapa do caderno `02_regioes` antes do download.
+
+**Motivo:** a caixa de 56 células usada até aqui tem muita água (Tapajós e Amazonas) e pouco contraste de perturbação. Usar a sub-bacia do baixo e médio Tapajós segue a mesma lógica hidrográfica do Xingu e inclui o eixo da BR-163, a Flona do Tapajós, o Jamanxim e as TIs Munduruku. A caixa antiga (`tapajos-era5-1990-2024`) permanece como plano B e como registro.
+
+## D-010 — Pré-registro dos descritores não lineares
+
+**Status:** aceito em 20/10/2026.
+
+**Regra:** variáveis, transformações, grades de τ e m, janela de Theiler, região de ajuste do Rosenstein, limiar da RQA, parâmetros da entropia de permutação, janela dos EWS, número de substitutas e sementes ficam em `configs/analysis/descriptors.yaml`. Esse arquivo é congelado num commit **antes** de qualquer cálculo nos dados reais. Mudanças posteriores geram uma nova versão, e ambas são relatadas.
+
+**Gate:** um descritor só é interpretado nos dados reais depois de separar os controles positivos (Lorenz, logístico) dos negativos (AR(1), ruído, seno com ruído) contra substitutas, no caderno `05_validacao_metodos`.
+
+## D-011 — Checagem do ERA5 com MODIS LST
+
+**Status:** aceito em 20/10/2026.
+
+**Motivo:** o ERA5 usa um mapa de vegetação fixo e não "vê" o desmatamento diretamente. A temperatura de superfície do MODIS (MOD11A2, 2001–2024) mostra se o gradiente de perturbação aparece num dado observado. O MODIS serve só para essa checagem e não entra na análise não linear, por causa das lacunas de nuvens.
+
+## D-012 — INPE como fonte principal de perturbação; MapBiomas complementar; sem GEE no caminho crítico
+
+**Status:** aceito em 20/10/2026.
+
+**Motivo:** o projeto aprovado (`docs/entregas/projeto_aprovado.pdf`) define PRODES e DETER (TerraBrasilis) e BDQueimadas como bases de distúrbio, com o MapBiomas como complemento. O Google Earth Engine tem cota mensal de computação, por isso todas as fontes são baixadas uma vez pelo CLI, com manifesto, e agregadas por célula localmente ou no HPC. O MapBiomas é lido dos COGs públicos. O `earthengine-api` fica num grupo opcional (`gee`), só para reproduzir as séries regionais antigas.
+

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -25,7 +25,7 @@ def build_manifest(directory: str | Path) -> pd.DataFrame:
                 "relative_path": str(path.relative_to(root)),
                 "size_bytes": stat.st_size,
                 "sha256": sha256_file(path),
-                "mtime_utc": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
+                "mtime_utc": datetime.fromtimestamp(stat.st_mtime, tz=UTC).isoformat(),
             }
         )
     return pd.DataFrame(rows)

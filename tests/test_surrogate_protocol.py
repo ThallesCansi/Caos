@@ -186,7 +186,7 @@ def test_generated_notebook_cells_compile_and_follow_required_order():
     import importlib.util
     from pathlib import Path
 
-    path = Path(__file__).resolve().parents[1] / "scripts/build_surrogate_notebook.py"
+    path = Path(__file__).resolve().parents[1] / "legacy/jupyter/build_surrogate_notebook.py"
     spec = importlib.util.spec_from_file_location("surrogate_notebook_builder", path)
     builder = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(builder)

@@ -8,7 +8,7 @@
 #SBATCH --output=logs/%x-%j.out
 #SBATCH --signal=B:USR1@600
 #
-# ERA5 horário pelo Earth Data Hub + séries diárias. Guia: docs/HPC_EDH.md
+# ERA5 horário pelo Earth Data Hub + séries diárias. Guia: docs/hpc.md
 #
 #   mkdir -p logs && sbatch scripts/hpc/era5_edh.sbatch
 #   CONFIG=configs/tapajos_1990_2024.yaml VERIFY=0 sbatch scripts/hpc/era5_edh.sbatch

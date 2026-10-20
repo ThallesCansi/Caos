@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import numpy as np
 import nolds
+import numpy as np
 
 
 def largest_lyapunov_rosenstein(

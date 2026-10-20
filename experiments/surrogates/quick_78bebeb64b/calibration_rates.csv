@@ -1,7 +1,0 @@
-control,method,rejections,replicates,rate,ci_low,ci_high,nominal_in_interval
-ar1,FT,0,8,0.0,0.0,0.3694166475528192,True
-ar1,IAAFT,0,8,0.0,0.0,0.3694166475528192,True
-logistic,FT,8,8,1.0,0.6305833524471808,1.0,False
-logistic,IAAFT,8,8,1.0,0.6305833524471808,1.0,False
-white,FT,0,8,0.0,0.0,0.3694166475528192,True
-white,IAAFT,0,8,0.0,0.0,0.3694166475528192,True

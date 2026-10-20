@@ -1,177 +1,66 @@
-# TCC — Dinâmica não linear do sistema floresta–atmosfera amazônico
+# Caos na floresta–atmosfera amazônica
 
-## Cadernos Jupyter: Xingu e Baixo Tapajós
+Código do TCC **"Uma Análise do Sistema Floresta-Atmosfera Amazônica sob a ótica da Teoria do Caos"** (Ilum/CNPEM, 2026), de Caio Ruas e Thalles Cansi, com orientação de Vinicius Wasques.
 
-Os cadernos principais cobrem **1990–2024** com ERA5 horário (Earth Data Hub, ver [HPC_EDH.md](docs/HPC_EDH.md)):
+> As células ERA5 com mais desmatamento e fogo antecedentes têm dinâmica climática diária diferente da das células comparáveis preservadas, depois de controlar sazonalidade, ruído, autocorrelação e geografia?
 
-- [04_Bacia_Xingu_1990_2024.ipynb](04_Bacia_Xingu_1990_2024.ipynb) — bacia inteira (BHB250/IBGE), 779 células;
-- [05_Baixo_Tapajos_1990_2024.ipynb](05_Baixo_Tapajos_1990_2024.ipynb) — caixa do Baixo Tapajós, 56 células.
+Regiões: **Bacia do Xingu** e **sub-bacia do Tapajós**. Período: 2001–2024, com o arquivo 1990–2000 para sensibilidade. Método: reconstrução do espaço de fases, Lyapunov, RQA, D2, entropia de permutação e sinais precoces, sempre contra controles sintéticos e séries substitutas. Os detalhes estão em [docs/metodologia.md](docs/metodologia.md).
 
-Ambos seguem o mesmo roteiro: onde estamos (mapa de situação, biomas, TIs e UCs), qualidade dos dados, climatologia 1991–2020, mapas por célula, tendências, anomalias e extremos, arquivo 1990–2000 × janela 2001–2024 e uma primeira reconstrução do espaço de fases. São gerados e executados por `uv run python scripts/build_region_notebooks.py --execute`; os resumos pesados ficam em `amazon_chaos.regional` (cache em `data/processed/<experimento>/summary_1990_2024.nc`) e as figuras em `reports/figures/<recorte>/`. A cartografia de contexto é baixada explicitamente por `amazon_chaos.atlas.fetch_basin_context` e `pilot_maps.fetch_context`.
+## Cadernos (Marimo)
 
-[06_Teste_Nao_Linearidade_Surrogates.ipynb](06_Teste_Nao_Linearidade_Surrogates.ipynb)
-testa hipóteses estacionárias por substitutas FT/IAAFT, com 199 realizações,
-assimetria temporal, previsão por vizinhos, controles sintéticos repetidos e
-correções Holm/BH. Execução: `uv run --frozen python scripts/build_surrogate_notebook.py --execute`.
-O modo `--quick` valida somente o código; use `--output reports/tmp/surrogates_quick.ipynb`
-para preservar o caderno principal. Sem ERA5 local, o notebook executa os controles
-e registra cada arquivo ausente, sem aquisição automática. Consulte o
-[protocolo e validação](docs/SURROGATE_PROTOCOL.md).
+Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e gera as figuras da monografia. Os cadernos que servem a mais de uma região recebem `--region`.
 
-O piloto anterior está em [03_Piloto_Tapajos_2024.ipynb](03_Piloto_Tapajos_2024.ipynb): mapa do recorte, aquisição documentada, qualidade e séries diárias de janeiro de 2024. Os notebooks leem os dados locais; as funções auxiliares ficam nos módulos Python.
+| Caderno | Etapa | Estado |
+|---|---|---|
+| `00_inicio` | visão geral e mapa do projeto | a fazer |
+| `01_laboratorio` | sistemas dinâmicos conhecidos (teoria) | a migrar |
+| `02_regioes` | limites, grade ERA5, contexto territorial | a fazer |
+| `03_clima` | atlas climático de 1990–2024 | a migrar (antigos 04 e 05) |
+| `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula e checagem MODIS | a fazer |
+| `05_validacao_metodos` | gate dos descritores em sistemas sintéticos | a fazer |
+| `06_surrogates` | testes FT/IAAFT | a migrar (antigo 06) |
+| `07_descritores` | descritores por célula, robustez, EWS | a fazer |
+| `08_gradiente` | perturbação × dinâmica | a fazer |
 
-Configuração: `configs/tapajos_2024.yaml`. Consulte [como executar o piloto](docs/PILOTO_TAPAJOS_COMO_EXECUTAR.md) e o [desenho metodológico](docs/DESENHO_ESTUDO_2001_2024.md). O roteiro abaixo descreve a infraestrutura anterior ERA5/DETER e marimo, preservada para reprodução.
+Os cadernos Jupyter anteriores estão em [`legacy/`](legacy/README.md) e na tag `v0-jupyter`.
 
----
-
-Projeto computacional do TCC **“Uma Análise do Sistema Floresta-Atmosfera Amazônica sob a ótica da Teoria do Caos”**.
-
-## Objetivo científico
-
-> Investigar a dinâmica não linear do sistema floresta-atmosfera amazônico, utilizando conceitos e métodos da Teoria do Caos e dos sistemas dinâmicos complexos para analisar possíveis sinais de instabilidade associados a perturbações na cobertura vegetal, como desmatamento, queimadas e degradação florestal.
-
-A hipótese de trabalho do projeto original é que séries temporais climáticas e ambientais associadas ao sistema floresta-atmosfera amazônico possam apresentar padrões de dinâmica não linear detectáveis por reconstrução do espaço de fases e descritores como o maior expoente de Lyapunov.
-
-## Pergunta operacional
-
-A versão computacional do objetivo será tratada como uma sequência de testes:
-
-1. É possível construir séries climáticas comparáveis, suficientemente longas, regulares e bem documentadas para diferentes regiões amazônicas?
-2. É possível classificar essas regiões por **níveis independentes de perturbação florestal** usando PRODES/MapBiomas/fogo/DETER sem olhar previamente para os descritores não lineares?
-3. Depois de controlar sazonalidade, tendência, autocorrelação, ruído e tamanho da amostra, aparecem estruturas não lineares robustas nas séries?
-4. Os descritores não lineares diferem sistematicamente entre gradientes de preservação e perturbação?
-5. Os padrões encontrados permanecem robustos a escolhas de atraso, dimensão de imersão, janelas temporais, variáveis e hipóteses nulas por séries substitutas?
-6. Como os resultados se relacionam ao contexto territorial e socioambiental sem transformar um descritor matemático isolado em alegação causal ou em “prova de tipping point”?
-
-## Princípio de arquitetura
-
-O repositório separa **efeitos colaterais caros** (download/ETL) de **análise interativa**.
-
-```text
-Fontes institucionais
-      │
-      ▼
-[ acquisition / src/amazon_chaos/io ]
-      │
-      ▼
-data/raw  ── imutável, não versionado
-      │
-      ▼
-[ preprocess + provenance ]
-      │
-      ▼
-data/interim
-      │
-      ▼
-[ harmonização espacial/temporal + features ]
-      │
-      ▼
-data/processed
-      │
-      ├────────► apps/ (marimo: exploração/QC/resultados)
-      │
-      └────────► nonlinear/ (embedding, Lyapunov, surrogates, recurrence)
-                         │
-                         ▼
-                 experiments/registry.csv
-                         │
-                         ▼
-                 reports/figures + tables
+```bash
+uv run marimo edit notebooks/03_clima.py                                  # editar
+uv run marimo export html notebooks/03_clima.py -o reports/html/03_clima_xingu.html -- --region xingu
 ```
-
-**Downloads não devem ocorrer automaticamente em um notebook reativo.** Aquisição é chamada explicitamente por CLI. Marimo é usado para inspeção e análise reprodutível.
 
 ## Começo rápido
 
-### 1. Instale o `uv`
-
-Consulte a documentação oficial do uv para o método adequado ao seu sistema.
-
-### 2. Crie/sincronize o ambiente
-
 ```bash
-uv sync --dev
+uv sync --dev                    # ambiente (uv.lock versionado)
+uv run pytest                    # testes
+uv run ruff check .              # estilo
 ```
 
-Na primeira execução, o uv criará `uv.lock`. **Commitar `uv.lock` no Git é recomendado** para congelar o ambiente computacional do TCC.
+Os dados não estão no Git (veja [docs/dados.md](docs/dados.md)). Para obtê-los:
+- ERA5 pelo Earth Data Hub no HPC, conforme [docs/hpc.md](docs/hpc.md);
+- uma região nova se cria com um YAML em `configs/regions/`.
 
-### 3. Configure o CDS
-
-Crie/valide `~/.cdsapirc` com sua credencial do Climate Data Store. Nunca versione credenciais.
-
-### 4. Inicialize as pastas locais
-
-```bash
-uv run amazon-chaos init-dirs
-```
-
-### 5. Baixe o piloto ERA5 + DETER
-
-```bash
-uv run amazon-chaos pilot --config configs/pilot.yaml
-```
-
-### 6. Gere/atualize o manifesto dos arquivos
-
-```bash
-uv run amazon-chaos manifest data/raw --output metadata/manifests/raw_files.csv
-```
-
-### 7. Abra o projeto no marimo
-
-```bash
-uv run marimo edit apps/
-```
-
-Comece por:
-
-```bash
-uv run marimo edit apps/00_project_overview.py
-uv run marimo edit apps/01_pilot_qc.py
-```
+Downloads **nunca** rodam dentro de um caderno; são comandos explícitos de CLI, com manifesto e SHA-256.
 
 ## Estrutura
 
 ```text
-tcc-amazonia-caos/
-├── apps/                    # notebooks marimo (análise, sem downloads implícitos)
-├── configs/                 # configurações versionadas de pilotos/experimentos
-├── data/                    # dados locais; conteúdo pesado ignorado pelo Git
-├── docs/                    # arquitetura, plano científico e guardrails
-├── experiments/             # registro de experimentos e resultados por configuração
-├── legacy/                  # notebook Jupyter do piloto inicial, preservado para auditoria
-├── metadata/                # catálogo, variáveis, manifests e proveniência
-├── reports/                 # figuras e tabelas derivadas
-├── src/amazon_chaos/        # biblioteca reutilizável do projeto
-├── tests/                   # testes unitários de transformações críticas
-├── .github/workflows/       # CI
-├── pyproject.toml
-└── README.md
+configs/      regiões, variáveis e análise pré-registrada (YAML)
+data/         dados locais, fora do Git
+docs/         metodologia, dados, decisões, HPC; entregas/ (projeto aprovado, relatório parcial)
+legacy/       fluxo Jupyter anterior, só para auditoria
+notebooks/    cadernos Marimo
+reports/      figuras e tabelas finais; registro de experimentos
+scripts/hpc/  jobs Slurm
+src/          biblioteca amazon_chaos (io, preprocess, features, nonlinear)
+tests/        testes das transformações e dos métodos
 ```
 
-## Os dados não vão para o Git
+## Regra interpretativa
 
-O projeto prevê volumes muito maiores que um repositório de código. `data/raw`, `data/interim` e `data/processed` ficam fora do Git; versionamos **código, configuração, manifestos, metadados, pequenas tabelas derivadas e figuras finais**. Se futuramente for necessário distribuir algum artefato binário grande, decidir entre armazenamento institucional, release, object storage ou Git LFS será uma decisão separada.
-
-## Fases científicas
-
-| Fase | Entrega principal | Gate para avançar |
-|---|---|---|
-| F0 | infraestrutura e catálogo | downloads reproduzíveis + manifests |
-| F1 | unidade espacial e gradiente de perturbação | classificação independente da resposta climática |
-| F2 | séries climáticas longas | QC, lacunas e regularidade documentados |
-| F3 | validação sintética | método distingue controles caóticos e nulos |
-| F4 | reconstrução e descritores | robustez a `tau`, `m`, janela e preprocessing |
-| F5 | hipóteses nulas | comparação com séries substitutas |
-| F6 | comparação espacial | efeito consistente entre regiões/estratos |
-| F7 | interpretação socioespacial | conclusão proporcional à evidência |
-
-Detalhes: [`docs/RESEARCH_PLAN.md`](docs/RESEARCH_PLAN.md).
-
-## Regra interpretativa central
-
-`lambda_max > 0` **não será tratado como prova isolada de caos**, e muito menos como prova de tipping point. A interpretação final depende da qualidade da série, controles sintéticos, sazonalidade, tendências, autocorrelação, ruído, sensibilidade dos parâmetros, séries substitutas e consistência espacial.
+`λ_max > 0` **não é prova isolada de caos**, e muito menos de tipping point. A conclusão depende da qualidade da série, dos controles sintéticos, das substitutas, da sensibilidade aos parâmetros e da consistência espacial. Resultados negativos são relatados ([guardrails](docs/metodologia.md#3-guardrails)).
 
 ## Licença
 
-Código sob licença MIT. Bases de terceiros permanecem submetidas aos termos e licenças de suas instituições responsáveis.
+Código sob licença MIT. As bases de terceiros seguem os termos das instituições responsáveis.
