@@ -1,15 +1,19 @@
 # Pré-registro da análise não linear (D-010; docs/metodologia.md §8).
 #
-# Tudo o que pode ser escolhido está aqui. Este arquivo é CONGELADO (status: congelado,
-# num commit próprio) depois da revisão do gate F4 e ANTES de qualquer cálculo nos dados
+# Tudo o que pode ser escolhido está aqui. CONGELADO em 20/10/2026, num commit próprio,
+# depois da revisão do gate F4 (execução 1c2fb37657) e ANTES de qualquer cálculo nos dados
 # reais. Mudanças depois disso geram a versão 2, e as duas são relatadas.
 version: 1
-status: rascunho
+status: congelado
+frozen_on: 2026-10-20
 
 series:
   variables: [t2m, vpd]            # anomalias diárias: análise primária
   exploratory: [precip]            # intermitente: só métodos ordinais, exploratório
-  transform: anomaly               # regional.anomalies: normal 1991–2020, suavização de 31 dias
+  # regional.standardized_anomalies: anomalia ÷ desvio-padrão sazonal (normal 1991–2020,
+  # suavização circular de 31 dias), sem remover tendência. Motivo: no gate, a variância
+  # sazonal fazia Lyapunov e RQA·DET rejeitarem H0 sem haver caos (padronizacao.csv).
+  transform: standardized_anomaly
   period: [2001-01-01, 2024-12-31] # 8.766 dias
   windows:                         # comparação longitudinal (docs/metodologia.md §9)
     - [2001-01-01, 2012-12-31]
@@ -64,3 +68,35 @@ gate:
   # (a hipótese nula é verdadeira neles). sine_noise e seasonal_trend são relatados como
   # alertas: seasonal_trend viola a estacionariedade, como os dados climáticos podem violar.
   criterion: {power: 0.8, positives_required: 2, size: 0.2, size_controls: [white, ar1]}
+
+# Famílias de descritores (decidido com o gate e o teste de padronização, 20/10/2026).
+# Conclusões só pela família primária; correção de Benjamini–Hochberg dentro de cada
+# família, sobre as células, separadamente por região × variável × janela.
+families:
+  primary: [pe_entropy, pe_complexity, prediction, rqa_det]
+  secondary: [d2, rqa_lam, asymmetry]   # d2 perde poder com ruído; lam sensível a
+                                        # periodicidade; asymmetry sem poder no Lorenz
+  exploratory: [lyapunov]               # 60% de falso positivo sob variância sazonal
+                                        # mesmo padronizada: só descritivo, com ressalva
+
+# Células que entram na comparação espacial (caderno 08). As demais ficam nos mapas.
+cells:
+  min_land_fraction: 0.5                # terra observada (MapBiomas 2000) / área da célula
+
+# Perturbação (features.disturbance; caderno 04). Definida sem olhar os descritores.
+disturbance:
+  primary: perda_antecedente            # 1 − floresta_frac_2000 (MapBiomas; cobre o Cerrado)
+  secondary:
+    - perda_2000_2024                   # floresta_frac_2000 − floresta_frac_2024
+    - focos_100km2_ano_2003_2024        # média das duas janelas, ponderada pelos anos
+    - mb_frequencia_fogo_media_2024
+  sensitivity: [prodes_acumulado_2024_frac, prodes_ate_2007_frac]
+  longitudinal:
+    response: descritor(2013–2024) − descritor(2001–2012)
+    exposure: mb_perda_floresta_2001_2012
+  controls: [latitude, agua_frac_2000]  # elevação entra quando o MDE estiver agregado
+  inference:
+    association: spearman               # e regressão com os controles
+    spatial_blocks_degrees: 1.0         # permutação por blocos de 1° × 1°
+    residual_check: moran
+
