@@ -1,0 +1,13 @@
+{
+  "src/amazon_chaos/nonlinear/surrogates.py": "17426432c1ddca234565feaac7d1d986ea7ad5a73d957fc273b0bce121922ca8",
+  "src/amazon_chaos/nonlinear/statistics.py": "8cace181164dc598b1eca1e849f9e841ee613efd52a07da37e35471242d3c0db",
+  "src/amazon_chaos/nonlinear/surrogate_study.py": "06a90b17587094989a2a5869543cf12ec670ebd7a128ea50d31d4a114e83fa30",
+  "scripts/build_surrogate_notebook.py": "83db7679bc7ed59355374baa9991be16461a6853b643410675c64ea7600f56dd",
+  "src/amazon_chaos/regional.py": "ecb21a9e50ce1994dfee16fe1200ff1414a9b7f83c23dc07c24c6e14c796ffe2",
+  "src/amazon_chaos/preprocess/daily.py": "22a52916229b2d88f2cb63e4d433f2ecfbe993fecb69489e0a21a09cfcd355cc",
+  "src/amazon_chaos/nonlinear/synthetic.py": "dbc6134e9aed4cf32ad54f7d64d870a8d7e63142867a39dcdd84e608323e0c43",
+  "src/amazon_chaos/nonlinear/embedding.py": "4a79d68d68d4d39d475e8962fd56c5f22aa8012969789105f82fd115898c9465",
+  "uv.lock": "afa34389b76346f46e895ae0acfd2d9ce8ae10b6a646ce1ea73ee3e9a7d6e282",
+  "configs/xingu_1990_2024.yaml": "532667c4b51d3630c293b98c62f9901ac3b0ce9dfff98a0e592eddb3093a2a3d",
+  "configs/tapajos_1990_2024.yaml": "f4d3fe72820afe28f02d2ae6d3cd02452a5eda148e4f4d36439f1257d27bc8f9"
+}

@@ -1,0 +1,94 @@
+{
+  "config": {
+    "regions": [
+      "xingu",
+      "tapajos"
+    ],
+    "variables": [
+      "t2m",
+      "precip"
+    ],
+    "archive": [
+      1990,
+      2024
+    ],
+    "period": [
+      "2001-01-01",
+      "2024-12-31"
+    ],
+    "base": [
+      "1991-01-01",
+      "2020-12-31"
+    ],
+    "resolution": "D",
+    "versions": [
+      "original",
+      "anomaly"
+    ],
+    "methods": [
+      "FT",
+      "IAAFT"
+    ],
+    "statistics": [
+      "asymmetry",
+      "prediction"
+    ],
+    "primary_lag": 1,
+    "n_surrogates": 19,
+    "alpha": 0.05,
+    "seed": 20261013,
+    "iaaft_max_iter": 1000,
+    "iaaft_tolerance": 1e-08,
+    "spectral_warning": 0.02,
+    "climatology_window": 31,
+    "minimum_climate_samples": 365,
+    "prediction": {
+      "dimension": 3,
+      "delay": 1,
+      "horizon": 1,
+      "neighbors": 5,
+      "theiler": 14,
+      "train_fraction": 0.6
+    },
+    "stationarity_blocks": 4,
+    "hac_lags": 14,
+    "calibration_repeats": 8,
+    "calibration_length": 512,
+    "sensitivity_lags": [
+      1,
+      7,
+      30
+    ],
+    "sensitivity_lengths": [
+      256,
+      1024
+    ],
+    "sensitivity_noise": [
+      0.0,
+      0.3
+    ],
+    "sensitivity_windows": [
+      [
+        "2001-01-01",
+        "2012-12-31"
+      ],
+      [
+        "2013-01-01",
+        "2024-12-31"
+      ]
+    ]
+  },
+  "versions": {
+    "amazon-chaos": "0.1.0",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "pandas": "3.0.5",
+    "statsmodels": "0.14.6",
+    "matplotlib": "3.11.1",
+    "xarray": "2026.7.0",
+    "nbclient": "0.11.0"
+  },
+  "python": "3.11.9",
+  "git_head": "43a44d3fbf82afc8c3c7cdae8919a972befb07af",
+  "quick_validation_only": true
+}

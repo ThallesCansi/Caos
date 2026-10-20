@@ -9,6 +9,15 @@ Os cadernos principais cobrem **1990–2024** com ERA5 horário (Earth Data Hub,
 
 Ambos seguem o mesmo roteiro: onde estamos (mapa de situação, biomas, TIs e UCs), qualidade dos dados, climatologia 1991–2020, mapas por célula, tendências, anomalias e extremos, arquivo 1990–2000 × janela 2001–2024 e uma primeira reconstrução do espaço de fases. São gerados e executados por `uv run python scripts/build_region_notebooks.py --execute`; os resumos pesados ficam em `amazon_chaos.regional` (cache em `data/processed/<experimento>/summary_1990_2024.nc`) e as figuras em `reports/figures/<recorte>/`. A cartografia de contexto é baixada explicitamente por `amazon_chaos.atlas.fetch_basin_context` e `pilot_maps.fetch_context`.
 
+[06_Teste_Nao_Linearidade_Surrogates.ipynb](06_Teste_Nao_Linearidade_Surrogates.ipynb)
+testa hipóteses estacionárias por substitutas FT/IAAFT, com 199 realizações,
+assimetria temporal, previsão por vizinhos, controles sintéticos repetidos e
+correções Holm/BH. Execução: `uv run --frozen python scripts/build_surrogate_notebook.py --execute`.
+O modo `--quick` valida somente o código; use `--output reports/tmp/surrogates_quick.ipynb`
+para preservar o caderno principal. Sem ERA5 local, o notebook executa os controles
+e registra cada arquivo ausente, sem aquisição automática. Consulte o
+[protocolo e validação](docs/SURROGATE_PROTOCOL.md).
+
 O piloto anterior está em [03_Piloto_Tapajos_2024.ipynb](03_Piloto_Tapajos_2024.ipynb): mapa do recorte, aquisição documentada, qualidade e séries diárias de janeiro de 2024. Os notebooks leem os dados locais; as funções auxiliares ficam nos módulos Python.
 
 Configuração: `configs/tapajos_2024.yaml`. Consulte [como executar o piloto](docs/PILOTO_TAPAJOS_COMO_EXECUTAR.md) e o [desenho metodológico](docs/DESENHO_ESTUDO_2001_2024.md). O roteiro abaixo descreve a infraestrutura anterior ERA5/DETER e marimo, preservada para reprodução.
