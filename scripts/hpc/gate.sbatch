@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=16
 #SBATCH -p cpu
 #SBATCH -J gate
 #SBATCH --time=06:00:00
@@ -17,4 +17,4 @@ NEEDS_REGION=0
 source scripts/hpc/_common.sh
 
 STEP="gate F4"
-run $PY -m amazon_chaos.cli gate run --workers "${SLURM_CPUS_PER_TASK:-32}"
+run $PY -m amazon_chaos.cli gate run --workers "${SLURM_CPUS_PER_TASK:-16}"

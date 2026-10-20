@@ -1,6 +1,6 @@
 # HPC: downloads e cálculos em lote
 
-O HPC (`172.20.10.15`, Slurm, partição `cpu`; exige a rede ou a VPN do CNPEM) roda o que é longo: o ERA5 pelo Earth Data Hub, a agregação das bases de perturbação e os descritores com substitutas por célula. A máquina local roda os cadernos. Nos dois lados o código é o mesmo, um clone deste repositório; os dados não passam pelo Git.
+O HPC (`172.20.10.15`, Slurm, partição `cpu`; exige a rede ou a VPN do CNPEM; **cota de 16 CPUs por usuário**, QOS `limit_16c`: jobs que pedem mais ficam pendentes com `QOSMaxCpuPerUserLimit`) roda o que é longo: o ERA5 pelo Earth Data Hub, a agregação das bases de perturbação e os descritores com substitutas por célula. A máquina local roda os cadernos. Nos dois lados o código é o mesmo, um clone deste repositório; os dados não passam pelo Git.
 
 ```
 local                                        HPC (~/Caos, clone Git)
@@ -120,4 +120,5 @@ No nó de login, `tmux new -s era5` e depois `REGION=xingu bash scripts/hpc/era5
 | `nenhum mês CDS … para conferir` | rode com `VERIFY=0` ou copie os meses CDS para `data/raw/<experimento>/era5` |
 | `spatial.area de … deveria ser […]` | a caixa do YAML não é o envelope do limite; copie o valor sugerido |
 | TIs da FUNAI com erro de certificado | o servidor omite o intermediário TLS; o código o obtém pelo endereço AIA (`regions.MISSING_INTERMEDIATE`); se o certificado mudar, atualize o endereço |
+| job pendente com `QOSMaxCpuPerUserLimit` | pediu mais que 16 CPUs (somando os jobs em execução): reduza `--cpus-per-task` |
 | nó sem rede (timeout no `NETWORK=1`) | rode no nó de login, dentro do `tmux` (§6) |
