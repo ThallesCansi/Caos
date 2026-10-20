@@ -76,8 +76,3 @@ def pt(text):
     """Números no padrão brasileiro: 508,627.5 → 508.627,5 (datas e intervalos intactos)."""
     return NUMBER.sub(lambda m: m.group().translate(str.maketrans(",.", ".,")), text)
 
-
-def show_md(text):
-    from IPython.display import Markdown, display
-
-    display(Markdown(pt(text)))

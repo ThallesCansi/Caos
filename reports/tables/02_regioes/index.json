@@ -1,0 +1,11 @@
+[
+  {
+    "name": "comparacao",
+    "region": null,
+    "caption": "Xingu e Tapajós: limite BHB250, grade ERA5, biomas (IBGE), TIs (FUNAI) e UCs federais (ICMBio), sem dupla contagem, e situação dos dados climáticos locais.",
+    "overleaf": true,
+    "csv": "reports/tables/02_regioes/comparacao.csv",
+    "tex": "reports/tables/02_regioes/comparacao.tex",
+    "commit": "5ae568a+modificado"
+  }
+]

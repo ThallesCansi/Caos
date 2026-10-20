@@ -20,10 +20,13 @@ jobs:
         run: uv python install 3.11
 
       - name: Sync
-        run: uv sync --dev
+        run: uv sync --frozen --dev
 
       - name: Ruff
-        run: uv run ruff check .
+        run: uv run --frozen ruff check .
+
+      - name: Marimo (estrutura dos cadernos)
+        run: uv run --frozen marimo check notebooks/
 
       - name: Tests
-        run: uv run pytest
+        run: uv run --frozen pytest

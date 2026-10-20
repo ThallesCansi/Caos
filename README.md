@@ -12,9 +12,9 @@ Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e 
 
 | Caderno | Etapa | Estado |
 |---|---|---|
-| `00_inicio` | visão geral e mapa do projeto | a fazer |
+| `00_inicio` | visão geral, situação dos dados e cronograma | pronto |
 | `01_laboratorio` | sistemas dinâmicos conhecidos (teoria) | a migrar |
-| `02_regioes` | limites, grade ERA5, contexto territorial | a fazer |
+| `02_regioes` | limites, grade ERA5, contexto territorial | pronto |
 | `03_clima` | atlas climático de 1990–2024 | a migrar (antigos 04 e 05) |
 | `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula e checagem MODIS | a fazer |
 | `05_validacao_metodos` | gate dos descritores em sistemas sintéticos | a fazer |
@@ -32,16 +32,22 @@ uv run marimo export html notebooks/03_clima.py -o reports/html/03_clima_xingu.h
 ## Começo rápido
 
 ```bash
-uv sync --dev                    # ambiente (uv.lock versionado)
-uv run pytest                    # testes
-uv run ruff check .              # estilo
+make sync                        # ambiente exatamente como no uv.lock
+make test && make check          # testes, ruff e marimo check
+uv run marimo edit notebooks/    # abrir os cadernos
+make notebooks                   # executar todos e exportar HTML (reports/html/)
+make overleaf                    # figuras e tabelas finais em reports/overleaf/
 ```
 
-Os dados não estão no Git (veja [docs/dados.md](docs/dados.md)). Para obtê-los:
-- ERA5 pelo Earth Data Hub no HPC, conforme [docs/hpc.md](docs/hpc.md);
-- uma região nova se cria com um YAML em `configs/regions/`.
+Os dados não estão no Git (veja [docs/dados.md](docs/dados.md)). Toda aquisição passa pelo CLI, com manifesto e SHA-256; os cadernos **nunca** baixam nada:
 
-Downloads **nunca** rodam dentro de um caderno; são comandos explícitos de CLI, com manifesto e SHA-256.
+```bash
+uv run amazon-chaos region list                 # regiões em configs/regions/
+uv run amazon-chaos region prepare tapajos      # limite, grade e cartografia
+uv run amazon-chaos era5 --help                 # plan · download · edh · process · summarize
+```
+
+O ERA5 de 1990–2024 é baixado no HPC pelo Earth Data Hub (`sbatch --export=ALL,REGION=<slug> scripts/hpc/era5.sbatch`) e trazido com `make pull REGION=<slug>`. Uma região nova se cria com um YAML. Tudo isso está em [docs/hpc.md](docs/hpc.md).
 
 ## Estrutura
 
@@ -52,7 +58,7 @@ docs/         metodologia, dados, decisões, HPC; entregas/ (projeto aprovado, r
 legacy/       fluxo Jupyter anterior, só para auditoria
 notebooks/    cadernos Marimo
 reports/      figuras e tabelas finais; registro de experimentos
-scripts/hpc/  jobs Slurm
+scripts/hpc/  jobs Slurm, setup e sincronização com o HPC
 src/          biblioteca amazon_chaos (io, preprocess, features, nonlinear)
 tests/        testes das transformações e dos métodos
 ```

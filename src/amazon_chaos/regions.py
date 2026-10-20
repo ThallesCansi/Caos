@@ -378,7 +378,7 @@ def plot_region(cfg, limit=None, grid=None, context=None, states_path=STATES_PAT
     brazil, local, ax = (fig.add_subplot(layout[0, 0]), fig.add_subplot(layout[1, 0]),
                          fig.add_subplot(layout[:, 1]))
 
-    states.plot(ax=brazil, color="#ecece4", edgecolor="white", linewidth=0.5)
+    states.plot(ax=brazil, color="#ecece4", edgecolor="white", linewidth=0.5, rasterized=True)
     touched.plot(ax=brazil, color="#c9d8c5", edgecolor="white", linewidth=0.5)
     limit.plot(ax=brazil, color="#b63034")
     brazil.set_title("Brasil · a região no território", loc="left", fontsize=11)
@@ -399,9 +399,10 @@ def plot_region(cfg, limit=None, grid=None, context=None, states_path=STATES_PAT
     if "biomas" in context:
         for name, color in BIOME_COLORS.items():
             part = context["biomas"][context["biomas"].iloc[:, 0].astype(str).str.contains(name)]
-            part.plot(ax=ax, color=color, edgecolor="none")
+            part.plot(ax=ax, color=color, edgecolor="none", rasterized=True)
     if "municipios" in context:
-        context["municipios"].plot(ax=ax, facecolor="#e9eee1", edgecolor="#8e9284", lw=0.8)
+        context["municipios"].plot(ax=ax, facecolor="#e9eee1", edgecolor="#8e9284", lw=0.8,
+                                      rasterized=True)
         for _, row in context["municipios"].iterrows():
             point = row.geometry.representative_point()
             if w - 0.2 < point.x < e + 0.2 and s - 0.2 < point.y < n + 0.2:
@@ -409,10 +410,13 @@ def plot_region(cfg, limit=None, grid=None, context=None, states_path=STATES_PAT
                         ha="center", bbox={"facecolor": "white", "alpha": 0.65,
                                            "edgecolor": "none"})
     if "tis" in context:
-        context["tis"].plot(ax=ax, facecolor="#e7c9a6", edgecolor="#a0673a", lw=0.5, alpha=0.7)
+        context["tis"].plot(ax=ax, facecolor="#e7c9a6", edgecolor="#a0673a", lw=0.5, alpha=0.7,
+                            rasterized=True)
     if "ucs" in context:
-        context["ucs"].plot(ax=ax, facecolor="#9fc7a6", edgecolor="#37744d", lw=0.6, alpha=0.7)
-    grid.boundary.plot(ax=ax, color="#5a6371", linewidth=0.25 if basin else 0.6, alpha=0.5)
+        context["ucs"].plot(ax=ax, facecolor="#9fc7a6", edgecolor="#37744d", lw=0.6, alpha=0.7,
+                            rasterized=True)
+    grid.boundary.plot(ax=ax, color="#5a6371", linewidth=0.25 if basin else 0.6, alpha=0.5,
+                       rasterized=True)
     if "rios" in context:
         context["rios"].plot(ax=ax, color="#3c90b5", linewidth=1.3)
     limit.boundary.plot(ax=ax, color="#b63034", linewidth=2.2, zorder=6)

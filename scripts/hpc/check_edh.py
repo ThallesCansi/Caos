@@ -1,6 +1,8 @@
 """Diagnostica a chave do Earth Data Hub sem imprimi-la.
 
     set -a; source ~/.edh_env; set +a; .venv/bin/python scripts/hpc/check_edh.py
+
+Também é chamado por scripts/hpc/setup.sh.
 """
 
 import os

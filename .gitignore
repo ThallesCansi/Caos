@@ -53,8 +53,10 @@ reports/html/
 *.prj
 *.cpg
 
-# Generated reports: selectively version final artifacts
+# Saídas geradas: PNG e tabelas são versionados; PDF e a cópia da Overleaf, não
 reports/tmp/
+reports/figures/**/*.pdf
+reports/overleaf/
 
 # Slurm / execução no HPC
 logs/
