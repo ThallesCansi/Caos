@@ -46,3 +46,17 @@ def test_polygon_areas_and_point_counts():
                               crs=4326)
     counts = point_counts(points, cells)
     assert counts["count"].sum() == 2 and isinstance(counts, pd.DataFrame)
+
+
+def test_polygonal_handles_mixed_collections_and_invalid_polygons():
+    from shapely.geometry import GeometryCollection, LineString, Polygon
+
+    from amazon_chaos.preprocess.zonal import polygonal
+
+    bowtie = Polygon([(0, 0), (1, 1), (1, 0), (0, 1)])
+    mixed = GeometryCollection([box(2, 2, 3, 3), LineString([(0, 0), (5, 5)])])
+    frame = gpd.GeoDataFrame({"k": [1, 2, 3]}, geometry=[bowtie, mixed, box(4, 4, 5, 5)],
+                             crs=3857)
+    out = polygonal(frame)
+    assert set(out.geom_type) == {"Polygon"} and out.k.tolist() == [1, 1, 2, 3]
+    assert out.area.sum() == pytest.approx(2.5)

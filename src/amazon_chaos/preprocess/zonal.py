@@ -89,12 +89,30 @@ def class_areas(source: str, cells: gpd.GeoDataFrame, *, block: int = 4096,
 
 
 def polygonal(frame: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """Geometrias válidas e só polígonos: `make_valid` pode gerar linhas e coleções a partir
-    de polígonos degenerados; linhas e pontos têm área nula e são descartados."""
-    frame = frame.copy()
-    frame.geometry = frame.geometry.make_valid()
-    frame = frame.explode(index_parts=False)
-    return frame[frame.geom_type.isin(["Polygon", "MultiPolygon"])]
+    """Só polígonos válidos, uma parte por linha.
+
+    Algumas feições do DETER chegam como coleções mistas (polígono + linha), que o GEOS se
+    recusa a validar. Por isso as partes são separadas antes do `make_valid`, e de novo
+    depois (a validação pode gerar linhas). Linhas e pontos têm área nula: descartá-los não
+    muda nenhuma área.
+    """
+
+    def polygons_only(geoms):
+        parts, index = shapely.get_parts(geoms, return_index=True)
+        keep = np.isin(shapely.get_type_id(parts), [3])  # 3 = Polygon
+        return parts[keep], index[keep]
+
+    parts, index = polygons_only(frame.geometry.values)
+    while True:  # coleções aninhadas: desmonta até só restarem polígonos
+        nested = np.isin(shapely.get_type_id(parts), [6, 7])
+        if not nested.any():
+            break
+        sub, j = polygons_only(parts[nested])
+        parts = np.concatenate([parts[~nested], sub])
+        index = np.concatenate([index[~nested], index[nested][j]])
+    valid, j = polygons_only(shapely.make_valid(parts))
+    out = frame.drop(columns="geometry").iloc[index[j]].reset_index(drop=True)
+    return gpd.GeoDataFrame(out, geometry=valid, crs=frame.crs)
 
 
 def polygon_areas(polygons: gpd.GeoDataFrame, cells: gpd.GeoDataFrame,
