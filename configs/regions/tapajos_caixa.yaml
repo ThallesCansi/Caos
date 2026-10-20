@@ -1,0 +1,15 @@
+# Caixa do Baixo Tapajós usada até 20/10/2026 (56 pontos). Plano B e registro (D-009).
+name: Baixo Tapajós (caixa)
+experiment_id: tapajos-era5-1990-2024
+
+boundary:
+  source: bbox
+
+spatial:
+  area: [-2.25, -56.0, -3.75, -54.25]
+  pilot_point: [-2.75, -55.0]
+
+context:
+  layers: [rios, ucs]
+  municipios: {"1506807": Santarém, "1501451": Belterra, "1504752": Mojuí dos Campos}
+  margin_degrees: 0.5

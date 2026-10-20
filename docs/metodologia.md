@@ -16,7 +16,7 @@ A direção perturbação → clima organiza a hipótese e a ordenação tempora
 
 | Dimensão | Decisão |
 |---|---|
-| Regiões | Bacia do Xingu (BHB250, `cod_otto=642`, 779 células) e sub-bacia do baixo e médio Tapajós (BHB250, D-009) |
+| Regiões | Bacias do Xingu (BHB250, `cod_otto=642`, 779 células) e do Tapajós (`cod_otto=644`, 762 células; D-009) |
 | Unidade espacial | célula ERA5 de 0,25°, recortada pelo limite e ponderada pela área efetiva (D-005) |
 | Período principal | 2001–2024, anos civis completos |
 | Arquivo anterior | 1990–2000, para sensibilidade e condições antecedentes, nunca reclassificado como período principal depois de ver resultados |

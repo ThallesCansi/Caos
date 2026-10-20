@@ -1,0 +1,13 @@
+# Bacia inteira do Tapajós (D-009): 762 células, simétrica ao Xingu.
+name: Bacia do Rio Tapajós
+experiment_id: tapajos-bacia-era5-1990-2024
+
+boundary:
+  source: bhb250
+  level: 3
+  cod_otto: "644"
+  expected_name: Bacia do Rio Tapajós
+
+spatial:
+  area: [-2.0, -60.25, -15.0, -53.75]
+  pilot_point: [-3.5, -55.0]   # Flona do Tapajós

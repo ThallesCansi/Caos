@@ -13,12 +13,11 @@ diários não mudarem (tamanho e data de modificação).
 import json
 from pathlib import Path
 
-import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-from amazon_chaos.preprocess.grid import build_grid
+from amazon_chaos.regions import cells as region_cells
 
 # nome curto → (variável diária, agregação mensal)
 VARIABLES = {
@@ -37,20 +36,6 @@ VARIABLES = {
 }
 DRY_DAY_MM = 1.0
 SUMMARY_VERSION = 2  # incrementar ao mudar o conteúdo do resumo
-
-
-def region_cells(config):
-    """Células da região com o peso (km²) de cada uma e o polígono recortado para mapas."""
-    grid = build_grid(config["spatial"]["area"])
-    if "basin_source" not in config["spatial"]:
-        grid["weight_km2"] = grid.area_km2
-        return grid
-    basin = gpd.read_file(config["spatial"]["basin_source"]).to_crs("EPSG:4326")
-    cells = gpd.read_file(Path("data/processed") / config["experiment_id"] / "basin_grid.geojson")
-    grid = grid.merge(cells[["latitude", "longitude", "basin_km2"]], on=["latitude", "longitude"])
-    grid["weight_km2"] = grid.basin_km2
-    grid["geometry"] = grid.geometry.intersection(basin.union_all())
-    return grid
 
 
 def weights(cells, latitudes, longitudes):

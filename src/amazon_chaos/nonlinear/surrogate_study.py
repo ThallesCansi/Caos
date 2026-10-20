@@ -12,14 +12,13 @@ from statsmodels.stats.diagnostic import breaks_cusumolsresid
 from statsmodels.stats.multitest import multipletests
 from statsmodels.tsa.stattools import acf, adfuller, kpss
 
-from amazon_chaos.config import load_config
+from amazon_chaos.config import load_region
 from amazon_chaos.nonlinear.surrogates import validate_series
 from amazon_chaos.regional import anomalies, regional_frame, summarize
 
-REGIONS = {
-    "xingu": "configs/xingu_1990_2024.yaml",
-    "tapajos": "configs/tapajos_1990_2024.yaml",
-}
+# Nome usado nas tabelas do protocolo → configs/regions/<slug>.yaml. A execução
+# full_e57802a1f7 usou a caixa do Tapajós; a bacia (D-009) entra na migração do caderno 06.
+REGIONS = {"xingu": "xingu", "tapajos": "tapajos_caixa"}
 UNITS = {"t2m": "degC", "precip": "mm"}
 NULLS = {
     "FT": "Processo estocástico linear gaussiano estacionário (espectro condicionado)",
@@ -32,7 +31,7 @@ def local_inventory(root, regions=("xingu", "tapajos"), first=1990, last=2024):
     root = Path(root)
     rows = []
     for region in regions:
-        cfg = load_config(root / REGIONS[region])
+        cfg = load_region(REGIONS[region], root=root)
         base = root / "data/processed" / cfg["experiment_id"]
         required = [("daily", base / f"daily_{y}-01-01_{y}-12-31.nc")
                     for y in range(first, last + 1)]
@@ -54,7 +53,7 @@ def load_local_region(root, region, first=1990, last=2024):
     their provenance is recorded as unverified and interpretation exploratory.
     """
     root = Path(root)
-    cfg = load_config(root / REGIONS[region])
+    cfg = load_region(REGIONS[region], root=root)
     inventory = local_inventory(root, (region,), first, last)
     prerequisites = inventory[inventory.kind.isin(["daily", "spatial"])]
     target = root / "data/processed" / cfg["experiment_id"] / f"summary_{first}_{last}.nc"

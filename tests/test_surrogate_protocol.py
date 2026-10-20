@@ -156,9 +156,12 @@ def test_inventory_reports_actual_files():
 def test_transferred_cache_reuses_units_and_marks_unverified(tmp_path):
     # A small synthetic fixture exercises the adapter; it is never ERA5 output.
     config_dir = tmp_path / "configs"
-    config_dir.mkdir()
-    (config_dir / "tapajos_1990_2024.yaml").write_text(
-        "experiment_id: test\nspatial:\n  area: [-2, -56, -3, -54]\n", encoding="utf-8")
+    (config_dir / "regions").mkdir(parents=True)
+    (config_dir / "study.yaml").write_text("time: {}\n", encoding="utf-8")
+    (config_dir / "regions" / "tapajos_caixa.yaml").write_text(
+        "name: teste\nexperiment_id: test\nboundary: {source: bbox}\n"
+        "spatial:\n  area: [-2, -56, -3, -54]\n  pilot_point: [-2.5, -55]\n",
+        encoding="utf-8")
     base = tmp_path / "data/processed/test"
     base.mkdir(parents=True)
     times = pd.date_range("2001-01-01", periods=100)

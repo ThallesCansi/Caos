@@ -4,7 +4,7 @@ Código do TCC **"Uma Análise do Sistema Floresta-Atmosfera Amazônica sob a ó
 
 > As células ERA5 com mais desmatamento e fogo antecedentes têm dinâmica climática diária diferente da das células comparáveis preservadas, depois de controlar sazonalidade, ruído, autocorrelação e geografia?
 
-Regiões: **Bacia do Xingu** e **sub-bacia do Tapajós**. Período: 2001–2024, com o arquivo 1990–2000 para sensibilidade. Método: reconstrução do espaço de fases, Lyapunov, RQA, D2, entropia de permutação e sinais precoces, sempre contra controles sintéticos e séries substitutas. Os detalhes estão em [docs/metodologia.md](docs/metodologia.md).
+Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Período: 2001–2024, com o arquivo 1990–2000 para sensibilidade. Método: reconstrução do espaço de fases, Lyapunov, RQA, D2, entropia de permutação e sinais precoces, sempre contra controles sintéticos e séries substitutas. Os detalhes estão em [docs/metodologia.md](docs/metodologia.md).
 
 ## Cadernos (Marimo)
 

@@ -1,0 +1,25 @@
+# Modelo para uma região nova. Copie para configs/regions/<slug>.yaml e ajuste.
+# Fluxo completo em docs/hpc.md ("Adicionar uma região").
+
+name: Bacia do Rio Exemplo
+experiment_id: exemplo-era5-1990-2024   # nome das pastas em data/raw e data/processed
+
+# Limite: uma bacia BHB250 (IBGE/ANA, 2021) ...
+boundary:
+  source: bhb250
+  level: 3              # nível de Otto Pfafstetter (2, 3 ou 4)
+  cod_otto: "000"
+  expected_name: Bacia do Rio Exemplo   # conferido contra o arquivo do IBGE
+# ... ou uma caixa [N, W, S, E] alinhada à grade de 0,25°:
+# boundary:
+#   source: bbox
+
+spatial:
+  # Caixa pedida ao ERA5, alinhada a 0,25°. Para bacias, `region prepare` calcula o
+  # envelope e recusa seguir se este valor não coincidir com ele.
+  area: [0.0, 0.0, -1.0, 1.0]
+  pilot_point: [-0.5, 0.5]   # célula de demonstração [lat, lon], dentro do limite
+
+# Opcional: municípios do IBGE (código de 7 dígitos) para o mapa de contexto.
+# context:
+#   municipios: {"1506807": Santarém}

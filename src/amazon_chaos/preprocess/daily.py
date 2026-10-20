@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from amazon_chaos.preprocess.climate import infer_time_name, saturation_vapor_pressure_kpa
-
 UNITS = {
     "t2m": {"K"},
     "d2m": {"K"},
@@ -14,6 +12,18 @@ UNITS = {
     "v10": {"m s**-1", "m s-1", "m/s"},
     "tp": {"m"},
 }
+
+
+def infer_time_name(ds):
+    for name in ("valid_time", "time"):
+        if name in ds.coords:
+            return name
+    raise KeyError("O dataset não tem coordenada valid_time nem time")
+
+
+def saturation_vapor_pressure_kpa(temp_c):
+    """Pressão de vapor de saturação (Tetens), em kPa, para temperatura em °C."""
+    return 0.6108 * np.exp((17.27 * temp_c) / (temp_c + 237.3))
 
 
 def check_units(ds):

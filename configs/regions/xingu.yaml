@@ -1,0 +1,15 @@
+name: Bacia do Rio Xingu
+experiment_id: xingu-era5-1990-2024
+
+boundary:
+  source: bhb250
+  level: 3
+  cod_otto: "642"
+  expected_name: Bacia do Rio Xingu
+
+spatial:
+  area: [-1.25, -55.75, -15.0, -50.25]
+  pilot_point: [-3.25, -52.25]
+  # caminhos anteriores ao padrão data/external/<slug>/, mantidos para não mover dados
+  basin_source: data/external/xingu/bacia_ibge_bhb250_2021.geojson
+  context_dir: data/external/xingu/contexto

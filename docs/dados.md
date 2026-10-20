@@ -7,7 +7,7 @@ Este documento reúne o catálogo de fontes, a cobertura real de cada uma, a org
 | Fonte | Papel | Acesso | Cobertura e restrições | Estado |
 |---|---|---|---|---|
 | **ERA5** horário, single levels (ECMWF/C3S) | séries climáticas | CDS (`cdsapi`) ou espelho Zarr do **Earth Data Hub** (D-007) | 1940–hoje; 0,25° interpolado de cerca de 31 km nativos; reanálise com **vegetação fixa** (D-011) | Xingu e caixa do Tapajós 1990–2024 baixados e processados |
-| **BHB250** (IBGE/ANA, 2021) | limites das bacias | geoftp do IBGE | Xingu: nível 3, `cod_otto=642`, 508.627 km², 93% Amazônia e 7% Cerrado | Xingu pronto; Tapajós a definir (D-009) |
+| **BHB250** (IBGE/ANA, 2021) | limites das bacias | geoftp do IBGE | nível 3. Xingu: `cod_otto=642`, 508.627 km², 93% Amazônia e 7% Cerrado. Tapajós: `cod_otto=644`, 493.153 km², 80% Amazônia e 20% Cerrado | Xingu (642) e Tapajós (644) prontos (D-009) |
 | **PRODES** (INPE/TerraBrasilis) | desmatamento, fonte principal | download dos vetores e da máscara | incrementos de 1988–2007 **agregados**; anuais de 2008 em diante; ano agosto–julho | planejado |
 | **DETER** (INPE/TerraBrasilis) | degradação e alertas recentes | WFS (`io/terrabrasilis.py`) | alertas desde 2016 na Amazônia; data de detecção ≠ data de ocorrência; não é taxa oficial | funcionou no piloto |
 | **BDQueimadas** (INPE) | fogo ativo, fonte principal | CSVs anuais de dados abertos | usar o satélite de referência (AQUA tarde); foco ≠ incêndio ≠ área queimada; auditar trocas de plataforma | planejado |
@@ -15,7 +15,7 @@ Este documento reúne o catálogo de fontes, a cobertura real de cada uma, a org
 | **MapBiomas Fogo**, col. 5.1 | área queimada, frequência e último fogo; complementar | COGs públicos | anual de 1985 a 2024; recorrência anual não conta eventos dentro de um ano | séries regionais (legado) |
 | **MODIS LST** MOD11A2 | checagem do ERA5 (D-011) | NASA AppEEARS (conta Earthdata) | 8 dias, 1 km, de 2000 em diante; lacunas de nuvens | planejado |
 | **Relevo** (Copernicus DEM ou SRTM) | covariável | COG público | estático | planejado |
-| **Contexto cartográfico** | mapas | IBGE (biomas, municípios), FUNAI (TIs), ICMBio/INDE (UCs), Natural Earth (rios, cidades) | limites atuais, não históricos | Xingu e caixa do Tapajós prontos |
+| **Contexto cartográfico** | mapas | IBGE (biomas, municípios), FUNAI (TIs), ICMBio/INDE (UCs), Natural Earth (rios, cidades) | limites atuais, não históricos; o servidor da FUNAI omite o certificado intermediário, que é obtido pelo endereço AIA (`regions.MISSING_INTERMEDIATE`) | prontos para as três regiões |
 
 Classes MapBiomas usadas: floresta {3, 6}; agropecuária {9, 14, 15, 18, 19, 20, 21, 35, 36, 39, 40, 41, 46, 47, 48, 62}; água {31, 33}. As versões exatas das coleções são fixadas no manifesto de cada download.
 
@@ -28,7 +28,7 @@ Classes MapBiomas usadas: floresta {3, 6}; agropecuária {9, 14, 15, 18, 19, 20,
 As variáveis derivadas estão em [`configs/variables.yaml`](../configs/variables.yaml).
 
 - **Earth Data Hub:** precisão reduzida conhecida (mantissa de cerca de 10 bits, até 0,125 K na temperatura horária). O download só segue se coincidir com os meses CDS dentro de uma tolerância relativa de 2⁻¹⁰. Os números estão em D-007.
-- **Volume:** Xingu 1990–2024 ocupa cerca de 2,4 GB brutos e 2,5 GB processados (1.288 pontos pedidos, 779 na bacia). A caixa do Tapajós ocupa 139 MB e 98 MB (56 pontos).
+- **Volume:** Xingu 1990–2024 ocupa cerca de 2,4 GB brutos e 2,5 GB processados (1.288 pontos pedidos, 779 na bacia). A caixa do Tapajós ocupa 139 MB e 98 MB (56 pontos). A bacia do Tapajós pede 1.431 pontos, então o volume esperado é parecido com o do Xingu.
 - **Organização:** um NetCDF por mês, com manifesto e SHA-256. Os diários são gravados ano a ano e mascarados pela bacia.
 
 ## 3. Organização em disco
@@ -48,7 +48,7 @@ reports/
   registro_experimentos.csv    uma linha por execução relevante
 ```
 
-Experimentos existentes: `xingu-era5-1990-2024` e `tapajos-era5-1990-2024` (caixa antiga).
+Experimentos: `xingu-era5-1990-2024`, `tapajos-bacia-era5-1990-2024` (download pendente) e `tapajos-era5-1990-2024` (caixa antiga).
 
 ## 4. Contratos
 

@@ -13,9 +13,12 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from amazon_chaos.io.era5 import build_request
-from amazon_chaos.preprocess.climate import infer_time_name
-from amazon_chaos.preprocess.daily import check_units, daily_statistics, derive_hourly
+from amazon_chaos.preprocess.daily import (
+    check_units,
+    daily_statistics,
+    derive_hourly,
+    infer_time_name,
+)
 from amazon_chaos.preprocess.grid import grid_coordinates
 from amazon_chaos.provenance import sha256_file
 
@@ -32,6 +35,28 @@ EDH_DATASET = "earthdatahub:era5-single-levels-atmosphere-v0"
 # Margem do CDS (0,05 K) + arredondamento de t2m e d2m no EDH (até 0,125 K cada; D-007).
 # Com 0,05 K, horas saturadas do EDH viravam lacunas de umidade.
 EDH_DEWPOINT_TOLERANCE_K = 0.05 + 2 * 0.125
+
+
+def build_request(config, variables, start, end):
+    """Requisição CDS de um único mês civil (os planos dividem períodos longos por mês)."""
+    dates = pd.date_range(start=start, end=end, freq="D")
+    years = sorted({d.strftime("%Y") for d in dates})
+    months = sorted({d.strftime("%m") for d in dates})
+    if len(years) != 1 or len(months) != 1:
+        raise ValueError("build_request currently expects a single calendar month")
+
+    era = config["era5"]
+    return {
+        "product_type": [era.get("product_type", "reanalysis")],
+        "variable": variables,
+        "year": years,
+        "month": months,
+        "day": [d.strftime("%d") for d in dates],
+        "time": [f"{h:02d}:00" for h in range(24)],
+        "data_format": era.get("data_format", "netcdf"),
+        "download_format": era.get("download_format", "unarchived"),
+        "area": config["spatial"]["area"],
+    }
 
 
 def plan_requests(config, start, end):

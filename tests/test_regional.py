@@ -7,7 +7,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import xarray as xr  # noqa: E402
 
-from amazon_chaos.config import load_config  # noqa: E402
+from amazon_chaos.config import load_region  # noqa: E402
 from amazon_chaos.preprocess.grid import build_grid  # noqa: E402
 from amazon_chaos.regional import (  # noqa: E402
     VARIABLES,
@@ -57,7 +57,7 @@ def test_map_colors_follow_vmin_vmax():
 
 
 def test_summarize_weights_and_cache(tmp_path):
-    cfg = load_config("configs/tapajos_1990_2024.yaml")
+    cfg = load_region("tapajos_caixa")
     cfg["spatial"]["area"] = [-2.25, -56, -2.5, -55.75]
     base = tmp_path / cfg["experiment_id"]
     base.mkdir()

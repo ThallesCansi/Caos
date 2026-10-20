@@ -64,11 +64,15 @@ Decisões arquiteturais e científicas estáveis. Execuções de análise ficam 
 
 **Regra:** os cadernos não baixam dados nem fazem cálculo pesado; leem o que o CLI e os jobs em lote produziram. Os Jupyter ficam em `legacy/jupyter/` e na tag `v0-jupyter`, só para auditoria.
 
-## D-009 — Tapajós por sub-bacia BHB250
+## D-009 — Tapajós pela bacia inteira (BHB250)
 
-**Status:** aceito em 20/10/2026; o recorte exato é aprovado no mapa do caderno `02_regioes` antes do download.
+**Status:** aceito em 20/10/2026.
 
-**Motivo:** a caixa de 56 células usada até aqui tem muita água (Tapajós e Amazonas) e pouco contraste de perturbação. Usar a sub-bacia do baixo e médio Tapajós segue a mesma lógica hidrográfica do Xingu e inclui o eixo da BR-163, a Flona do Tapajós, o Jamanxim e as TIs Munduruku. A caixa antiga (`tapajos-era5-1990-2024`) permanece como plano B e como registro.
+**Recorte:** BHB250/IBGE-ANA, nível 3, `cod_otto=644` (Bacia do Rio Tapajós): 493.153 km², 762 células ERA5 com interseção e 1.431 pontos pedidos ao EDH, com caixa `[N,W,S,E]=[-2.0,-60.25,-15.0,-53.75]`. A bacia é 80% Amazônia e 20% Cerrado; 35% da área está em TIs ou UCs federais (sem dupla contagem).
+
+**Motivo:** a caixa de 56 células usada até aqui tinha muita água (Tapajós e Amazonas) e pouco contraste de perturbação. A bacia inteira segue a lógica hidrográfica do Xingu, tem tamanho quase igual (779 × 762 células) e cobre o gradiente completo: a soja do Teles Pires em MT, o Jamanxim e a BR-163, e o baixo Tapajós com a Flona e as TIs Munduruku. Também foi avaliado o recorte "644 sem Teles Pires, Arinos e Sangue" (450 células), descartado porque deixa uma faixa estreita ao longo do Juruena. O nível 4 da BHB250 só traz as sub-bacias afluentes, não o trecho do eixo principal.
+
+A caixa antiga (`configs/regions/tapajos_caixa.yaml`, `tapajos-era5-1990-2024`) fica como plano B e como registro da execução `full_e57802a1f7` das substitutas.
 
 ## D-010 — Pré-registro dos descritores não lineares
 

@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from amazon_chaos.config import load_config
+from amazon_chaos.config import load_config, load_region
 from amazon_chaos.io.era5_edh import compare_with_cds, download_edh, open_edh
 from amazon_chaos.io.era5_monthly import (
     NAMES,
@@ -24,7 +24,7 @@ UNITS = {"t2m": "K", "d2m": "K", "sp": "Pa", "u10": "m s**-1", "v10": "m s**-1",
 
 
 def small_config():
-    cfg = load_config("configs/tapajos_2024.yaml")
+    cfg = load_config("tests/fixtures/tapajos_2024.yaml")
     cfg["spatial"]["area"] = [-2.25, -56, -2.5, -55.75]
     return cfg
 
@@ -216,7 +216,7 @@ def test_http_mirror_with_token(tmp_path):
 
 
 def test_edh_plan_mirrors_cds_days_and_grid():
-    cfg = load_config("configs/xingu_1990_2024.yaml")
+    cfg = load_region("xingu")
     jobs = plan_edh_requests(cfg, "1990-01-01", "2024-12-31")
     assert len(jobs) == 421 and jobs[-1]["month"] == "2025-01"
     assert jobs[-1]["request"]["day"] == ["01"]

@@ -21,7 +21,7 @@ from amazon_chaos.io.era5_monthly import (
 
 
 def small_config():
-    cfg = load_config("configs/tapajos_2024.yaml")
+    cfg = load_config("tests/fixtures/tapajos_2024.yaml")
     cfg["spatial"]["area"] = [-2.25, -56, -2.5, -55.75]
     return cfg
 

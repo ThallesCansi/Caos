@@ -40,7 +40,7 @@ def test_grid_covers_bbox_without_overlap_and_clips_edge_cells():
 def test_month_plan_handles_leap_year_and_utc_support_day():
     from amazon_chaos.io.era5_monthly import plan_requests
 
-    config = load_config("configs/pilot.yaml")
+    config = load_config("tests/fixtures/tapajos_2024.yaml")
     jobs = plan_requests(config, "2024-02-01", "2024-02-29")
     assert len(jobs) == 4
     assert jobs[0]["request"]["day"][-1] == "29"
@@ -111,3 +111,11 @@ def test_derivation_rejects_unexpected_units():
     raw.t2m.attrs["units"] = "degC"
     with pytest.raises(ValueError, match="units"):
         derive_hourly(raw)
+
+
+def test_saturation_vapor_pressure_increases_with_temperature():
+    from amazon_chaos.preprocess.daily import saturation_vapor_pressure_kpa
+
+    values = saturation_vapor_pressure_kpa(np.array([10.0, 20.0, 30.0]))
+    assert np.all(np.diff(values) > 0)
+    assert values[1] == pytest.approx(2.338, abs=1e-3)

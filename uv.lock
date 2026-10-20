@@ -130,6 +130,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "cdsapi" },
+    { name = "certifi" },
     { name = "dask", extra = ["array"] },
     { name = "fsspec" },
     { name = "geopandas" },
@@ -176,6 +177,7 @@ gee = [
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9" },
     { name = "cdsapi", specifier = ">=0.7.7" },
+    { name = "certifi", specifier = ">=2024.7" },
     { name = "dask", extras = ["array"], specifier = ">=2024.7" },
     { name = "fsspec", specifier = ">=2024.6" },
     { name = "geopandas", specifier = ">=1.0" },
