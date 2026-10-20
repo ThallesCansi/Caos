@@ -13,6 +13,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
+import shapely
 from rasterio.features import rasterize
 from rasterio.windows import Window, from_bounds
 
@@ -98,14 +99,24 @@ def polygonal(frame: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
 def polygon_areas(polygons: gpd.GeoDataFrame, cells: gpd.GeoDataFrame,
                   by: str | None = None, crs: str = "EPSG:6933") -> pd.DataFrame:
-    """Área (km²) de polígonos (PRODES, DETER) dentro de cada célula, opcionalmente por `by`."""
+    """Área (km²) de polígonos (PRODES, DETER) dentro de cada célula, opcionalmente por `by`.
+
+    Pares candidatos por índice espacial e interseção vetorizada (shapely). A área de uma
+    coleção de geometrias soma só as partes poligonais: restos de linha do recorte das
+    células pela borda da bacia não atrapalham, ao contrário de `gpd.overlay`.
+    """
     cols = ["geometry"] + ([by] if by else [])
-    parts = gpd.overlay(polygonal(polygons[cols]).to_crs(crs),
-                        cells[["cell_id", "geometry"]].to_crs(crs),
-                        how="intersection", keep_geom_type=True)
-    parts["km2"] = parts.area / 1e6
+    left = polygonal(polygons[cols]).to_crs(crs).reset_index(drop=True)
+    right = cells[["cell_id", "geometry"]].to_crs(crs).reset_index(drop=True)
+    right["geometry"] = right.geometry.make_valid()
+    pairs = gpd.sjoin(left, right, predicate="intersects", how="inner")
+    inter = shapely.intersection(pairs.geometry.values,
+                                 right.geometry.values[pairs["index_right"].to_numpy()])
+    pairs = pd.DataFrame({"cell_id": pairs["cell_id"].to_numpy(),
+                          "km2": shapely.area(inter) / 1e6,
+                          **({by: pairs[by].to_numpy()} if by else {})})
     keys = ["cell_id"] + ([by] if by else [])
-    table = parts.groupby(keys).km2.sum()
+    table = pairs.groupby(keys).km2.sum()
     table = table.unstack(fill_value=0.0) if by else table.to_frame("km2")
     return table.reindex(cells.cell_id, fill_value=0.0)
 
