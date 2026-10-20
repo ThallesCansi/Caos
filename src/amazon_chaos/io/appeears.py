@@ -39,13 +39,26 @@ def credentials(path: str | Path | None = None) -> tuple[str, str]:
     return entry[0], entry[2]
 
 
-def login() -> str:
+def login(attempts: int = 12, wait: int = 120, report=print) -> str:
+    """Token de sessão do AppEEARS. O `/login` às vezes devolve 502/504 por horas, mesmo
+    com credenciais válidas; nesse caso tenta de novo com espera crescente."""
     user, password = credentials()
-    response = requests.post(f"{API}/login", auth=(user, password), timeout=120)
-    if response.status_code == 401:
-        raise RuntimeError("AppEEARS recusou usuário ou senha do Earthdata (HTTP 401)")
-    response.raise_for_status()
-    return response.json()["token"]
+    for attempt in range(1, attempts + 1):
+        try:
+            response = requests.post(f"{API}/login", auth=(user, password), timeout=180)
+            if response.status_code == 401:
+                raise RuntimeError("AppEEARS recusou usuário ou senha do Earthdata (HTTP 401)")
+            if response.status_code < 500:
+                response.raise_for_status()
+                return response.json()["token"]
+            reason = f"HTTP {response.status_code}"
+        except requests.RequestException as error:
+            reason = type(error).__name__
+        if attempt < attempts:
+            minutes = wait * attempt // 60
+            report(f"AppEEARS indisponível ({reason}); nova tentativa em {minutes} min")
+            time.sleep(wait * attempt)
+    raise RuntimeError(f"AppEEARS indisponível após {attempts} tentativas ({reason})")
 
 
 def _headers(token):
