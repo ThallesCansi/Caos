@@ -2,6 +2,7 @@
 
     amazon-chaos region list | prepare <região>
     amazon-chaos era5 plan | download | edh | process | summarize <região> ...
+    amazon-chaos disturbance fetch | build <região>
     amazon-chaos gate run [--quick]
     amazon-chaos manifest <pasta>
     amazon-chaos notify "mensagem"
@@ -25,8 +26,11 @@ app = typer.Typer(no_args_is_help=True, help="TCC Caos — floresta–atmosfera 
 region_app = typer.Typer(no_args_is_help=True, help="Limites, grade ERA5 e contexto")
 era5_app = typer.Typer(no_args_is_help=True, help="ERA5 horário → séries diárias")
 app.add_typer(region_app, name="region")
+disturbance_app = typer.Typer(no_args_is_help=True,
+                              help="Perturbação por célula: PRODES, DETER, BDQueimadas, MapBiomas")
 gate_app = typer.Typer(no_args_is_help=True, help="Gate F4: descritores em controles sintéticos")
 app.add_typer(era5_app, name="era5")
+app.add_typer(disturbance_app, name="disturbance")
 app.add_typer(gate_app, name="gate")
 
 Region = Annotated[str, typer.Argument(help="slug em configs/regions/ (ex.: xingu)")]
@@ -168,6 +172,33 @@ def era5_summarize(region: Region, first: int = 1990, last: int = 2024) -> None:
     cfg = load_region(region)
     summarize(cfg, first, last, progress=lambda year: typer.echo(f"{year} ✓"))
     typer.echo(f"data/processed/{cfg['experiment_id']}/summary_{first}_{last}.nc")
+
+
+# ── perturbação ─────────────────────────────────────────────────────────────
+
+
+@disturbance_app.command("fetch")
+def disturbance_fetch(
+    region: Region,
+    sources: Annotated[str, typer.Option(help="lista separada por vírgulas")] = (
+        "mapbiomas,terrabrasilis,queimadas"),
+) -> None:
+    """Baixa as fontes e agrega por célula (retomável; tabelas já feitas são puladas)."""
+    from amazon_chaos.features.disturbance import fetch_all
+
+    fetch_all(load_region(region), tuple(sources.split(",")), report=typer.echo)
+
+
+@disturbance_app.command("build")
+def disturbance_build(region: Region) -> None:
+    """Monta a tabela final por célula a partir das tabelas locais; não acessa a rede."""
+    from amazon_chaos.features.disturbance import build, out_dir
+
+    cfg = load_region(region)
+    table = build(cfg)
+    target = out_dir(cfg) / "celulas.parquet"
+    table.to_parquet(target)
+    typer.echo(f"{len(table)} células × {table.shape[1]} colunas em {target}")
 
 
 # ── gate F4 ─────────────────────────────────────────────────────────────────

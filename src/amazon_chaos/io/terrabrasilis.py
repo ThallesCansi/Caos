@@ -1,161 +1,118 @@
+"""PRODES e DETER (INPE/TerraBrasilis) pelo WFS, recortados pela caixa da região.
+
+O download é paginado (ordenado por um campo fixo, para que as páginas sejam estáveis),
+retomável e conferido: no fim, o total baixado precisa igualar o `numberMatched`
+anunciado pelo servidor. Cada página vai para um GeoParquet, com manifesto (consulta,
+data, SHA-256). Fontes e limitações: docs/dados.md.
+"""
+
 from __future__ import annotations
 
+import io
 import json
-import xml.etree.ElementTree as ET
+import re
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
+import geopandas as gpd
 import pandas as pd
 import requests
 
+from amazon_chaos.provenance import sha256_file
 
-def _local_name(tag: str) -> str:
-    return tag.split("}")[-1] if "}" in tag else tag
+GEOSERVER = "https://terrabrasilis.dpi.inpe.br/geoserver/{workspace}/ows"
+HEADERS = {"User-Agent": "Mozilla/5.0 (amazon-chaos; TCC ILUM)"}
+
+# nome lógico → (workspace, camada, campo de ordenação, campos guardados)
+LAYERS = {
+    "prodes_anual": ("prodes-legal-amz", "yearly_deforestation", "fid",
+                     ["year", "main_class", "class_name", "area_km", "image_date", "state"]),
+    "prodes_acumulado_2007": ("prodes-legal-amz", "accumulated_deforestation_2007", "fid",
+                              ["main_class", "class_name", "area_km"]),
+    "prodes_nao_floresta": ("prodes-legal-amz", "no_forest", "fid", ["main_class"]),
+    "prodes_hidrografia": ("prodes-legal-amz", "hydrography", "fid", ["main_class"]),
+    "deter": ("deter-amz", "deter_amz", "gid",
+              ["classname", "view_date", "areauckm", "areamunkm", "satellite", "sensor"]),
+}
 
 
-def _get_xml(url: str, params: dict[str, Any], timeout: int = 90) -> ET.Element:
-    response = requests.get(url, params=params, timeout=timeout)
-    response.raise_for_status()
-    root = ET.fromstring(response.content)
-    if _local_name(root.tag) == "ExceptionReport":
-        messages = [
-            (el.text or "").strip()
-            for el in root.iter()
-            if _local_name(el.tag) == "ExceptionText"
-        ]
-        raise RuntimeError("WFS Exception: " + " | ".join(messages))
-    return root
+def _get(url, params, timeout=300, attempts=5):
+    error = None
+    for _ in range(attempts):
+        try:
+            response = requests.get(url, params=params, headers=HEADERS, timeout=timeout)
+            response.raise_for_status()
+            if b"ExceptionReport" in response.content[:500]:
+                raise RuntimeError(f"WFS: {response.text[:400]}")
+            return response
+        except (requests.RequestException, RuntimeError) as exc:
+            error = exc
+    raise RuntimeError(f"WFS falhou {attempts} vezes: {error}") from error
 
 
-def discover_feature_types(wfs_url: str) -> pd.DataFrame:
-    root = _get_xml(
-        wfs_url,
-        {"service": "WFS", "version": "2.0.0", "request": "GetCapabilities"},
-    )
-    rows: list[dict[str, str | None]] = []
-    for feature_type in root.iter():
-        if _local_name(feature_type.tag) != "FeatureType":
+def bbox_filter(bounds) -> str:
+    """CQL com a caixa em lon/lat explícito (CRS:84).
+
+    Sem o CRS, o GeoServer lê a caixa na ordem de eixos oficial do EPSG:4674 (lat, lon) e
+    devolve zero feições sem erro.
+    """
+    west, south, east, north = bounds
+    return f"BBOX(geom,{west},{south},{east},{north},'CRS:84')"
+
+
+def count_features(name: str, cql: str) -> int:
+    workspace, layer, *_ = LAYERS[name]
+    response = _get(GEOSERVER.format(workspace=workspace), {
+        "service": "WFS", "version": "2.0.0", "request": "GetFeature",
+        "typeNames": f"{workspace}:{layer}", "resultType": "hits", "CQL_FILTER": cql})
+    found = re.search(rb'numberMatched="(\d+)"', response.content)
+    if not found:
+        raise RuntimeError("O WFS não informou numberMatched")
+    return int(found.group(1))
+
+
+def download_layer(name: str, bounds, directory: Path, *, page: int = 10_000,
+                   report=print) -> Path:
+    """Baixa a camada na caixa `bounds` (W, S, E, N); devolve o GeoParquet consolidado."""
+    workspace, layer, order, keep = LAYERS[name]
+    directory = Path(directory) / name
+    directory.mkdir(parents=True, exist_ok=True)
+    target = directory.parent / f"{name}.parquet"
+    manifest_path = directory.parent / f"{name}.json"
+    cql = bbox_filter(bounds)
+    expected = count_features(name, cql)
+    if target.exists() and manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+        if manifest["features"] == expected and manifest["sha256"] == sha256_file(target):
+            return target
+    pages = range(0, expected, page)
+    report(f"{name}: {expected} feições em {len(pages)} páginas")
+    for k, start in enumerate(pages, 1):
+        part = directory / f"pagina_{start:08d}.parquet"
+        if part.exists():
             continue
-        name = title = None
-        for child in feature_type:
-            if _local_name(child.tag) == "Name":
-                name = (child.text or "").strip()
-            elif _local_name(child.tag) == "Title":
-                title = (child.text or "").strip()
-        if name:
-            rows.append({"name": name, "title": title})
-    return pd.DataFrame(rows).drop_duplicates().reset_index(drop=True)
-
-
-def choose_layer(feature_types: pd.DataFrame, preferred_local_name: str) -> str:
-    names = feature_types["name"].tolist()
-    exact = [name for name in names if name.split(":")[-1].lower() == preferred_local_name.lower()]
-    if len(exact) != 1:
-        raise RuntimeError(
-            f"Expected one WFS layer with local name {preferred_local_name!r}; found {exact}. "
-            f"Available: {names}"
-        )
-    return exact[0]
-
-
-def describe_fields(wfs_url: str, layer: str) -> pd.DataFrame:
-    root = _get_xml(
-        wfs_url,
-        {
-            "service": "WFS",
-            "version": "2.0.0",
-            "request": "DescribeFeatureType",
-            "typeNames": layer,
-        },
-    )
-    fields = []
-    for el in root.iter():
-        if _local_name(el.tag) == "element" and el.attrib.get("name"):
-            fields.append({"name": el.attrib["name"], "type": el.attrib.get("type")})
-    return pd.DataFrame(fields).drop_duplicates().reset_index(drop=True)
-
-
-def choose_date_field(fields: pd.DataFrame, candidates: list[str]) -> str:
-    names = fields["name"].tolist()
-    lookup = {name.lower(): name for name in names}
-    for candidate in candidates:
-        if candidate.lower() in lookup:
-            return lookup[candidate.lower()]
-    date_like = [name for name in names if "date" in name.lower()]
-    if len(date_like) == 1:
-        return date_like[0]
-    raise RuntimeError(f"Could not identify date field safely. Candidates found: {date_like}")
-
-
-def count_features(wfs_url: str, layer: str, cql_filter: str) -> int:
-    root = _get_xml(
-        wfs_url,
-        {
-            "service": "WFS",
-            "version": "2.0.0",
-            "request": "GetFeature",
-            "typeNames": layer,
-            "resultType": "hits",
-            "CQL_FILTER": cql_filter,
-        },
-    )
-    for key in ["numberMatched", "numberOfFeatures"]:
-        value = root.attrib.get(key)
-        if value and value != "unknown":
-            return int(value)
-    raise RuntimeError(f"WFS did not report feature count: {root.attrib}")
-
-
-def download_geojson(
-    wfs_url: str,
-    layer: str,
-    cql_filter: str,
-    destination: str | Path,
-    count: int = 100_000,
-) -> Path:
-    destination = Path(destination)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    if destination.exists():
-        return destination
-
-    params = {
-        "service": "WFS",
-        "version": "2.0.0",
-        "request": "GetFeature",
-        "typeNames": layer,
-        "CQL_FILTER": cql_filter,
-        "outputFormat": "application/json",
-        "count": count,
-        "startIndex": 0,
-        "srsName": "EPSG:4674",
-    }
-    response = requests.get(wfs_url, params=params, timeout=180)
-    response.raise_for_status()
-    try:
-        payload = response.json()
-    except requests.JSONDecodeError as exc:
-        text = response.text[:1000]
-        raise RuntimeError(f"TerraBrasilis did not return JSON. First bytes: {text}") from exc
-    if payload.get("type") != "FeatureCollection":
-        raise RuntimeError(f"Unexpected WFS JSON payload: {json.dumps(payload)[:1000]}")
-    destination.write_text(json.dumps(payload), encoding="utf-8")
-    return destination
-
-
-def download_deter_pilot(config: dict[str, Any], destination: str | Path) -> Path:
-    tb = config["terrabrasilis"]
-    feature_types = discover_feature_types(tb["wfs_url"])
-    layer = choose_layer(feature_types, tb["preferred_layer_local_name"])
-    fields = describe_fields(tb["wfs_url"], layer)
-    date_field = choose_date_field(fields, tb["date_field_candidates"])
-    start = config["time"]["science_start"]
-    end = config["time"]["science_end"]
-    cql = f"{date_field} BETWEEN '{start}' AND '{end}'"
-    n = count_features(tb["wfs_url"], layer, cql)
-    limit = int(tb.get("max_features_without_pagination", 100_000))
-    if n > limit:
-        raise RuntimeError(
-            f"DETER query matches {n} features, above non-paginated limit {limit}. "
-            "Implement controlled pagination before scaling."
-        )
-    return download_geojson(tb["wfs_url"], layer, cql, destination, count=limit)
+        response = _get(GEOSERVER.format(workspace=workspace), {
+            "service": "WFS", "version": "2.0.0", "request": "GetFeature",
+            "typeNames": f"{workspace}:{layer}", "CQL_FILTER": cql,
+            "outputFormat": "application/json", "srsName": "EPSG:4674",
+            "sortBy": order, "count": page, "startIndex": start})
+        frame = gpd.read_file(io.BytesIO(response.content))
+        frame = frame[[c for c in keep if c in frame.columns] + ["geometry"]]
+        frame.to_parquet(part)
+        if k % 5 == 0 or k == len(pages):
+            report(f"{name}: página {k}/{len(pages)}")
+    parts = [gpd.read_parquet(p) for p in sorted(directory.glob("pagina_*.parquet"))]
+    frame = (gpd.GeoDataFrame(pd.concat(parts, ignore_index=True), crs=parts[0].crs)
+             if parts else gpd.GeoDataFrame(geometry=[], crs="EPSG:4674"))
+    if len(frame) != expected:
+        raise RuntimeError(f"{name}: baixadas {len(frame)} feições, servidor anunciou {expected}")
+    frame.to_parquet(target)
+    manifest_path.write_text(json.dumps({
+        "source": GEOSERVER.format(workspace=workspace), "layer": f"{workspace}:{layer}",
+        "cql": cql, "features": expected, "retrieved_utc": datetime.now(UTC).isoformat(),
+        "sha256": sha256_file(target),
+    }, ensure_ascii=False, indent=2))
+    for p in directory.glob("pagina_*.parquet"):
+        p.unlink()
+    directory.rmdir()
+    return target
