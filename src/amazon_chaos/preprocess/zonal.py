@@ -124,12 +124,16 @@ def polygon_areas(polygons: gpd.GeoDataFrame, cells: gpd.GeoDataFrame,
     células pela borda da bacia não atrapalham, ao contrário de `gpd.overlay`.
     """
     cols = ["geometry"] + ([by] if by else [])
-    left = polygonal(polygons[cols]).to_crs(crs).reset_index(drop=True)
-    right = cells[["cell_id", "geometry"]].to_crs(crs).reset_index(drop=True)
-    right["geometry"] = right.geometry.make_valid()
+    # validar de novo depois de projetar: a reprojeção pode criar autointerseções
+    left = polygonal(polygonal(polygons[cols]).to_crs(crs))
+    right = polygonal(cells[["cell_id", "geometry"]].to_crs(crs))
     pairs = gpd.sjoin(left, right, predicate="intersects", how="inner")
-    inter = shapely.intersection(pairs.geometry.values,
-                                 right.geometry.values[pairs["index_right"].to_numpy()])
+    a = pairs.geometry.values
+    b = right.geometry.values[pairs["index_right"].to_numpy()]
+    try:
+        inter = shapely.intersection(a, b)
+    except shapely.errors.GEOSException:  # topologia degenerada: precisão de 1 m basta
+        inter = shapely.intersection(a, b, grid_size=1.0)
     pairs = pd.DataFrame({"cell_id": pairs["cell_id"].to_numpy(),
                           "km2": shapely.area(inter) / 1e6,
                           **({by: pairs[by].to_numpy()} if by else {})})
