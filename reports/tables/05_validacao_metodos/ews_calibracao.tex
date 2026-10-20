@@ -1,0 +1,14 @@
+\begin{table}
+\caption{EWS: taxa de rejeição (τ de Kendall da variância e do AR(1) contra substitutas IAAFT) num AR(1) estacionário e num AR(1) que se aproxima da instabilidade.}
+\label{tab:05_validacao_metodos::ews_calibracao}
+\begin{tabular}{llrrrr}
+\toprule
+control & indicator & repetições & rejeições & tau\_médio & taxa \\
+\midrule
+ar1\_estacionario & ar1 & 10 & 0 & -0,098 & 0 \\
+ar1\_estacionario & variance & 10 & 0 & -0,097 & 0 \\
+ar1\_rampa & ar1 & 10 & 10 & 0,996 & 1 \\
+ar1\_rampa & variance & 10 & 10 & 0,99 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}

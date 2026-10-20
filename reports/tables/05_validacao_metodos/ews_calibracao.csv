@@ -1,0 +1,5 @@
+control,indicator,repetições,rejeições,tau_médio,taxa
+ar1_estacionario,ar1,10,0,-0.098,0.0
+ar1_estacionario,variance,10,0,-0.097,0.0
+ar1_rampa,ar1,10,10,0.996,1.0
+ar1_rampa,variance,10,10,0.99,1.0

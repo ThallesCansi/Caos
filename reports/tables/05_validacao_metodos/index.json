@@ -1,0 +1,20 @@
+[
+  {
+    "name": "ews_calibracao",
+    "region": null,
+    "caption": "EWS: taxa de rejeição (τ de Kendall da variância e do AR(1) contra substitutas IAAFT) num AR(1) estacionário e num AR(1) que se aproxima da instabilidade.",
+    "overleaf": true,
+    "csv": "reports/tables/05_validacao_metodos/ews_calibracao.csv",
+    "tex": "reports/tables/05_validacao_metodos/ews_calibracao.tex",
+    "commit": "fa4ec00"
+  },
+  {
+    "name": "veredito",
+    "region": null,
+    "caption": "Gate F4: poder nos controles positivos e taxa de rejeição nos negativos (n máximo, ruído máximo), e o veredito pelo critério pré-registrado.",
+    "overleaf": true,
+    "csv": "reports/tables/05_validacao_metodos/veredito.csv",
+    "tex": "reports/tables/05_validacao_metodos/veredito.tex",
+    "commit": "fa4ec00"
+  }
+]

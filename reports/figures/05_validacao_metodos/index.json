@@ -1,0 +1,29 @@
+[
+  {
+    "name": "comprimento_ruido",
+    "region": null,
+    "caption": "Gate F4: taxa de rejeição por controle em cada combinação de comprimento e ruído de observação; pontilhado: tamanho máximo aceito.",
+    "overleaf": true,
+    "png": "reports/figures/05_validacao_metodos/comprimento_ruido.png",
+    "pdf": "reports/figures/05_validacao_metodos/comprimento_ruido.pdf",
+    "commit": "fa4ec00"
+  },
+  {
+    "name": "diagnosticos",
+    "region": null,
+    "caption": "Controles com ruído de observação 0,2: curvas de divergência de Rosenstein, plano complexidade–entropia (Bandt–Pompe, d = 5) e D2 em função da dimensão de imersão (Lorenz × AR(1)).",
+    "overleaf": true,
+    "png": "reports/figures/05_validacao_metodos/diagnosticos.png",
+    "pdf": "reports/figures/05_validacao_metodos/diagnosticos.pdf",
+    "commit": "fa4ec00"
+  },
+  {
+    "name": "taxas_rejeicao",
+    "region": null,
+    "caption": "Gate F4: fração de repetições que rejeitam a hipótese nula IAAFT, por descritor e controle, no maior comprimento e ruído.",
+    "overleaf": true,
+    "png": "reports/figures/05_validacao_metodos/taxas_rejeicao.png",
+    "pdf": "reports/figures/05_validacao_metodos/taxas_rejeicao.pdf",
+    "commit": "fa4ec00"
+  }
+]
