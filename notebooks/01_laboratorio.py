@@ -58,20 +58,7 @@ def _():
     texto da caixa abaixo dela se recalculam, e o leitor pode explorar o modelo por conta
     própria. O código que gera cada figura está recolhido e pode ser aberto por quem quiser
     vê-lo.
-
-    Ao longo do capítulo, quatro tipos de caixa colorida destacam o que merece atenção:
     """)
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    mo.hstack([
-        mo.callout(mo.md("Verde: uma ideia-chave, que vale guardar."), kind="success"),
-        mo.callout(mo.md("Azul: a leitura do que um controle mostra agora."), kind="info"),
-        mo.callout(mo.md("Amarelo: um cuidado de interpretação."), kind="warn"),
-        mo.callout(mo.md("Vermelho: um alerta central para o trabalho."), kind="danger"),
-    ], widths="equal", gap=0.5)
     return
 
 
@@ -642,8 +629,9 @@ def plot_sensitivity(exponent):
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.4), layout="constrained")
     axes[0].plot(x1, color=COLORS["ink"], lw=1.2, label="trajetória A")
     axes[0].plot(x2, "--", color=COLORS["t2m"], lw=1.2, label="trajetória B")
-    axes[0].set(xlabel="passo n", ylabel="$x_n$", title="Duas condições iniciais quase iguais")
-    axes[0].legend(fontsize=8)
+    axes[0].set(xlabel="passo n", ylabel="$x_n$", title="Duas condições iniciais quase iguais",
+                ylim=(None, 1.18))
+    axes[0].legend(fontsize=8, ncol=2, loc="upper center", frameon=True, framealpha=0.95)
     axes[1].semilogy(np.maximum(d, 1e-16), color=COLORS["ink"])
     axes[1].set(xlabel="passo n", ylabel="distância (escala log)",
                 title="A distância entre elas")

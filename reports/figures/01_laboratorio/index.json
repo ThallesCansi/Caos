@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/bifurcacao_lyapunov.png",
     "pdf": "reports/figures/01_laboratorio/bifurcacao_lyapunov.pdf",
-    "commit": "d9d0287+modificado"
+    "commit": "1bfa6ae+modificado"
   },
   {
     "name": "contaminacao",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/contaminacao.png",
     "pdf": "reports/figures/01_laboratorio/contaminacao.pdf",
-    "commit": "d9d0287+modificado"
+    "commit": "1bfa6ae+modificado"
   },
   {
     "name": "mapa_memoria",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/mapa_memoria.png",
     "pdf": "reports/figures/01_laboratorio/mapa_memoria.pdf",
-    "commit": "d9d0287+modificado"
+    "commit": "1bfa6ae+modificado"
   },
   {
     "name": "recorrencia",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/recorrencia.png",
     "pdf": "reports/figures/01_laboratorio/recorrencia.pdf",
-    "commit": "d9d0287+modificado"
+    "commit": "1bfa6ae+modificado"
   },
   {
     "name": "sensibilidade_rosenstein",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/sensibilidade_rosenstein.png",
     "pdf": "reports/figures/01_laboratorio/sensibilidade_rosenstein.pdf",
-    "commit": "d9d0287+modificado"
+    "commit": "1bfa6ae+modificado"
   },
   {
     "name": "trajetorias",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/trajetorias.png",
     "pdf": "reports/figures/01_laboratorio/trajetorias.pdf",
-    "commit": "d9d0287+modificado"
+    "commit": "1bfa6ae+modificado"
   },
   {
     "name": "troca_estabilidade",
@@ -60,6 +60,6 @@
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/troca_estabilidade.png",
     "pdf": "reports/figures/01_laboratorio/troca_estabilidade.pdf",
-    "commit": "d9d0287+modificado"
+    "commit": "1bfa6ae+modificado"
   }
 ]
