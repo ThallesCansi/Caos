@@ -124,3 +124,11 @@ A caixa antiga (`configs/regions/tapajos_caixa.yaml`, `tapajos-era5-1990-2024`) 
 2. A fração de vegetação alta fixa do ERA5 (`cvh`) acompanha a floresta de 2000 (ρ = 0,51 e 0,65), mas não a perda posterior. Controlá-la mostra quanto da associação entre perturbação e descritores passa pelo mapa de vegetação do próprio modelo.
 
 Ambas são relatadas como complementares, ao lado do resultado pré-registrado, que permanece o principal.
+
+## D-015 — Mudança da dimensão de imersão entre as metades do período
+
+**Status:** aceito em 21/10/2026, durante a análise longitudinal do caderno 08.
+
+**Problema:** o pré-registro escolhe m pelo critério dos falsos vizinhos em cada janela. Entre 2001–2012 e 2013–2024, m muda em 20% a 33% das células (t2m e VPD, Xingu). Os descritores que dependem do espaço de fases (DET, LAM, D2, Lyapunov) saltam junto com m: a mudança de DET fica em três faixas (cerca de −0,03, +0,01 e +0,04 para m −1, igual e +1), e esse salto é maior que a mudança climática que se quer medir. A entropia e a complexidade de permutação têm ordem fixa e não dependem de m; o erro de previsão quase não reage.
+
+**Decisão:** o resultado longitudinal pré-registrado é relatado como está. Como sensibilidade complementar, repetimos a análise só nas células em que m é o mesmo nas duas metades (`dm_{var} == 0` em `gradient.cell_table`). As conclusões não mudam: nenhuma associação longitudinal se destaca. As frações de células em que DET e LAM aumentam (caderno 07) também misturam esse efeito e devem ser lidas com essa ressalva.

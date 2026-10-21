@@ -1,0 +1,11 @@
+[
+  {
+    "name": "resultado_preregistrado",
+    "region": null,
+    "caption": "Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda antecedente de floresta e z dos descritores primários, bruta e parcial (controles: latitude, água e altitude), com IC 95% por bootstrap em blocos de 1° e I de Moran dos resíduos.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/resultado_preregistrado.csv",
+    "tex": "reports/tables/08_gradiente/resultado_preregistrado.tex",
+    "commit": "d8f080b+modificado"
+  }
+]

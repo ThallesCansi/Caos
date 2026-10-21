@@ -1,0 +1,17 @@
+Bacia,Descritor,Variável,Células,ρ bruto,ρ parcial,IC 95%,Moran dos resíduos
+Xingu,Entropia de permutação,temperatura,668,0.62,0.26,[+0.03; +0.43],0.51
+Xingu,Complexidade estatística,temperatura,668,-0.61,-0.24,[-0.42; +0.00],0.54
+Xingu,Erro de previsão não linear,temperatura,668,0.06,-0.3,[-0.45; -0.11],0.52
+Xingu,RQA · determinismo,temperatura,668,-0.63,-0.38,[-0.48; -0.26],0.42
+Xingu,Entropia de permutação,déficit de pressão de vapor,668,0.69,0.46,[+0.27; +0.59],0.65
+Xingu,Complexidade estatística,déficit de pressão de vapor,668,-0.69,-0.45,[-0.59; -0.26],0.64
+Xingu,Erro de previsão não linear,déficit de pressão de vapor,668,-0.52,-0.44,[-0.59; -0.25],0.56
+Xingu,RQA · determinismo,déficit de pressão de vapor,668,-0.52,-0.37,[-0.51; -0.18],0.63
+Tapajós,Entropia de permutação,temperatura,652,0.74,0.01,[-0.10; +0.16],0.55
+Tapajós,Complexidade estatística,temperatura,652,-0.74,-0.01,[-0.16; +0.11],0.54
+Tapajós,Erro de previsão não linear,temperatura,652,-0.15,-0.04,[-0.18; +0.09],0.48
+Tapajós,RQA · determinismo,temperatura,652,-0.46,-0.3,[-0.42; -0.16],0.44
+Tapajós,Entropia de permutação,déficit de pressão de vapor,652,0.64,0.23,[+0.10; +0.37],0.69
+Tapajós,Complexidade estatística,déficit de pressão de vapor,652,-0.64,-0.23,[-0.36; -0.10],0.71
+Tapajós,Erro de previsão não linear,déficit de pressão de vapor,652,0.06,-0.03,[-0.12; +0.07],0.39
+Tapajós,RQA · determinismo,déficit de pressão de vapor,652,-0.29,-0.11,[-0.31; +0.08],0.76

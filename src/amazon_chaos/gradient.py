@@ -6,7 +6,8 @@ descritores primários contra as substitutas, janela 2001–2024. Associação: 
 bruta e parcial, com IC por bootstrap em blocos de 1° e o I de Moran dos resíduos. Os
 controles são a latitude, a fração de água e a altitude do relevo do modelo ERA5, já
 prevista no pré-registro. Longitudinal: mudança do descritor entre 2001–2012 e 2013–2024
-contra a perda de floresta de 2001 a 2012.
+contra a perda de floresta de 2001 a 2012; como sensibilidade (D-015), só nas células em que
+a dimensão de imersão m é a mesma nas duas metades.
 """
 
 from __future__ import annotations
@@ -65,7 +66,13 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     delta = pd.DataFrame({
         f"delta_{v}_{d}": halves[(v, d, "2013_2024")] - halves[(v, d, "2001_2012")]
         for v, d, _ in halves.columns.unique()[::2]})
-    return out.join(full).join(delta)
+    # a regra do FNN escolhe m em cada metade; quando muda, os descritores que dependem do
+    # espaço de fases (DET, LAM, D2, Lyapunov) saltam junto (D-015)
+    dims = tests[tests.window.isin(["2001_2012", "2013_2024"])].pivot_table(
+        index="cell_id", columns=["variable", "window"], values="m", aggfunc="first")
+    dm = pd.DataFrame({f"dm_{v}": dims[(v, "2013_2024")] - dims[(v, "2001_2012")]
+                       for v in dims.columns.get_level_values(0).unique()})
+    return out.join(full).join(delta).join(dm)
 
 
 def _residual_ranks(y, controls):

@@ -542,7 +542,11 @@ def _(win_descriptor, win_variable):
         capturam algo estável de cada lugar, e não ruído de estimativa. Ao mesmo tempo, há
         deslocamentos sistemáticos. O determinismo e a laminaridade aumentam em cerca de 80%
         das células, a assimetria fica mais negativa em quase todas e o erro de previsão sobe
-        em boa parte delas. Esses deslocamentos atingem as bacias inteiras ao mesmo tempo e
+        em boa parte delas. No determinismo e na laminaridade, parte desse movimento vem de
+        um detalhe de método: a dimensão de imersão é escolhida em cada década, muda em um
+        quinto a um terço das células, e esses descritores saltam junto com ela, o que
+        aparece como faixas na figura; nas células em que ela não muda, o aumento persiste,
+        mas é menor. Esses deslocamentos atingem as bacias inteiras ao mesmo tempo e
         coincidem com uma década mais quente e com dois eventos fortes de El Niño
         (2015–2016 e 2023–2024); antes de atribuí-los a qualquer mudança local, o próximo
         capítulo pergunta se as células mais desmatadas mudaram mais do que as preservadas.

@@ -1,0 +1,56 @@
+[
+  {
+    "name": "dispersao",
+    "region": null,
+    "caption": "Figura 2. Perturbação antecedente e z do descritor, por célula, antes (esquerda) e depois (direita) de retirar dos postos a parte explicada pela latitude, pela fração de água e pela altitude. Cor: latitude. Na versão impressa, complexidade estatística do VPD, Xingu.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/dispersao.png",
+    "pdf": "reports/figures/08_gradiente/dispersao.pdf",
+    "commit": "d8f080b+modificado"
+  },
+  {
+    "name": "longitudinal",
+    "region": null,
+    "caption": "Figura 5. Esquerda: perda de floresta de 2001 a 2012 e mudança do descritor entre 2013–2024 e 2001–2012, por célula, colorida pela mudança da dimensão de imersão m entre as décadas. Direita: correlação parcial (controles: latitude, água e altitude) com IC 95% por blocos de 1°, para os descritores primários, com todas as células (cheios) e só aquelas em que m não mudou (vazios). Na versão impressa, determinismo da temperatura, Xingu.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/longitudinal.png",
+    "pdf": "reports/figures/08_gradiente/longitudinal.pdf",
+    "commit": "d8f080b+modificado"
+  },
+  {
+    "name": "modelos",
+    "region": null,
+    "caption": "Figura 3. Correlação parcial entre perturbação e z de cada descritor primário, com IC 95% por blocos de 1°, em três modelos: o pré-registrado (perda antecedente, controlando latitude, água e altitude); a conversão agropecuária em 2000, controlando também a vegetação natural não florestal; e a perda antecedente controlando também a vegetação alta fixa do ERA5.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/modelos.png",
+    "pdf": "reports/figures/08_gradiente/modelos.pdf",
+    "commit": "d8f080b+modificado"
+  },
+  {
+    "name": "outras_exposicoes",
+    "region": null,
+    "caption": "Figura 4. Correlação parcial (controles: latitude, água e altitude) entre outras medidas de perturbação e o z dos descritores primários: entropia de permutação (PE), complexidade estatística (C), erro de previsão (EP) e determinismo (DET), da temperatura e do VPD. Asterisco: IC 95% por blocos de 1° sem o zero.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/outras_exposicoes.png",
+    "pdf": "reports/figures/08_gradiente/outras_exposicoes.pdf",
+    "commit": "d8f080b+modificado"
+  },
+  {
+    "name": "paisagem",
+    "region": "tapajos",
+    "caption": "Fração sem floresta em 2000 e desmatada em 2000–2024 (MapBiomas) e vegetação alta fixa do ERA5, por célula.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/tapajos/paisagem.png",
+    "pdf": "reports/figures/08_gradiente/tapajos/paisagem.pdf",
+    "commit": "d8f080b+modificado"
+  },
+  {
+    "name": "paisagem",
+    "region": "xingu",
+    "caption": "Fração sem floresta em 2000 e desmatada em 2000–2024 (MapBiomas) e vegetação alta fixa do ERA5, por célula.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/xingu/paisagem.png",
+    "pdf": "reports/figures/08_gradiente/xingu/paisagem.pdf",
+    "commit": "d8f080b+modificado"
+  }
+]
