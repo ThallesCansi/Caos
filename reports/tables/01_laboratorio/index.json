@@ -2,10 +2,10 @@
   {
     "name": "pontos_fixos",
     "region": null,
-    "caption": "Mapa com memória: ponto fixo, raio espectral da Jacobiana e maior expoente de Lyapunov pela dinâmica tangente, para alguns valores de μ.",
+    "caption": "Tabela 1. Ponto fixo do mapa com memória, maior módulo dos autovalores da jacobiana e maior expoente de Lyapunov, para alguns valores de μ.",
     "overleaf": true,
     "csv": "reports/tables/01_laboratorio/pontos_fixos.csv",
     "tex": "reports/tables/01_laboratorio/pontos_fixos.tex",
-    "commit": "2c59538+modificado"
+    "commit": "b8867ae+modificado"
   }
 ]

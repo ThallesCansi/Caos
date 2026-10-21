@@ -2,46 +2,46 @@
   {
     "name": "bifurcacao_lyapunov",
     "region": null,
-    "caption": "Mapa com memória: diagrama de bifurcação em μ e maior expoente de Lyapunov pela dinâmica tangente (Benettin). λ₁ > 0 coincide com as bandas aperiódicas.",
+    "caption": "Figura 2. Acima, valores de longo prazo de x em função de μ. Abaixo, o maior expoente de Lyapunov pela dinâmica tangente; em vermelho, os intervalos com λ₁ > 0.",
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/bifurcacao_lyapunov.png",
     "pdf": "reports/figures/01_laboratorio/bifurcacao_lyapunov.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "b8867ae+modificado"
   },
   {
     "name": "contaminacao",
     "region": null,
-    "caption": "Rosenstein em três séries: dinâmica determinística limpa, a mesma com sazonalidade e 5% de ruído, e um AR(1) estocástico. O AR(1) também produz inclinação positiva, mas sem trecho linear (R² baixo): λ positivo não prova caos.",
+    "caption": "Figura 4. Três séries (acima) e suas curvas de Rosenstein (abaixo), com m = 3, τ = 1, janela de Theiler de 25 passos e ajuste nos passos 1 a 8: dinâmica caótica limpa, a mesma com sazonalidade e 5% de ruído, e um AR(1) com φ = 0,92.",
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/contaminacao.png",
     "pdf": "reports/figures/01_laboratorio/contaminacao.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "b8867ae+modificado"
   },
   {
     "name": "recorrencia",
     "region": null,
-    "caption": "Gráficos de recorrência (m = 3, τ = 1, taxa de recorrência de 8%) da série determinística, de uma substituta FT dela e de um AR(1). A substituta mantém o espectro, mas perde as diagonais longas.",
+    "caption": "Figura 5. Gráficos de recorrência (m = 3, τ = 1, taxa de recorrência de 8%, primeiros 550 estados) da série caótica, de uma substituta com o mesmo espectro e de um AR(1). Pontos pretos: pares de instantes cujos estados estão próximos.",
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/recorrencia.png",
     "pdf": "reports/figures/01_laboratorio/recorrencia.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "b8867ae+modificado"
   },
   {
     "name": "sensibilidade_rosenstein",
     "region": null,
-    "caption": "Mapa com memória (μ = 11.5): separação exponencial de trajetórias próximas e estimativa de Rosenstein a partir apenas da série reconstruída (m = 3, τ = 1, Theiler 20, ajuste nos passos 1–8).",
+    "caption": "Figura 3. Mapa com memória, μ = 11,5. Esquerda: duas trajetórias com estados iniciais a 10⁻⁸ uma da outra. Centro: a distância entre elas, em escala log. Direita: curva de divergência de Rosenstein (m = 3, τ = 1, janela de Theiler de 20 passos) e o ajuste nos passos 1 a 8.",
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/sensibilidade_rosenstein.png",
     "pdf": "reports/figures/01_laboratorio/sensibilidade_rosenstein.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "b8867ae+modificado"
   },
   {
     "name": "troca_estabilidade",
     "region": null,
-    "caption": "Modelo umidade–vegetação: equilíbrios em função da entrada de umidade P. Abaixo de P_c = βdh/(r − d) só o estado sem vegetação é estável; acima, o equilíbrio vegetado assume (bifurcação transcrítica).",
+    "caption": "Figura 1. Equilíbrios do modelo umidade–vegetação. Pontos escuros: equilíbrio sem vegetação estável; claros: o mesmo equilíbrio, instável; verdes: equilíbrio vegetado estável. A linha tracejada marca P_c.",
     "overleaf": true,
     "png": "reports/figures/01_laboratorio/troca_estabilidade.png",
     "pdf": "reports/figures/01_laboratorio/troca_estabilidade.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "b8867ae+modificado"
   }
 ]

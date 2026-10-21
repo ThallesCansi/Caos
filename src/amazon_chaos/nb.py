@@ -89,7 +89,8 @@ class Notebook:
         plt.close(fig)
         return mo.vstack([
             mo.Html(f'<div style="width:{width}">{html.text}</div>'),
-            mo.md(f"<small>**Figura · {name}.** {pt(caption)}</small>"),
+            mo.Html(f'<p style="font-size:0.88em;color:#5b6770;margin:0 0 0.6em 0">'
+                    f'{pt(caption)}</p>'),
         ], gap=0.25)
 
     def table(self, frame: pd.DataFrame, name: str, caption: str, region: str | None = None,
@@ -108,7 +109,7 @@ class Notebook:
             "commit": _git_commit(),
         })
         return mo.vstack([
-            mo.md(f"<small>**Tabela · {name}.** {pt(caption)}</small>"),
+            mo.Html(f'<p style="font-size:0.88em;color:#5b6770;margin:0">{pt(caption)}</p>'),
             mo.ui.table(frame.reset_index() if index else frame, selection=selection,
                         show_download=True),
         ], gap=0.25)
