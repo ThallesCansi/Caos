@@ -233,3 +233,29 @@ def compare_with_cds(config, root="data/raw", rtol=EDH_RTOL, atol=1e-7):
         row["months"] = sorted(row["months"])
         row["bias"] /= row["values"]
     return stats
+
+
+STATIC = {"z": "geopotencial (m² s⁻²)", "lsm": "máscara terra–mar (fração)",
+          "cvh": "fração de vegetação alta (fixa no ERA5)",
+          "cvl": "fração de vegetação baixa (fixa no ERA5)"}
+
+
+def static_fields(config, when="2001-01-01T00:00", url=EDH_URL):
+    """Campos constantes do ERA5 na grade da região: relevo do modelo e vegetação fixa.
+
+    Lidos num único instante; `altitude_m` = z / g. Servem de controle (relevo) e para
+    mostrar que a vegetação do ERA5 não muda com o desmatamento (D-011).
+    """
+    import xarray as xr
+
+    ds = open_edh(url=url)
+    lats, lons = grid_coordinates(config["spatial"]["area"])
+    east = np.round(lons % 360, 6)
+    out = (ds[list(STATIC)].sel(valid_time=when, method="nearest")
+           .sel(latitude=lats, longitude=east, method="nearest", tolerance=1e-6).load())
+    out = out.reset_coords(drop=True).assign_coords(latitude=lats, longitude=lons)
+    out["altitude_m"] = out.z / 9.80665
+    for name, label in STATIC.items():
+        out[name].attrs["long_name"] = label
+    out.attrs = {"source": url, "instant": when}
+    return xr.Dataset(out)

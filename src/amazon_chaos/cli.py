@@ -171,6 +171,18 @@ def era5_process(
     typer.echo(process_period(load_region(region), start, end, source=source))
 
 
+@era5_app.command("static")
+def era5_static(region: Region) -> None:
+    """Relevo do modelo e vegetação fixa do ERA5 na grade da região (Earth Data Hub)."""
+    from amazon_chaos.io.era5_edh import static_fields
+    from amazon_chaos.regions import processed_dir
+
+    cfg = load_region(region)
+    target = processed_dir(cfg) / "era5_estatico.nc"
+    static_fields(cfg).to_netcdf(target)
+    typer.echo(target)
+
+
 @era5_app.command("summarize")
 def era5_summarize(region: Region, first: int = 1990, last: int = 2024) -> None:
     """Resumo regional (série ponderada, mensais e extremos por célula) lido pelos cadernos."""
