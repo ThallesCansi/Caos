@@ -246,7 +246,6 @@ def static_fields(config, when="2001-01-01T00:00", url=EDH_URL):
     Lidos num único instante; `altitude_m` = z / g. Servem de controle (relevo) e para
     mostrar que a vegetação do ERA5 não muda com o desmatamento (D-011).
     """
-    import xarray as xr
 
     ds = open_edh(url=url)
     lats, lons = grid_coordinates(config["spatial"]["area"])
@@ -258,4 +257,4 @@ def static_fields(config, when="2001-01-01T00:00", url=EDH_URL):
     for name, label in STATIC.items():
         out[name].attrs["long_name"] = label
     out.attrs = {"source": url, "instant": when}
-    return xr.Dataset(out)
+    return out
