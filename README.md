@@ -10,17 +10,17 @@ Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Perí
 
 Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e gera as figuras da monografia. Os cadernos que servem a mais de uma região recebem `--region`.
 
-| Caderno | Etapa | Estado |
+| Caderno | Capítulo | Estado |
 |---|---|---|
-| `00_inicio` | visão geral, situação dos dados e cronograma | pronto |
+| `00_inicio` | apresentação, percurso, legenda das caixas e resumo dos resultados | pronto |
 | `01_laboratorio` | sistemas dinâmicos conhecidos (teoria, interativo) | pronto |
-| `02_regioes` | limites, grade ERA5, contexto territorial | pronto |
-| `03_clima` | atlas climático de 1990–2024 (`--region`) | pronto |
-| `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula (MODIS pendente) | pronto |
-| `05_validacao_metodos` | gate dos descritores em sistemas sintéticos | pronto (aguarda revisão) |
-| `06_surrogates` | testes FT/IAAFT | a migrar (antigo 06) |
+| `02_regioes` | as bacias, a grade ERA5 e as células da comparação | pronto |
+| `03_clima` | o clima de 1990–2024 e a anomalia padronizada (`--region`) | pronto |
+| `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes (`--region`) | pronto (MODIS pendente) |
+| `05_validacao_metodos` | o portão: descritores em controles sintéticos | pronto |
+| `06_surrogates` | substitutas FT/IAAFT nas séries das bacias (D-016) | pronto |
 | `07_descritores` | descritores por célula, robustez, EWS | pronto |
-| `08_gradiente` | perturbação × dinâmica | a fazer |
+| `08_gradiente` | perturbação × dinâmica (D-014, D-015) | pronto (MODIS pendente) |
 
 Os cadernos Jupyter anteriores estão em [`legacy/`](legacy/README.md) e na tag `v0-jupyter`.
 

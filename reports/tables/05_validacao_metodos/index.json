@@ -2,19 +2,19 @@
   {
     "name": "ews_calibracao",
     "region": null,
-    "caption": "EWS: taxa de rejeição (τ de Kendall da variância e do AR(1) contra substitutas IAAFT) num AR(1) estacionário e num AR(1) que se aproxima da instabilidade.",
+    "caption": "Tabela 2. Calibração dos sinais precoces: número de repetições em que a tendência da variância e da autocorrelação rejeita a hipótese nula IAAFT, e τ de Kendall médio, num AR(1) estacionário e num AR(1) que se aproxima da instabilidade.",
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/ews_calibracao.csv",
     "tex": "reports/tables/05_validacao_metodos/ews_calibracao.tex",
-    "commit": "3f1689b+modificado"
+    "commit": "4664853+modificado"
   },
   {
     "name": "veredito",
     "region": null,
-    "caption": "Gate F4: poder nos controles positivos e taxa de rejeição nos negativos (n máximo, ruído máximo), e o veredito pelo critério pré-registrado.",
+    "caption": "Tabela 1. Veredito do portão no maior comprimento (8.766) e no maior ruído (0,2): número de controles positivos com poder de ao menos 80%, poder em cada controle positivo, taxa de rejeição nos controles negativos e aprovação pelo critério pré-registrado.",
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/veredito.csv",
     "tex": "reports/tables/05_validacao_metodos/veredito.tex",
-    "commit": "3f1689b+modificado"
+    "commit": "4664853+modificado"
   }
 ]

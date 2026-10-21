@@ -1,18 +1,18 @@
 \begin{table}
-\caption{Gate F4: poder nos controles positivos e taxa de rejeição nos negativos (n máximo, ruído máximo), e o veredito pelo critério pré-registrado.}
+\caption{Tabela 1. Veredito do portão no maior comprimento (8,766) e no maior ruído (0,2): número de controles positivos com poder de ao menos 80%, poder em cada controle positivo, taxa de rejeição nos controles negativos e aprovação pelo critério pré-registrado.}
 \label{tab:05_validacao_metodos::veredito}
 \begin{tabular}{llrrrrrrl}
 \toprule
 Descritor & positivos com poder & poder henon & poder logistic & poder lorenz & rejeição ar1 & rejeição white & rejeição seasonal\_trend & passa \\
 \midrule
-Assimetria temporal & 2/3 & 1 & 1 & 0 & 0 & 0 & 0,1 & ✅ passa \\
-Dimensão de correlação D2 & 3/3 & 1 & 1 & 0,9 & 0 & 0,1 & 0,2 & ✅ passa \\
-Lyapunov (Rosenstein) & 3/3 & 1 & 1 & 1 & 0 & 0 & 1 & ✅ passa \\
-Complexidade estatística & 3/3 & 1 & 1 & 1 & 0 & 0 & 0 & ✅ passa \\
-Entropia de permutação & 3/3 & 1 & 1 & 1 & 0 & 0 & 0 & ✅ passa \\
-Erro de previsão não linear & 3/3 & 1 & 1 & 1 & 0,1 & 0 & 0 & ✅ passa \\
-RQA · DET & 3/3 & 1 & 1 & 1 & 0,1 & 0 & 0,8 & ✅ passa \\
-RQA · LAM & 3/3 & 1 & 1 & 1 & 0,2 & 0 & 0 & ✅ passa \\
+Assimetria temporal & 2/3 & 1 & 1 & 0 & 0 & 0 & 0,1 & sim \\
+Dimensão de correlação & 3/3 & 1 & 1 & 0,9 & 0 & 0,1 & 0,2 & sim \\
+Lyapunov (Rosenstein) & 3/3 & 1 & 1 & 1 & 0 & 0 & 1 & sim \\
+Complexidade estatística & 3/3 & 1 & 1 & 1 & 0 & 0 & 0 & sim \\
+Entropia de permutação & 3/3 & 1 & 1 & 1 & 0 & 0 & 0 & sim \\
+Erro de previsão não linear & 3/3 & 1 & 1 & 1 & 0,1 & 0 & 0 & sim \\
+RQA · determinismo & 3/3 & 1 & 1 & 1 & 0,1 & 0 & 0,8 & sim \\
+RQA · laminaridade & 3/3 & 1 & 1 & 1 & 0,2 & 0 & 0 & sim \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -1,14 +1,14 @@
 \begin{table}
-\caption{EWS: taxa de rejeição (τ de Kendall da variância e do AR(1) contra substitutas IAAFT) num AR(1) estacionário e num AR(1) que se aproxima da instabilidade.}
+\caption{Tabela 2. Calibração dos sinais precoces: número de repetições em que a tendência da variância e da autocorrelação rejeita a hipótese nula IAAFT, e τ de Kendall médio, num AR(1) estacionário e num AR(1) que se aproxima da instabilidade.}
 \label{tab:05_validacao_metodos::ews_calibracao}
-\begin{tabular}{llrrrr}
+\begin{tabular}{llrrr}
 \toprule
-control & indicator & repetições & rejeições & tau\_médio & taxa \\
+Série & Indicador & Repetições & Rejeições & τ de Kendall médio \\
 \midrule
-ar1\_estacionario & ar1 & 10 & 0 & -0,098 & 0 \\
-ar1\_estacionario & variance & 10 & 0 & -0,097 & 0 \\
-ar1\_rampa & ar1 & 10 & 10 & 0,996 & 1 \\
-ar1\_rampa & variance & 10 & 10 & 0,99 & 1 \\
+AR(1) estacionário & autocorrelação de defasagem 1 & 10 & 0 & -0,1 \\
+AR(1) estacionário & variância & 10 & 0 & -0,1 \\
+AR(1) com memória crescente & autocorrelação de defasagem 1 & 10 & 10 & 1 \\
+AR(1) com memória crescente & variância & 10 & 10 & 0,99 \\
 \bottomrule
 \end{tabular}
 \end{table}

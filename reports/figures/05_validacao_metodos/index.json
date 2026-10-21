@@ -9,30 +9,39 @@
     "commit": "3f1689b+modificado"
   },
   {
+    "name": "controles",
+    "region": null,
+    "caption": "Figura 1. Um controle do portão: os primeiros 400 passos com o ruído escolhido e a reconstrução em duas dimensões, com o atraso escolhido pela informação mútua, com esse ruído e sem ruído. Na versão impressa, Lorenz com ruído 0,2.",
+    "overleaf": true,
+    "png": "reports/figures/05_validacao_metodos/controles.png",
+    "pdf": "reports/figures/05_validacao_metodos/controles.pdf",
+    "commit": "4664853+modificado"
+  },
+  {
     "name": "diagnosticos",
     "region": null,
-    "caption": "Controles com ruído de observação 0,2: curvas de divergência de Rosenstein, plano complexidade–entropia (Bandt–Pompe, d = 5) e D2 em função da dimensão de imersão (Lorenz × AR(1)).",
+    "caption": "Figura 3. Uma repetição de cada controle com ruído 0,2 e 4.000 passos: curvas de divergência de Rosenstein, posição no plano complexidade–entropia (padrões de ordem 5) e dimensão de correlação contra a dimensão de imersão, para Lorenz e AR(1).",
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/diagnosticos.png",
     "pdf": "reports/figures/05_validacao_metodos/diagnosticos.pdf",
-    "commit": "3f1689b+modificado"
+    "commit": "4664853+modificado"
   },
   {
     "name": "padronizacao",
     "region": null,
-    "caption": "Taxa de rejeição de H0 com a anomalia simples, a anomalia padronizada pelo desvio sazonal e a padronizada sem tendência; pontilhado: tamanho máximo aceito.",
+    "caption": "Figura 4. Taxa de rejeição em quatro controles com a anomalia simples, a anomalia padronizada pelo desvio sazonal e a padronizada sem tendência; nos três primeiros, toda rejeição é falso positivo; no Lorenz, é poder. Pontilhado: o máximo aceito de falsos positivos.",
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/padronizacao.png",
     "pdf": "reports/figures/05_validacao_metodos/padronizacao.pdf",
-    "commit": "3f1689b+modificado"
+    "commit": "4664853+modificado"
   },
   {
     "name": "taxas_rejeicao",
     "region": null,
-    "caption": "Gate F4: fração de repetições que rejeitam a hipótese nula IAAFT, por descritor e controle, no maior comprimento e ruído.",
+    "caption": "Figura 2. Fração das 10 repetições em que cada descritor rejeita a hipótese nula IAAFT, por controle, no comprimento e no ruído escolhidos. Na versão impressa, 8.766 passos e ruído 0,2.",
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/taxas_rejeicao.png",
     "pdf": "reports/figures/05_validacao_metodos/taxas_rejeicao.pdf",
-    "commit": "3f1689b+modificado"
+    "commit": "4664853+modificado"
   }
 ]
