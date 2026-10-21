@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/06_surrogates/anatomia.png",
     "pdf": "reports/figures/06_surrogates/anatomia.pdf",
-    "commit": "18739fe+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "bacia_celulas",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/06_surrogates/bacia_celulas.png",
     "pdf": "reports/figures/06_surrogates/bacia_celulas.pdf",
-    "commit": "18739fe+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "ft_iaaft",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/06_surrogates/ft_iaaft.png",
     "pdf": "reports/figures/06_surrogates/ft_iaaft.pdf",
-    "commit": "18739fe+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "nulas",
@@ -33,6 +33,6 @@
     "overleaf": true,
     "png": "reports/figures/06_surrogates/nulas.png",
     "pdf": "reports/figures/06_surrogates/nulas.pdf",
-    "commit": "18739fe+modificado"
+    "commit": "892c606+modificado"
   }
 ]

@@ -275,8 +275,8 @@ def _():
         As duas hipóteses nulas descrevem processos estacionários, isto é, processos cujas
         propriedades estatísticas são as mesmas em qualquer trecho da série. Uma série
         climática diária se afasta disso de duas maneiras evidentes. A primeira é a
-        sazonalidade: não só a média, mas também a variabilidade muda ao longo do ano, e os
-        dias da estação seca variam mais que os da chuvosa. Se essa diferença ficar na série,
+        sazonalidade: não só a média, mas também a variabilidade muda ao longo do ano, e há
+        épocas em que os dias se afastam muito mais da normal do que em outras. Se essa diferença ficar na série,
         os descritores a detectam como estrutura, e as substitutas, que espalham a
         variabilidade por igual, a rejeitam. Na validação dos métodos, a fração de falsos
         positivos do determinismo da recorrência em séries apenas sazonais caía de 80% para

@@ -136,7 +136,7 @@ def region_picker(default: str = "xingu", regions: list[str] | None = None):
         raise ValueError(f"--region {chosen}: use uma de {list_regions()}")
     options = {load_region(r)["name"]: r for r in dict.fromkeys([*regions, chosen])}
     label = next(k for k, v in options.items() if v == chosen)
-    return mo.ui.dropdown(options=options, value=label, label="Região")
+    return mo.ui.dropdown(options=options, value=label, label="Bacia")
 
 
 def header(title: str, question: str, *, stage: str, inputs: list[str], outputs: list[str],

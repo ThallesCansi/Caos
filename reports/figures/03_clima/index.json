@@ -1,5 +1,23 @@
 [
   {
+    "name": "duas_bacias",
+    "region": null,
+    "caption": "Figura 13. Normais mensais de 1991–2020 da temperatura, da chuva e do VPD médios das duas bacias.",
+    "overleaf": true,
+    "png": "reports/figures/03_clima/duas_bacias.png",
+    "pdf": "reports/figures/03_clima/duas_bacias.pdf",
+    "commit": "892c606+modificado"
+  },
+  {
+    "name": "ano",
+    "region": "tapajos",
+    "caption": "Figura 2. Um ano dia a dia (temperatura, umidade relativa, VPD, vento e chuva) contra o ciclo anual normal de 1991–2020. Na versão impressa, 2024.",
+    "overleaf": true,
+    "png": "reports/figures/03_clima/tapajos/ano.png",
+    "pdf": "reports/figures/03_clima/tapajos/ano.pdf",
+    "commit": "892c606+modificado"
+  },
+  {
     "name": "ano_2024",
     "region": "tapajos",
     "caption": "Bacia do Rio Tapajós: 2024 dia a dia (temperatura, umidade relativa, VPD, vento e chuva) contra o ciclo anual normal de 1991–2020.",
@@ -11,11 +29,11 @@
   {
     "name": "anomalias_mensais",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: anomalias mensais de temperatura (°C) e de chuva (%) em relação à normal 1991–2020 de cada mês.",
+    "caption": "Figura 11. Anomalias mensais de temperatura (°C) e de chuva (%) em relação à normal 1991–2020 de cada mês.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/anomalias_mensais.png",
     "pdf": "reports/figures/03_clima/tapajos/anomalias_mensais.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "arquivo_vs_janela",
@@ -29,20 +47,20 @@
   {
     "name": "ciclo_anual",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: ciclo anual da umidade relativa, VPD, amplitude térmica e vento, normal 1991–2020 (faixa: 10º–90º percentil entre anos).",
+    "caption": "Figura 4. Ciclo anual da umidade relativa, do VPD, da amplitude térmica diária e do vento na normal 1991–2020 (faixa: 10º e 90º percentis entre os anos).",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/ciclo_anual.png",
     "pdf": "reports/figures/03_clima/tapajos/ciclo_anual.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "climograma",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: chuva mensal (barras; claras = mês seco < 100 mm; erro = 10º–90º percentil entre anos) e temperaturas média, mínima e máxima, 1991–2020.",
+    "caption": "Figura 3. Climograma da normal 1991–2020: chuva mensal (barras claras: meses com menos de 100 mm; hastes: 10º e 90º percentis entre os anos) e temperaturas média, mínima e máxima.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/climograma.png",
     "pdf": "reports/figures/03_clima/tapajos/climograma.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "duas_bacias",
@@ -56,74 +74,92 @@
   {
     "name": "estacoes",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: chuva média mensal e VPD nos trimestres mais chuvoso e mais seco da normal 1991–2020.",
+    "caption": "Figura 7. Chuva média mensal e VPD no trimestre mais chuvoso (acima) e no mais seco (abaixo) da normal 1991–2020; mesma escala de cor por variável.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/estacoes.png",
     "pdf": "reports/figures/03_clima/tapajos/estacoes.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "extremos",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: dias com máxima regional acima do 90º percentil das anomalias de 1991–2020 (cerca de 36,5 por ano por construção), maior sequência seca (calculada por célula e promediada) e dias com chuva.",
+    "caption": "Figura 12. Dias por ano com a máxima da bacia acima do 90º percentil das anomalias de 1991–2020 (cerca de 36,5 por ano, por construção, no período de referência; barras escuras acima disso), maior sequência de dias secos (calculada por célula e promediada) e número de dias com chuva.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/extremos.png",
     "pdf": "reports/figures/03_clima/tapajos/extremos.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "listras",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: anomalia anual da temperatura média regional em relação a 1991–2020.",
+    "caption": "Figura 8. Anomalia anual da temperatura média da bacia em relação à normal 1991–2020.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/listras.png",
     "pdf": "reports/figures/03_clima/tapajos/listras.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "mapas_normal",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: normal 1991–2020 por célula ERA5 (temperatura, chuva anual, meses secos, VPD, amplitude térmica e vento).",
+    "caption": "Figura 5. Normal 1991–2020 por célula ERA5: temperatura média, chuva anual, número de meses com menos de 100 mm, VPD médio, amplitude térmica diária e vento.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/mapas_normal.png",
     "pdf": "reports/figures/03_clima/tapajos/mapas_normal.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "mapas_tendencia",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: tendência de Theil–Sen 1990–2024 por célula; pontos: q < 0,05 (BH sobre as células, p de Mann–Kendall corrigido para autocorrelação).",
+    "caption": "Figura 10. Tendência de Theil–Sen de 1990 a 2024 por célula; pontos: q < 0,05 (Benjamini–Hochberg sobre as células, com o p de Mann–Kendall corrigido para autocorrelação).",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/mapas_tendencia.png",
     "pdf": "reports/figures/03_clima/tapajos/mapas_tendencia.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
+  },
+  {
+    "name": "padronizacao",
+    "region": "tapajos",
+    "caption": "Figura 14. Da série diária à anomalia padronizada, de 2019 a 2024: a série e a sua normal, a anomalia e a anomalia dividida pelo desvio típico de cada dia do ano; à direita, esse desvio ao longo do ano. Na versão impressa, temperatura.",
+    "overleaf": true,
+    "png": "reports/figures/03_clima/tapajos/padronizacao.png",
+    "pdf": "reports/figures/03_clima/tapajos/padronizacao.pdf",
+    "commit": "892c606+modificado"
   },
   {
     "name": "perfil_norte_sul",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: médias por faixa de latitude (ponderadas pela área), normal 1991–2020.",
+    "caption": "Figura 6. Médias por faixa de latitude, ponderadas pela área das células, na normal 1991–2020.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/perfil_norte_sul.png",
     "pdf": "reports/figures/03_clima/tapajos/perfil_norte_sul.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "serie_35_anos",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: temperatura média diária regional (faixa: mínima–máxima; linha grossa: média móvel de 365 dias) e chuva mensal, 1990–2024. ERA5.",
+    "caption": "Figura 1. Temperatura média diária da bacia (faixa: entre a mínima e a máxima do dia; linha grossa: média móvel de 365 dias) e chuva mensal, de 1990 a 2024.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/serie_35_anos.png",
     "pdf": "reports/figures/03_clima/tapajos/serie_35_anos.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "series_anuais",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: médias anuais (chuva: total) com tendência de Theil–Sen e p de Mann–Kendall corrigido para autocorrelação (Hamed e Rao, 1998).",
+    "caption": "Figura 9. Médias anuais (chuva: total anual) com a tendência de Theil–Sen (tracejado) e o p de Mann–Kendall corrigido para autocorrelação; em cinza, o período anterior à janela de análise.",
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/series_anuais.png",
     "pdf": "reports/figures/03_clima/tapajos/series_anuais.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "892c606+modificado"
+  },
+  {
+    "name": "ano",
+    "region": "xingu",
+    "caption": "Figura 2. Um ano dia a dia (temperatura, umidade relativa, VPD, vento e chuva) contra o ciclo anual normal de 1991–2020. Na versão impressa, 2024.",
+    "overleaf": true,
+    "png": "reports/figures/03_clima/xingu/ano.png",
+    "pdf": "reports/figures/03_clima/xingu/ano.pdf",
+    "commit": "892c606+modificado"
   },
   {
     "name": "ano_2024",
@@ -132,16 +168,16 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/ano_2024.png",
     "pdf": "reports/figures/03_clima/xingu/ano_2024.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "anomalias_mensais",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: anomalias mensais de temperatura (°C) e de chuva (%) em relação à normal 1991–2020 de cada mês.",
+    "caption": "Figura 11. Anomalias mensais de temperatura (°C) e de chuva (%) em relação à normal 1991–2020 de cada mês.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/anomalias_mensais.png",
     "pdf": "reports/figures/03_clima/xingu/anomalias_mensais.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "arquivo_vs_janela",
@@ -150,25 +186,25 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/arquivo_vs_janela.png",
     "pdf": "reports/figures/03_clima/xingu/arquivo_vs_janela.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "ciclo_anual",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: ciclo anual da umidade relativa, VPD, amplitude térmica e vento, normal 1991–2020 (faixa: 10º–90º percentil entre anos).",
+    "caption": "Figura 4. Ciclo anual da umidade relativa, do VPD, da amplitude térmica diária e do vento na normal 1991–2020 (faixa: 10º e 90º percentis entre os anos).",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/ciclo_anual.png",
     "pdf": "reports/figures/03_clima/xingu/ciclo_anual.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "climograma",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: chuva mensal (barras; claras = mês seco < 100 mm; erro = 10º–90º percentil entre anos) e temperaturas média, mínima e máxima, 1991–2020.",
+    "caption": "Figura 3. Climograma da normal 1991–2020: chuva mensal (barras claras: meses com menos de 100 mm; hastes: 10º e 90º percentis entre os anos) e temperaturas média, mínima e máxima.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/climograma.png",
     "pdf": "reports/figures/03_clima/xingu/climograma.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "duas_bacias",
@@ -177,78 +213,87 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/duas_bacias.png",
     "pdf": "reports/figures/03_clima/xingu/duas_bacias.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "estacoes",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: chuva média mensal e VPD nos trimestres mais chuvoso e mais seco da normal 1991–2020.",
+    "caption": "Figura 7. Chuva média mensal e VPD no trimestre mais chuvoso (acima) e no mais seco (abaixo) da normal 1991–2020; mesma escala de cor por variável.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/estacoes.png",
     "pdf": "reports/figures/03_clima/xingu/estacoes.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "extremos",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: dias com máxima regional acima do 90º percentil das anomalias de 1991–2020 (cerca de 36,5 por ano por construção), maior sequência seca (calculada por célula e promediada) e dias com chuva.",
+    "caption": "Figura 12. Dias por ano com a máxima da bacia acima do 90º percentil das anomalias de 1991–2020 (cerca de 36,5 por ano, por construção, no período de referência; barras escuras acima disso), maior sequência de dias secos (calculada por célula e promediada) e número de dias com chuva.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/extremos.png",
     "pdf": "reports/figures/03_clima/xingu/extremos.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "listras",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: anomalia anual da temperatura média regional em relação a 1991–2020.",
+    "caption": "Figura 8. Anomalia anual da temperatura média da bacia em relação à normal 1991–2020.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/listras.png",
     "pdf": "reports/figures/03_clima/xingu/listras.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "mapas_normal",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: normal 1991–2020 por célula ERA5 (temperatura, chuva anual, meses secos, VPD, amplitude térmica e vento).",
+    "caption": "Figura 5. Normal 1991–2020 por célula ERA5: temperatura média, chuva anual, número de meses com menos de 100 mm, VPD médio, amplitude térmica diária e vento.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/mapas_normal.png",
     "pdf": "reports/figures/03_clima/xingu/mapas_normal.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "mapas_tendencia",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: tendência de Theil–Sen 1990–2024 por célula; pontos: q < 0,05 (BH sobre as células, p de Mann–Kendall corrigido para autocorrelação).",
+    "caption": "Figura 10. Tendência de Theil–Sen de 1990 a 2024 por célula; pontos: q < 0,05 (Benjamini–Hochberg sobre as células, com o p de Mann–Kendall corrigido para autocorrelação).",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/mapas_tendencia.png",
     "pdf": "reports/figures/03_clima/xingu/mapas_tendencia.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
+  },
+  {
+    "name": "padronizacao",
+    "region": "xingu",
+    "caption": "Figura 14. Da série diária à anomalia padronizada, de 2019 a 2024: a série e a sua normal, a anomalia e a anomalia dividida pelo desvio típico de cada dia do ano; à direita, esse desvio ao longo do ano. Na versão impressa, temperatura.",
+    "overleaf": true,
+    "png": "reports/figures/03_clima/xingu/padronizacao.png",
+    "pdf": "reports/figures/03_clima/xingu/padronizacao.pdf",
+    "commit": "892c606+modificado"
   },
   {
     "name": "perfil_norte_sul",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: médias por faixa de latitude (ponderadas pela área), normal 1991–2020.",
+    "caption": "Figura 6. Médias por faixa de latitude, ponderadas pela área das células, na normal 1991–2020.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/perfil_norte_sul.png",
     "pdf": "reports/figures/03_clima/xingu/perfil_norte_sul.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "serie_35_anos",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: temperatura média diária regional (faixa: mínima–máxima; linha grossa: média móvel de 365 dias) e chuva mensal, 1990–2024. ERA5.",
+    "caption": "Figura 1. Temperatura média diária da bacia (faixa: entre a mínima e a máxima do dia; linha grossa: média móvel de 365 dias) e chuva mensal, de 1990 a 2024.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/serie_35_anos.png",
     "pdf": "reports/figures/03_clima/xingu/serie_35_anos.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   },
   {
     "name": "series_anuais",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: médias anuais (chuva: total) com tendência de Theil–Sen e p de Mann–Kendall corrigido para autocorrelação (Hamed e Rao, 1998).",
+    "caption": "Figura 9. Médias anuais (chuva: total anual) com a tendência de Theil–Sen (tracejado) e o p de Mann–Kendall corrigido para autocorrelação; em cinza, o período anterior à janela de análise.",
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/series_anuais.png",
     "pdf": "reports/figures/03_clima/xingu/series_anuais.pdf",
-    "commit": "2c59538+modificado"
+    "commit": "892c606+modificado"
   }
 ]
