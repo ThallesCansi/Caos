@@ -17,22 +17,60 @@ with app.setup(hide_code=True):
     from amazon_chaos.config import load_region
     from amazon_chaos.regional import (
         anomalies,
-        daily_files,
         regional_frame,
         standardized_anomalies,
         summarize,
         theil_sen,
     )
-    from amazon_chaos.viz import COLORS, LABELS, MONTHS, map_cells
+    from amazon_chaos.viz import COLORS, LABELS, MONTHS, map_basins
 
     book = nb.notebook("03_clima")
+    SLUGS = ["xingu", "tapajos"]
+    SHORT = {"xingu": "Xingu", "tapajos": "Tapajós"}
+    BASIN_COLORS = {"xingu": COLORS["ink"], "tapajos": COLORS["t2m"]}
     BASE = ("1991-01-01", "2020-12-31")  # normal climatológica da OMM
     SCIENCE = ("2001-01-01", "2024-12-31")
-    MONTHLY = {"precip": "sum"}  # o resto: média
     TREND_SERIES = [("t2m", "Temperatura média (°C)"), ("tmax", "Máxima média (°C)"),
                     ("vpd", "VPD médio (kPa)"), ("rh", "Umidade relativa (%)"),
                     ("precip", "Chuva anual (mm)"),
                     ("dry_spell", "Maior sequência seca (dias)")]
+
+
+@app.function(hide_code=True)
+def agg_of(frame):
+    return {c: "sum" if c == "precip" else "mean" for c in frame.columns}
+
+
+@app.function(hide_code=True)
+@mo.cache
+def basin(slug):
+    """Tudo o que o capítulo usa de uma bacia, calculado uma vez."""
+    cfg = load_region(slug)
+    summary = summarize(cfg, 1990, 2024)
+    daily = regional_frame(summary)
+    agg = agg_of(daily)
+    monthly = daily.loc[BASE[0]:BASE[1]].resample("MS").agg(agg)
+    annual = daily.resample("YS").agg(agg)
+    annual.index = annual.index.year
+    w = summary.weight_km2
+    annual["dry_spell"] = ((summary.longest_dry_spell * w).sum(("latitude", "longitude"))
+                           .values / float(w.sum()))
+    return {
+        "cfg": cfg, "name": cfg["name"], "summary": summary, "daily": daily,
+        "inside": w > 0, "cells": regions.cells(cfg), "limit": regions.boundary(cfg),
+        "rivers": regions.load_context(cfg).get("rios"),
+        "normals": monthly.groupby(monthly.index.month).mean(),
+        "p10": monthly.groupby(monthly.index.month).quantile(0.1),
+        "p90": monthly.groupby(monthly.index.month).quantile(0.9),
+        "annual_rain": monthly.precip.groupby(monthly.index.year).sum(),
+        "annual": annual,
+        "anomaly": annual.t2m - annual.loc[1991:2020].t2m.mean(),
+    }
+
+
+@app.function(hide_code=True)
+def basin_picker(label="Bacia"):
+    return mo.ui.dropdown(options={SHORT[s]: s for s in SLUGS}, value="Xingu", label=label)
 
 
 @app.cell(hide_code=True)
@@ -43,57 +81,33 @@ def _():
     Antes de perguntar que tipo de dinâmica o clima amazônico tem, precisamos conhecê-lo
     pelo que ele tem de mais simples: quanto faz de calor, quanto chove, como o ano se
     divide entre estação chuvosa e seca, como tudo isso muda de um lugar para outro dentro
-    de cada bacia e o que mudou em 35 anos. Este capítulo é esse retrato. Ele não depende
-    de nenhum método não linear e serve a três propósitos: mostrar ao leitor o sistema que
+    das bacias e o que mudou em 35 anos. Este capítulo é esse retrato. Ele não depende de
+    nenhum método não linear e serve a três propósitos: mostrar ao leitor o sistema que
     estamos estudando, conferir que os dados se comportam como esperado e preparar, passo a
     passo, a série que todos os capítulos seguintes analisam.
 
     Começamos pela origem dos números, a reanálise ERA5. Depois olhamos para 35 anos de
     temperatura e chuva e, de perto, para um ano escolhido pelo leitor. Seguem o ritmo do
-    ano, a geografia do clima dentro da bacia, as tendências, as anomalias e os extremos.
-    Comparamos então as duas bacias e terminamos mostrando como a série diária vira a
-    anomalia padronizada que entra nos descritores. O menu abaixo escolhe a bacia; todo o
-    capítulo, figuras e números, acompanha a escolha.
+    ano, a geografia do clima, as tendências, as anomalias e os extremos. Terminamos
+    mostrando como a série diária vira a anomalia padronizada que entra nos descritores.
+    Os mapas mostram as duas bacias juntas, lado a lado como estão no território; os
+    gráficos de linhas as sobrepõem; e as figuras que acompanham uma única série têm um
+    pequeno seletor de bacia.
     """)
     return
 
 
 @app.cell(hide_code=True)
 def _():
-    picker = nb.region_picker()
-    picker
-    return (picker,)
-
-
-@app.cell(hide_code=True)
-def _(picker):
-    cfg = load_region(picker.value)
-    slug = cfg["slug"]
-    try:
-        daily_files(cfg, 1990, 2024)
-    except FileNotFoundError:
-        mo.stop(True, nb.missing([regions.processed_dir(cfg) / "daily_<ano>.nc"],
-                                 f"make pull REGION={slug}"))
-    with mo.status.spinner(f"Resumindo {cfg['name']} (na primeira vez lê os 35 anos)…"):
-        summary = summarize(cfg, 1990, 2024)
-    daily = regional_frame(summary)
-    inside = summary.weight_km2 > 0
-    cells = regions.cells(cfg)
-    limit = regions.boundary(cfg)
-    rivers = regions.load_context(cfg).get("rios")
-    region = cfg["name"]
-    return cells, cfg, daily, inside, limit, region, rivers, slug, summary
-
-
-@app.cell(hide_code=True)
-def _(inside, slug, summary):
-    _possible = int(summary.days_in_year.sum()) * int(inside.sum())
-    _quality = pd.DataFrame([
-        {"Variável": LABELS[v], "Célula-dias completos": int(summary[f"complete_days_{v}"].sum()),
-         "Possíveis": _possible}
-        for v in ["t2m", "tmax", "rh", "vpd", "wind", "precip"]])
-    _quality["Completude (%)"] = (100 * _quality["Célula-dias completos"]
-                                  / _quality["Possíveis"]).round(4)
+    _rows = []
+    for _var in ["t2m", "tmax", "rh", "vpd", "wind", "precip"]:
+        _row = {"Variável": LABELS[_var]}
+        for _slug in SLUGS:
+            _s = basin(_slug)["summary"]
+            _possible = int(_s.days_in_year.sum()) * int(basin(_slug)["inside"].sum())
+            _row[f"Completude, {SHORT[_slug]} (%)"] = round(
+                100 * int(_s[f"complete_days_{_var}"].sum()) / _possible, 4)
+        _rows.append(_row)
     mo.vstack([
         mo.md(r"""
         ## 🛰️ De onde vêm os números
@@ -123,11 +137,11 @@ def _(inside, slug, summary):
         quanto maior, mais água ele retira das folhas, e é uma das variáveis mais ligadas ao
         estresse da floresta e ao risco de fogo [3]. As estatísticas diárias usam o dia local,
         três horas atrás do horário universal, e só existem para os dias com as 24 horas
-        completas. A Tabela 1 mostra que nenhum dia ficou de fora.
+        completas. A Tabela 1 mostra que nenhum dia ficou de fora nas duas bacias.
         """),
-        book.table(_quality, "completude",
-                   "Tabela 1. Células-dia com as 24 horas válidas, de 1990 a 2024, por "
-                   "variável.", region=slug, selection=None),
+        book.table(pd.DataFrame(_rows), "completude",
+                   "Tabela 1. Porcentagem de células-dia com as 24 horas válidas, de 1990 a "
+                   "2024, por variável e bacia.", selection=None),
         mo.callout(mo.md(
             "Os dados vêm de um espelho do ERA5 que guarda os números com precisão reduzida, "
             "um erro relativo de até 0,05%, sem viés, cerca de um décimo de grau numa hora. "
@@ -139,7 +153,8 @@ def _(inside, slug, summary):
 
 
 @app.function(hide_code=True)
-def plot_series(daily, region):
+def plot_series(slug):
+    daily, region = basin(slug)["daily"], basin(slug)["name"]
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(13, 7), sharex=True, layout="constrained",
                                    height_ratios=[1.3, 1])
     ax1.fill_between(daily.index, daily.tmin, daily.tmax, color=COLORS["t2m"], alpha=0.12,
@@ -162,22 +177,29 @@ def plot_series(daily, region):
 
 
 @app.cell(hide_code=True)
-def _(daily, region, slug):
-    _first = daily.t2m.loc["1991":"1995"].mean()
-    _last = daily.t2m.loc["2020":"2024"].mean()
+def _():
+    series_basin = basin_picker()
+    return (series_basin,)
+
+
+@app.cell(hide_code=True)
+def _(series_basin):
+    _d = basin(series_basin.value)["daily"]
+    _first, _last = _d.t2m.loc["1991":"1995"].mean(), _d.t2m.loc["2020":"2024"].mean()
     mo.vstack([
         mo.md(r"""
-        ## 📈 Trinta e cinco anos de uma bacia
+        ## 📈 Trinta e cinco anos de clima
 
         A série de cada bacia é a média diária das suas células, ponderada pela área que
         cada uma tem dentro do limite; para a chuva, é a média dos totais diários, a altura
         de água que caiu em média sobre a bacia. A Figura 1 mostra a temperatura e a chuva
         de 1990 a 2024.
         """),
-        book.figure(plot_series(daily, region), "serie_35_anos",
+        series_basin,
+        book.figure(plot_series(series_basin.value), "serie_35_anos",
                     "Figura 1. Temperatura média diária da bacia (faixa: entre a mínima e a "
                     "máxima do dia; linha grossa: média móvel de 365 dias) e chuva mensal, de "
-                    "1990 a 2024.", region=slug),
+                    "1990 a 2024.", save=False),
         mo.callout(mo.md(nb.pt(
             f"Média de 1991–1995: {_first:.1f} °C; média de 2020–2024: {_last:.1f} °C, uma "
             f"diferença de {_last - _first:+.1f} °C.")), kind="info"),
@@ -194,14 +216,9 @@ def _(daily, region, slug):
     return
 
 
-@app.cell(hide_code=True)
-def _():
-    year_slider = mo.ui.slider(1990, 2024, value=2024, step=1, label="Ano", show_value=True)
-    return (year_slider,)
-
-
 @app.function(hide_code=True)
-def plot_year(daily, region, year):
+def plot_year(slug, year):
+    daily, region = basin(slug)["daily"], basin(slug)["name"]
     sel = daily.loc[str(year)]
     panels = [("t2m", "°C"), ("rh", "%"), ("vpd", "kPa"), ("wind", "m/s"), ("precip", "mm/dia")]
     fig, axes = plt.subplots(len(panels), 1, figsize=(13, 12), sharex=True, layout="constrained")
@@ -222,25 +239,35 @@ def plot_year(daily, region, year):
 
 
 @app.cell(hide_code=True)
-def _(daily, region, slug, year_slider):
-    _hot = anomalies(daily.t2m, BASE)[0].loc[str(year_slider.value)]
-    _rain = anomalies(daily.precip, BASE)[0].loc[str(year_slider.value)].sum()
+def _():
+    year_basin = basin_picker()
+    year_slider = mo.ui.slider(1990, 2024, value=2024, step=1, label="Ano", show_value=True)
+    return year_basin, year_slider
+
+
+@app.cell(hide_code=True)
+def _(year_basin, year_slider):
+    _d = basin(year_basin.value)["daily"]
+    _hot = anomalies(_d.t2m, BASE)[0].loc[str(year_slider.value)]
+    _rain = anomalies(_d.precip, BASE)[0].loc[str(year_slider.value)].sum()
     mo.vstack([
         mo.md(r"""
         A Figura 2 aproxima a lente: um ano inteiro, dia a dia, em cinco variáveis, contra o
         ano normal. A linha tracejada é a normal climatológica de 1991–2020 [5], a média de
-        cada dia do calendário nesses trinta anos, suavizada numa janela de 31 dias. O
-        controle escolhe o ano; a versão impressa é a de 2024.
+        cada dia do calendário nesses trinta anos, suavizada numa janela de 31 dias. Os
+        controles escolhem a bacia e o ano; a versão impressa é a de 2024, para as duas
+        bacias.
         """),
-        year_slider,
-        book.figure(plot_year(daily, region, year_slider.value), "ano",
+        mo.hstack([year_basin, year_slider], justify="start", gap=1),
+        book.figure(plot_year(year_basin.value, year_slider.value), "ano",
                     "Figura 2. Um ano dia a dia (temperatura, umidade relativa, VPD, vento e "
                     "chuva) contra o ciclo anual normal de 1991–2020. Na versão impressa, 2024.",
-                    region=slug, save=year_slider.value == 2024),
+                    save=False),
         mo.callout(mo.md(nb.pt(
-            f"Em {year_slider.value}, {int((_hot > 0).sum())} de {len(_hot)} dias ficaram "
-            f"acima da normal de temperatura, com anomalia média de {_hot.mean():+.2f} °C; a "
-            f"chuva do ano ficou {_rain:+.0f} mm em relação à normal.")), kind="info"),
+            f"{SHORT[year_basin.value]}, {year_slider.value}: {int((_hot > 0).sum())} de "
+            f"{len(_hot)} dias acima da normal de temperatura, com anomalia média de "
+            f"{_hot.mean():+.2f} °C; a chuva do ano ficou {_rain:+.0f} mm em relação à "
+            f"normal.")), kind="info"),
         mo.md(r"""
         As cinco variáveis se movem juntas. Quando a chuva para, no meio do ano, a umidade
         relativa cai, o VPD dispara e a amplitude entre a mínima e a máxima se abre; o vento
@@ -254,27 +281,17 @@ def _(daily, region, slug, year_slider):
     return
 
 
-@app.cell(hide_code=True)
-def _(daily):
-    agg = {c: MONTHLY.get(c, "mean") for c in daily.columns}
-    monthly = daily.loc[BASE[0]:BASE[1]].resample("MS").agg(agg)
-    normals = monthly.groupby(monthly.index.month).mean()
-    p10 = monthly.groupby(monthly.index.month).quantile(0.1)
-    p90 = monthly.groupby(monthly.index.month).quantile(0.9)
-    dry = [MONTHS[m - 1] for m in normals.index[normals.precip < 100]]
-    annual_rain = monthly.precip.groupby(monthly.index.year).sum()
-    return agg, annual_rain, dry, normals, p10, p90
-
-
 @app.function(hide_code=True)
-def plot_climogram(normals, p10, p90, region):
+def plot_climogram(slug):
+    d = basin(slug)
+    normals, p10, p90 = d["normals"], d["p10"], d["p90"]
     fig, ax = plt.subplots(figsize=(11, 5), layout="constrained")
     ax.bar(MONTHS, normals.precip, alpha=0.9,
            color=[COLORS["precip"] if v >= 100 else "#9ec3dc" for v in normals.precip])
     ax.errorbar(MONTHS, normals.precip, fmt="none", ecolor="#123f5e", elinewidth=0.8, capsize=3,
                 yerr=[normals.precip - p10.precip, p90.precip - normals.precip])
     ax.axhline(100, color="#123f5e", ls=":", lw=1)
-    ax.set(ylabel="Chuva (mm/mês)", title=f"Climograma · {region} · 1991–2020")
+    ax.set(ylabel="Chuva (mm/mês)", title=f"Climograma · {d['name']} · 1991–2020")
     ax.grid(axis="x", visible=False)
     twin = ax.twinx()
     twin.plot(MONTHS, normals.tmax, color=COLORS["tmax"], ls="--", lw=1.2, label="máxima")
@@ -288,99 +305,128 @@ def plot_climogram(normals, p10, p90, region):
 
 
 @app.function(hide_code=True)
-def plot_cycles(normals, p10, p90):
-    fig, axes = plt.subplots(2, 2, figsize=(12, 7), layout="constrained", sharex=True)
-    for ax, var in zip(axes.flat, ["rh", "vpd", "dtr", "wind"], strict=True):
-        ax.fill_between(MONTHS, p10[var], p90[var], color=COLORS[var], alpha=0.18,
-                        label="10º–90º percentil entre anos")
-        ax.plot(MONTHS, normals[var], color=COLORS[var], marker="o", lw=2)
-        ax.set(title=LABELS[var])
-    axes[0, 0].legend(fontsize=8)
+def plot_cycles():
+    fig, axes = plt.subplots(2, 3, figsize=(15, 7.4), layout="constrained", sharex=True)
+    for ax, var in zip(axes.flat, ["t2m", "precip", "rh", "vpd", "dtr", "wind"], strict=True):
+        for slug in SLUGS:
+            d = basin(slug)
+            ax.fill_between(MONTHS, d["p10"][var], d["p90"][var], color=BASIN_COLORS[slug],
+                            alpha=0.12, lw=0)
+            ax.plot(MONTHS, d["normals"][var], color=BASIN_COLORS[slug], marker="o", lw=2,
+                    ms=4, label=SHORT[slug])
+        ax.set(title=LABELS[var] if var != "precip" else "Chuva (mm/mês)")
+    axes[0, 0].legend(fontsize=9)
     return fig
 
 
 @app.cell(hide_code=True)
-def _(annual_rain, dry, normals, p10, p90, region, slug):
-    _table = normals[["t2m", "tmin", "tmax", "precip", "rh", "vpd", "wind"]].copy()
-    _table.index = MONTHS
-    _table = _table.round(2).rename(columns={k: LABELS[k] for k in _table.columns}).T
-    _peak = MONTHS[int(normals.vpd.idxmax()) - 1]
+def _():
+    climo_basin = basin_picker()
+    return (climo_basin,)
+
+
+@app.cell(hide_code=True)
+def _(climo_basin):
+    _d = basin(climo_basin.value)
+    _dry = [MONTHS[m - 1] for m in _d["normals"].index[_d["normals"].precip < 100]]
+    _peak = MONTHS[int(_d["normals"].vpd.idxmax()) - 1]
+    _rain = {s: basin(s)["annual_rain"].mean() for s in SLUGS}
+    _rows = []
+    for _slug in SLUGS:
+        _n = basin(_slug)["normals"]
+        for _var in ["t2m", "tmin", "tmax", "precip", "rh", "vpd", "wind"]:
+            _rows.append({"Variável": LABELS[_var], "Bacia": SHORT[_slug],
+                          **{m: round(float(_n[_var].iloc[i]), 2) for i, m in enumerate(MONTHS)}})
     mo.vstack([
         mo.md(r"""
         ## 🌦️ O ritmo do ano
 
-        A Figura 3 é o climograma da bacia: a chuva de cada mês na normal de 1991–2020, com
-        a faixa entre o décimo e o nonagésimo percentil dos anos, e as temperaturas média,
-        mínima e máxima. Marcamos como secos os meses com menos de 100 mm, um limiar
+        A Figura 3 é o climograma de uma bacia: a chuva de cada mês na normal de 1991–2020,
+        com a faixa entre o décimo e o nonagésimo percentil dos anos, e as temperaturas
+        média, mínima e máxima. Marcamos como secos os meses com menos de 100 mm, um limiar
         operacional comum em estudos amazônicos: abaixo dele, a floresta tende a transpirar
         mais água do que recebe e passa a depender da reserva do solo [6].
         """),
-        book.figure(plot_climogram(normals, p10, p90, region), "climograma",
+        climo_basin,
+        book.figure(plot_climogram(climo_basin.value), "climograma",
                     "Figura 3. Climograma da normal 1991–2020: chuva mensal (barras claras: "
                     "meses com menos de 100 mm; hastes: 10º e 90º percentis entre os anos) e "
-                    "temperaturas média, mínima e máxima.", region=slug),
+                    "temperaturas média, mínima e máxima.", save=False),
         mo.callout(mo.md(nb.pt(
-            f"Chuva anual normal: {annual_rain.mean():,.0f} mm, de {annual_rain.min():,.0f} "
-            f"a {annual_rain.max():,.0f} mm entre os anos. Meses secos: "
-            f"{', '.join(dry) if dry else 'nenhum'}. Pico do VPD: {_peak}.")), kind="info"),
+            f"{SHORT[climo_basin.value]}: chuva anual normal de "
+            f"{_d['annual_rain'].mean():,.0f} mm, de {_d['annual_rain'].min():,.0f} a "
+            f"{_d['annual_rain'].max():,.0f} mm entre os anos. Meses secos: "
+            f"{', '.join(_dry) if _dry else 'nenhum'}. Pico do VPD: {_peak}.")), kind="info"),
         mo.md(r"""
         As duas bacias têm o regime típico do sul da Amazônia: uma estação chuvosa longa, de
         outubro a maio, com o pico de janeiro a março, e uma estação seca bem marcada, de
         junho a setembro, em que a chuva cai a poucas dezenas de milímetros por mês. A
         temperatura média varia pouco ao longo do ano, de dois a três graus, e chega ao máximo
         no fim da estação seca, em agosto e setembro, quando o céu limpo e o solo mais seco
-        deixam a superfície esquentar. A Figura 4 completa o quadro com as outras variáveis.
+        deixam a superfície esquentar. A Figura 4 sobrepõe o ano normal das duas bacias em
+        seis variáveis.
         """),
-        book.figure(plot_cycles(normals, p10, p90), "ciclo_anual",
-                    "Figura 4. Ciclo anual da umidade relativa, do VPD, da amplitude térmica "
-                    "diária e do vento na normal 1991–2020 (faixa: 10º e 90º percentis entre os "
-                    "anos).", region=slug),
+        book.figure(plot_cycles(), "ciclo_anual",
+                    "Figura 4. Ciclo anual das duas bacias na normal 1991–2020: temperatura, "
+                    "chuva, umidade relativa, VPD, amplitude térmica diária e vento (faixas: "
+                    "10º e 90º percentis entre os anos)."),
+        mo.callout(mo.md(nb.pt(
+            f"Chuva anual normal: {_rain['xingu']:,.0f} mm no Xingu e "
+            f"{_rain['tapajos']:,.0f} mm no Tapajós.")), kind="info"),
         mo.md(r"""
-        Na estação seca, a umidade relativa cai de quase 90% para perto de 60%, o VPD
-        quadruplica, a amplitude térmica diária passa de 7 para 12 graus e o vento ganha
-        força. As faixas mostram outra coisa importante: a variação entre anos da umidade e do VPD é maior
-        na estação seca. Um agosto pode ser muito mais seco que outro, enquanto os meses
-        chuvosos se parecem mais entre si. Diferenças de variabilidade ao longo do ano como essa são
-        a razão de padronizarmos as séries antes de analisar a sua dinâmica, como veremos no
-        fim do capítulo. A Tabela 2 reúne as normais mensais.
+        As duas curvas quase se confundem, o que é esperado para bacias vizinhas que
+        atravessam a mesma faixa de latitude. O Tapajós chove um pouco mais, cerca de 200 mm
+        por ano, distribuídos por quase todos os meses, e a sua estação seca termina um pouco
+        antes, com setembro menos seco; o Xingu tem um VPD ligeiramente maior em setembro.
+        Na estação seca, nas duas, a umidade relativa cai de quase 90% para perto de 60%, o
+        VPD quadruplica, a amplitude térmica diária passa de 7 para 12 graus e o vento ganha
+        força. As faixas mostram outra coisa importante: a variação entre anos da umidade e
+        do VPD é maior na estação seca; um agosto pode ser muito mais seco que outro, enquanto
+        os meses chuvosos se parecem mais entre si. Diferenças de variabilidade ao longo do
+        ano como essa são a razão de padronizarmos as séries antes de analisar a sua
+        dinâmica, como veremos no fim do capítulo. A Tabela 2 reúne as normais mensais.
         """),
-        book.table(_table.reset_index(names="Variável"), "normais_mensais",
-                   "Tabela 2. Normais mensais de 1991–2020, médias da bacia (chuva em "
-                   "mm/mês).", region=slug, selection=None),
+        book.table(pd.DataFrame(_rows), "normais_mensais",
+                   "Tabela 2. Normais mensais de 1991–2020, médias de cada bacia (chuva em "
+                   "mm/mês).", selection=None),
     ])
     return
 
 
-@app.cell(hide_code=True)
-def _(inside, summary):
-    by_month = (summary.sel(month=slice(*BASE))[
+@app.function(hide_code=True)
+@mo.cache
+def normal_fields(slug):
+    d = basin(slug)
+    by_month = (d["summary"].sel(month=slice(*BASE))[
         [f"cell_{v}" for v in ["t2m", "precip", "vpd", "dtr", "wind", "rh"]]]
         .groupby("month.month").mean())
-    fields = {
+    return by_month, {
         "t2m": (by_month.cell_t2m.mean("month"), "YlOrRd", "Temperatura média (°C)"),
         "precip": (by_month.cell_precip.sum("month", min_count=12), "YlGnBu",
                    "Chuva anual (mm)"),
-        "dry": ((by_month.cell_precip < 100).sum("month").where(inside), "OrRd",
+        "dry": ((by_month.cell_precip < 100).sum("month").where(d["inside"]), "OrRd",
                 "Meses secos (< 100 mm)"),
         "vpd": (by_month.cell_vpd.mean("month"), "YlOrBr", "VPD médio (kPa)"),
         "dtr": (by_month.cell_dtr.mean("month"), "PuRd", "Amplitude térmica (°C)"),
         "wind": (by_month.cell_wind.mean("month"), "PuBu", "Vento médio (m/s)"),
     }
-    return by_month, fields
 
 
 @app.function(hide_code=True)
-def plot_normal_maps(cells, fields, limit, rivers, region):
-    fig, axes = plt.subplots(2, 3, figsize=(14, 14), layout="constrained")
-    for ax, (field, cmap, label) in zip(axes.flat, fields.values(), strict=True):
-        map_cells(ax, cells, field, cmap, label, outline=limit, lines=rivers)
+def plot_normal_maps():
+    fig, axes = plt.subplots(2, 3, figsize=(15, 13), layout="constrained")
+    for ax, key in zip(axes.flat, ["t2m", "precip", "dry", "vpd", "dtr", "wind"], strict=True):
+        _, cmap, label = normal_fields("xingu")[1][key]
+        map_basins(ax, [(basin(s)["cells"], normal_fields(s)[1][key][0], basin(s)["limit"])
+                        for s in SLUGS], cmap, label)
         ax.set_title(label)
-    fig.suptitle(f"Normal 1991–2020 · {region}", fontsize=14, x=0.02, ha="left")
     return fig
 
 
 @app.function(hide_code=True)
-def latitude_profile(summary, fields):
+def latitude_profile(slug):
+    summary = basin(slug)["summary"]
+    fields = normal_fields(slug)[1]
     w = summary.weight_km2
     keep = w.sum("longitude").values > 0
     return pd.DataFrame({
@@ -390,59 +436,72 @@ def latitude_profile(summary, fields):
 
 
 @app.function(hide_code=True)
-def plot_profile(profile, region):
+def plot_profile():
     fig, axes = plt.subplots(1, 4, figsize=(13, 6), sharey=True, layout="constrained")
-    for ax, (key, color, label) in zip(axes, [
-            ("t2m", COLORS["t2m"], "Temperatura (°C)"),
-            ("precip", COLORS["precip"], "Chuva anual (mm)"),
-            ("dry", "#b0523b", "Meses secos"), ("vpd", COLORS["vpd"], "VPD (kPa)")], strict=True):
-        ax.plot(profile[key], profile.index, color=color, lw=2.4)
-        ax.set(title=label)
+    for slug in SLUGS:
+        profile = latitude_profile(slug)
+        for ax, (key, label) in zip(axes, [
+                ("t2m", "Temperatura (°C)"), ("precip", "Chuva anual (mm)"),
+                ("dry", "Meses secos"), ("vpd", "VPD (kPa)")], strict=True):
+            ax.plot(profile[key], profile.index, color=BASIN_COLORS[slug], lw=2.2,
+                    label=SHORT[slug])
+            ax.set(title=label)
     axes[0].set_ylabel("Latitude (°)")
-    fig.suptitle(f"Perfil norte–sul · {region} · normal 1991–2020", fontsize=13, x=0.02,
-                 ha="left")
+    axes[0].legend(fontsize=9)
     return fig
 
 
 @app.function(hide_code=True)
-def plot_seasons(cells, by_month, normals, limit, rivers):
-    rolling = pd.concat([normals.precip, normals.precip.iloc[:2]]).rolling(3).sum().iloc[2:]
+def plot_seasons():
+    rain = (basin("xingu")["normals"].precip + basin("tapajos")["normals"].precip) / 2
+    rolling = pd.concat([rain, rain.iloc[:2]]).rolling(3).sum().iloc[2:]
     rolling.index = [(m - 3) % 12 + 1 for m in range(3, 15)]
 
     def quarter(start):
         return [(start + k - 1) % 12 + 1 for k in range(3)]
 
-    starts = [int(rolling.idxmax()), int(rolling.idxmin())]
-    fig, axes = plt.subplots(1, 4, figsize=(16, 7.8), layout="constrained")
-    axes = np.reshape(axes, (2, 2))
-    for row, start in enumerate(starts):
-        sel = by_month.sel(month=quarter(start))
-        name = "–".join(MONTHS[m - 1] for m in quarter(start))
-        map_cells(axes[row, 0], cells, sel.cell_precip.sum("month") / 3, "YlGnBu", "mm/mês",
-                  outline=limit, lines=rivers, vmin=0, vmax=float(by_month.cell_precip.max()))
-        map_cells(axes[row, 1], cells, sel.cell_vpd.mean("month"), "YlOrBr", "kPa",
-                  outline=limit, lines=rivers, vmin=0, vmax=float(by_month.cell_vpd.max()))
+    by = {s: normal_fields(s)[0] for s in SLUGS}
+    top_rain = max(float(b.cell_precip.max()) for b in by.values())
+    top_vpd = max(float(b.cell_vpd.max()) for b in by.values())
+    fig, axes = plt.subplots(2, 2, figsize=(12, 13), layout="constrained")
+    for row, start in enumerate([int(rolling.idxmax()), int(rolling.idxmin())]):
+        months = quarter(start)
+        name = "–".join(MONTHS[m - 1] for m in months)
+        map_basins(axes[row, 0], [(basin(s)["cells"],
+                                   by[s].cell_precip.sel(month=months).sum("month") / 3,
+                                   basin(s)["limit"]) for s in SLUGS],
+                   "YlGnBu", "mm/mês", vmin=0, vmax=top_rain)
+        map_basins(axes[row, 1], [(basin(s)["cells"],
+                                   by[s].cell_vpd.sel(month=months).mean("month"),
+                                   basin(s)["limit"]) for s in SLUGS],
+                   "YlOrBr", "kPa", vmin=0, vmax=top_vpd)
         axes[row, 0].set_title(f"Chuva · {name}")
         axes[row, 1].set_title(f"VPD · {name}")
     return fig
 
 
 @app.cell(hide_code=True)
-def _(by_month, cells, fields, limit, normals, region, rivers, slug, summary):
-    _profile = latitude_profile(summary, fields)
-    _north, _south = _profile.iloc[:8].mean(), _profile.iloc[-8:].mean()
+def _():
+    _p = {s: latitude_profile(s) for s in SLUGS}
+    _txt = "; ".join(
+        f"{SHORT[s]}: chuva de {_p[s].iloc[:8].precip.mean():,.0f} contra "
+        f"{_p[s].iloc[-8:].precip.mean():,.0f} mm por ano, {_p[s].iloc[:8].dry.mean():.1f} "
+        f"contra {_p[s].iloc[-8:].dry.mean():.1f} meses secos e VPD de "
+        f"{_p[s].iloc[:8].vpd.mean():.2f} contra {_p[s].iloc[-8:].vpd.mean():.2f} kPa"
+        for s in SLUGS)
     mo.vstack([
         mo.md(r"""
         ## 🧭 A geografia do clima
 
-        A média da bacia esconde diferenças grandes. A Figura 5 mostra a mesma normal de
-        1991–2020, agora célula por célula, para seis grandezas; cada painel tem a sua escala
-        de cor, e os rios principais aparecem como referência.
+        A média de cada bacia esconde diferenças grandes. A Figura 5 mostra a mesma normal
+        de 1991–2020, agora célula por célula, nas duas bacias, que aparecem lado a lado como
+        estão no território, o Tapajós a oeste e o Xingu a leste. Cada painel tem a sua escala
+        de cor, comum às duas bacias.
         """),
-        book.figure(plot_normal_maps(cells, fields, limit, rivers, region), "mapas_normal",
-                    "Figura 5. Normal 1991–2020 por célula ERA5: temperatura média, chuva "
-                    "anual, número de meses com menos de 100 mm, VPD médio, amplitude térmica "
-                    "diária e vento.", region=slug),
+        book.figure(plot_normal_maps(), "mapas_normal",
+                    "Figura 5. Normal 1991–2020 por célula ERA5 nas duas bacias: temperatura "
+                    "média, chuva anual, número de meses com menos de 100 mm, VPD médio, "
+                    "amplitude térmica diária e vento."),
         mo.md(r"""
         O padrão dominante é um gradiente de norte a sul. O norte das bacias, perto do
         Amazonas, é mais chuvoso, tem uma estação seca curta e um ar mais úmido. O sul, nas
@@ -451,16 +510,13 @@ def _(by_month, cells, fields, limit, normals, region, rivers, slug, summary):
         Cerrado. A temperatura média segue o relevo mais que a latitude: as terras altas do
         sul são um pouco mais frescas na média, embora tenham máximas altas na estação seca.
         A Figura 6 resume o gradiente com a média de cada faixa de latitude, ponderada pela
-        área.
+        área, para cada bacia.
         """),
-        book.figure(plot_profile(_profile, region), "perfil_norte_sul",
+        book.figure(plot_profile(), "perfil_norte_sul",
                     "Figura 6. Médias por faixa de latitude, ponderadas pela área das células, "
-                    "na normal 1991–2020.", region=slug),
+                    "na normal 1991–2020, nas duas bacias."),
         mo.callout(mo.md(nb.pt(
-            f"Dois graus mais ao norte contra dois graus mais ao sul: chuva de "
-            f"{_north.precip:,.0f} contra {_south.precip:,.0f} mm por ano, "
-            f"{_north.dry:.1f} contra {_south.dry:.1f} meses secos e VPD de "
-            f"{_north.vpd:.2f} contra {_south.vpd:.2f} kPa.")), kind="info"),
+            f"Dois graus mais ao norte contra dois graus mais ao sul. {_txt}.")), kind="info"),
         mo.callout(mo.md(
             "O sul de cada bacia é ao mesmo tempo o mais seco, o mais sazonal e o mais "
             "desmatado. Qualquer comparação entre células perturbadas e preservadas que não "
@@ -471,42 +527,31 @@ def _(by_month, cells, fields, limit, normals, region, rivers, slug, summary):
         A Figura 7 mostra o mesmo gradiente nas duas estações: o trimestre mais chuvoso e o
         mais seco da normal, com a mesma escala de cor para cada variável nos dois.
         """),
-        book.figure(plot_seasons(cells, by_month, normals, limit, rivers), "estacoes",
+        book.figure(plot_seasons(), "estacoes",
                     "Figura 7. Chuva média mensal e VPD no trimestre mais chuvoso (acima) e no "
-                    "mais seco (abaixo) da normal 1991–2020; mesma escala de cor por variável.",
-                    region=slug),
+                    "mais seco (abaixo) da normal 1991–2020; mesma escala de cor por variável."),
         mo.md(r"""
-        No trimestre chuvoso a bacia inteira recebe chuva abundante e o VPD é baixo em toda
-        parte. No seco, a chuva quase desaparece no sul enquanto o norte ainda recebe alguma,
-        e o VPD do sul chega a quase o dobro do que se vê no norte. O contraste entre norte e sul,
-        portanto, é sobretudo um contraste de estação seca.
+        No trimestre chuvoso as duas bacias inteiras recebem chuva abundante e o VPD é baixo
+        em toda parte. No seco, a chuva quase desaparece no sul enquanto o norte ainda
+        recebe alguma, e o VPD do sul chega a quase o dobro do que se vê no norte. O
+        contraste entre norte e sul, portanto, é sobretudo um contraste de estação seca.
         """),
     ])
     return
 
 
-@app.cell(hide_code=True)
-def _(agg, daily, summary):
-    annual = daily.resample("YS").agg(agg)
-    annual.index = annual.index.year
-    _w = summary.weight_km2
-    annual["dry_spell"] = ((summary.longest_dry_spell * _w).sum(("latitude", "longitude"))
-                           .values / float(_w.sum()))
-    annual["hottest"] = daily.tmax.resample("YS").max().values
-    anomaly = annual.t2m - annual.loc[1991:2020].t2m.mean()
-    return annual, anomaly
-
-
 @app.function(hide_code=True)
-def plot_stripes(anomaly, region):
-    fig, ax = plt.subplots(figsize=(13, 2.6), layout="constrained")
-    lim = float(np.abs(anomaly).max())
-    ax.bar(anomaly.index, 1, width=1, color=plt.cm.RdBu_r((anomaly + lim) / (2 * lim)))
-    ax.set(xlim=(anomaly.index[0] - 0.5, anomaly.index[-1] + 0.5), yticks=[],
-           title=f"{region} · anomalia anual da temperatura em relação a 1991–2020")
-    ax.grid(False)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
+def plot_stripes():
+    fig, axes = plt.subplots(2, 1, figsize=(13, 3.6), layout="constrained", sharex=True)
+    lim = max(float(np.abs(basin(s)["anomaly"]).max()) for s in SLUGS)
+    for ax, slug in zip(axes, SLUGS, strict=True):
+        anomaly = basin(slug)["anomaly"]
+        ax.bar(anomaly.index, 1, width=1, color=plt.cm.RdBu_r((anomaly + lim) / (2 * lim)))
+        ax.set(xlim=(anomaly.index[0] - 0.5, anomaly.index[-1] + 0.5), yticks=[])
+        ax.set_ylabel(SHORT[slug], rotation=0, ha="right", va="center")
+        ax.grid(False)
+        for spine in ax.spines.values():
+            spine.set_visible(False)
     return fig
 
 
@@ -526,78 +571,88 @@ def trend_table(annual):
 
 
 @app.function(hide_code=True)
-def plot_trends(annual, trends):
-    years = annual.index.values.astype(float)
+def plot_trends():
     fig, axes = plt.subplots(3, 2, figsize=(13, 10), sharex=True, layout="constrained")
-    for ax, (var, label), (_, row) in zip(axes.flat, TREND_SERIES, trends.iterrows(),
-                                          strict=True):
-        values = annual[var].values
-        slope = row["Tendência 1990–2024 (/década)"] / 10
-        ax.plot(years, values, "o-", color=COLORS.get(var, "#b0523b"), ms=3.5, lw=1.2)
-        middle = np.nanmedian(values) - slope * np.nanmedian(years)
-        ax.plot(years, middle + slope * years, color=COLORS["ink"], ls="--", lw=1.3)
+    for slug in SLUGS:
+        annual = basin(slug)["annual"]
+        years = annual.index.values.astype(float)
+        trends = trend_table(annual)
+        for ax, (var, label), (_, row) in zip(axes.flat, TREND_SERIES, trends.iterrows(),
+                                              strict=True):
+            values = annual[var].values
+            slope = row["Tendência 1990–2024 (/década)"] / 10
+            ax.plot(years, values, "o-", color=BASIN_COLORS[slug], ms=3, lw=1, alpha=0.85,
+                    label=nb.pt(f"{SHORT[slug]} · {10 * slope:+.3g}/década "
+                                f"(p = {row['p 1990–2024']:.3f})"))
+            middle = np.nanmedian(values) - slope * np.nanmedian(years)
+            ax.plot(years, middle + slope * years, color=BASIN_COLORS[slug], ls="--", lw=1.3)
+            ax.set_title(label, fontsize=10)
+    for ax in axes.flat:
         ax.axvspan(1990, 2000.5, color="#eeeeee", zorder=0)
-        ax.set_title(nb.pt(f"{label} · {10 * slope:+.3g}/década (p = {row['p 1990–2024']:.3f})"),
-                     fontsize=10)
+        ax.legend(fontsize=8, loc="best")
     return fig
 
 
 @app.cell(hide_code=True)
-def _(annual, anomaly, region, slug):
-    trends = trend_table(annual)
-    _t = trends.set_index("Variável")
+def _():
+    _an = {s: basin(s)["anomaly"] for s in SLUGS}
+    _tr = {s: trend_table(basin(s)["annual"]).set_index("Variável") for s in SLUGS}
+    _rows = []
+    for _var, _label in TREND_SERIES:
+        _row = {"Variável": _label}
+        for _slug in SLUGS:
+            _t = _tr[_slug].loc[_label]
+            _row[f"{SHORT[_slug]}, 1990–2024"] = round(_t.iloc[0], 3)
+            _row[f"p ({SHORT[_slug]})"] = round(_t.iloc[1], 3)
+            _row[f"{SHORT[_slug]}, 2001–2024"] = round(_t.iloc[2], 3)
+            _row[f"p 2001+ ({SHORT[_slug]})"] = round(_t.iloc[3], 3)
+        _rows.append(_row)
     mo.vstack([
         mo.md(r"""
         ## 🔥 O que mudou em 35 anos
 
         A Figura 8 resume a história da temperatura numa faixa de cores, à maneira das
         listras de Ed Hawkins: cada ano é uma barra, azul se foi mais frio que a normal de
-        1991–2020 e vermelha se foi mais quente.
+        1991–2020 e vermelha se foi mais quente, uma faixa para cada bacia.
         """),
-        book.figure(plot_stripes(anomaly, region), "listras",
-                    "Figura 8. Anomalia anual da temperatura média da bacia em relação à normal "
-                    "1991–2020.", region=slug),
-        mo.callout(mo.md(nb.pt(
-            f"Ano mais quente: {anomaly.idxmax()} ({anomaly.max():+.2f} °C); mais frio: "
-            f"{anomaly.idxmin()} ({anomaly.min():+.2f} °C). Os cinco mais quentes: "
-            f"{', '.join(map(str, sorted(anomaly.sort_values().index[-5:])))}.")),
+        book.figure(plot_stripes(), "listras",
+                    "Figura 8. Anomalia anual da temperatura média de cada bacia em relação à "
+                    "normal 1991–2020, com a mesma escala de cor nas duas."),
+        mo.callout(mo.md(nb.pt(" ".join(
+            f"{SHORT[s]}: ano mais quente {_an[s].idxmax()} ({_an[s].max():+.2f} °C), mais "
+            f"frio {_an[s].idxmin()} ({_an[s].min():+.2f} °C)." for s in SLUGS))),
             kind="info"),
         mo.md(r"""
-        A passagem do azul para o vermelho é quase monótona, e os anos mais quentes estão
-        todos na segunda metade do período, com 2024 no topo nas duas bacias. Para dar
-        números a essa impressão, a Figura 9 mostra as médias anuais de seis grandezas com a
-        tendência estimada pelo método de Theil–Sen, a mediana das inclinações entre todos
-        os pares de anos, que não se deixa levar por um ano atípico [7]. A significância vem
-        do teste de Mann–Kendall com a correção de Hamed e Rao [8], que leva em conta que um
-        ano quente tende a ser seguido de outro, como acontece com os ciclos do El Niño;
-        sem essa correção, o p seria otimista.
+        A passagem do azul para o vermelho é quase monótona e simultânea nas duas bacias, e
+        os anos mais quentes estão todos na segunda metade do período, com 2024 no topo. Para
+        dar números a essa impressão, a Figura 9 mostra as médias anuais de seis grandezas
+        com a tendência estimada pelo método de Theil–Sen, a mediana das inclinações entre
+        todos os pares de anos, que não se deixa levar por um ano atípico [7]. A
+        significância vem do teste de Mann–Kendall com a correção de Hamed e Rao [8], que
+        leva em conta que um ano quente tende a ser seguido de outro, como acontece com os
+        ciclos do El Niño; sem essa correção, o p seria otimista.
         """),
-        book.figure(plot_trends(annual, trends), "series_anuais",
-                    "Figura 9. Médias anuais (chuva: total anual) com a tendência de Theil–Sen "
-                    "(tracejado) e o p de Mann–Kendall corrigido para autocorrelação; em cinza, "
-                    "o período anterior à janela de análise.", region=slug),
-        mo.callout(mo.md(nb.pt(
-            f"Tendências de 1990 a 2024, por década: temperatura média "
-            f"{_t.loc['Temperatura média (°C)'].iloc[0]:+.2f} °C, máxima "
-            f"{_t.loc['Máxima média (°C)'].iloc[0]:+.2f} °C, VPD "
-            f"{_t.loc['VPD médio (kPa)'].iloc[0]:+.3f} kPa, umidade relativa "
-            f"{_t.loc['Umidade relativa (%)'].iloc[0]:+.1f} pontos e chuva "
-            f"{_t.loc['Chuva anual (mm)'].iloc[0]:+.0f} mm "
-            f"(p = {_t.loc['Chuva anual (mm)'].iloc[1]:.3f}).")), kind="info"),
+        book.figure(plot_trends(), "series_anuais",
+                    "Figura 9. Médias anuais das duas bacias (chuva: total anual) com a "
+                    "tendência de Theil–Sen (tracejado) e o p de Mann–Kendall corrigido para "
+                    "autocorrelação; em cinza, o período anterior à janela de análise."),
         mo.md(r"""
-        O quadro é de um clima que esquenta e seca. A temperatura média subiu de 0,3 a 0,4 °C
-        por década, a máxima subiu mais depressa, perto de 0,4 a 0,5 °C, o ar ficou mais
-        seco, com a umidade relativa caindo e o VPD subindo cerca de um décimo de
-        quilopascal por década, e a chuva anual caiu algumas dezenas de milímetros por
-        década, uma tendência menos nítida que as outras, porque a chuva varia muito de um
-        ano para outro. Esses números estão em linha com o que se observa no sul da
-        Amazônia, onde a estação seca ficou mais quente e mais longa nas últimas décadas [9].
-        A Tabela 3 traz todas as tendências, também para 2001–2024, a janela de análise dos
-        capítulos seguintes.
+        O quadro é de um clima que esquenta e seca, nas duas bacias. A temperatura média
+        subiu de 0,3 a 0,4 °C por década, a máxima subiu mais depressa, perto de 0,4 a
+        0,5 °C, o ar ficou mais seco, com a umidade relativa caindo e o VPD subindo cerca de
+        um décimo de quilopascal por década, e a chuva anual caiu algumas dezenas de
+        milímetros por década, uma tendência menos nítida que as outras, porque a chuva
+        varia muito de um ano para outro. A maior sequência de dias sem chuva de cada ano,
+        por sua vez, ficou cerca de dez dias mais longa por década, uma das tendências mais
+        claras da figura: chove um pouco menos no total, mas a estação seca ficou mais
+        comprida. Esses números estão em linha com o que se observa
+        no sul da Amazônia, onde a estação seca ficou mais quente e mais longa nas últimas
+        décadas [9]. A Tabela 3 traz todas as tendências, também para 2001–2024, a janela de
+        análise dos capítulos seguintes.
         """),
-        book.table(trends.round(4), "tendencias",
+        book.table(pd.DataFrame(_rows), "tendencias",
                    "Tabela 3. Tendências de Theil–Sen por década e p de Mann–Kendall com a "
-                   "correção de Hamed e Rao, em 1990–2024 e em 2001–2024.", region=slug,
+                   "correção de Hamed e Rao, em 1990–2024 e em 2001–2024, nas duas bacias.",
                    selection=None),
         mo.callout(mo.md(
             "Trinta e cinco anos é pouco para separar uma tendência de uma oscilação de "
@@ -624,68 +679,74 @@ def trend_field(field, inside):
     return slope, (p.copy(data=q.reshape(p.shape)) < 0.05) & inside
 
 
-@app.cell(hide_code=True)
-def _(inside, summary):
-    _group = summary[["cell_t2m", "cell_vpd", "cell_precip"]].groupby("month.year")
-    annual_cells = xr.merge([_group.mean()[["cell_t2m", "cell_vpd"]],
-                             _group.sum(min_count=12)[["cell_precip"]],
+@app.function(hide_code=True)
+@mo.cache
+def trend_maps(slug):
+    summary, inside = basin(slug)["summary"], basin(slug)["inside"]
+    group = summary[["cell_t2m", "cell_vpd", "cell_precip"]].groupby("month.year")
+    annual_cells = xr.merge([group.mean()[["cell_t2m", "cell_vpd"]],
+                             group.sum(min_count=12)[["cell_precip"]],
                              summary[["hottest_day"]]])
-    trend_maps = {var: trend_field(annual_cells[var], inside)
-                  for var in ["cell_t2m", "hottest_day", "cell_vpd", "cell_precip"]}
-    return (trend_maps,)
+    return {var: trend_field(annual_cells[var], inside)
+            for var in ["cell_t2m", "hottest_day", "cell_vpd", "cell_precip"]}
 
 
 @app.function(hide_code=True)
-def plot_trend_maps(cells, trend_maps, limit, rivers):
+def plot_trend_maps():
     meta = {"cell_t2m": ("Temperatura média", "°C/década", "RdBu_r"),
             "hottest_day": ("Dia mais quente do ano", "°C/década", "RdBu_r"),
             "cell_vpd": ("VPD médio", "kPa/década", "BrBG_r"),
             "cell_precip": ("Chuva anual", "mm/década", "BrBG")}
-    fig, axes = plt.subplots(1, 4, figsize=(16, 7.8), layout="constrained")
-    for ax, (var, (slope, significant)) in zip(axes, trend_maps.items(), strict=True):
-        title, label, cmap = meta[var]
-        lim = float(np.nanmax(np.abs(slope)))
-        map_cells(ax, cells, slope, cmap, label, outline=limit, lines=rivers,
-                  norm=TwoSlopeNorm(0, -lim, lim), stipple=significant)
+    maps = {s: trend_maps(s) for s in SLUGS}
+    fig, axes = plt.subplots(1, 4, figsize=(18, 7.6), layout="constrained")
+    for ax, (var, (title, label, cmap)) in zip(axes, meta.items(), strict=True):
+        lim = max(float(np.nanmax(np.abs(maps[s][var][0]))) for s in SLUGS)
+        map_basins(ax, [(basin(s)["cells"], maps[s][var][0], basin(s)["limit"],
+                         maps[s][var][1]) for s in SLUGS], cmap, label,
+                   norm=TwoSlopeNorm(0, -lim, lim))
         ax.set_title(title, fontsize=10.5)
     return fig
 
 
 @app.cell(hide_code=True)
-def _(cells, limit, rivers, slug, trend_maps):
-    _share = {v: float(s.sum() / np.isfinite(t).sum()) for v, (t, s) in trend_maps.items()}
+def _():
+    _share = {s: {v: float(m.sum() / np.isfinite(t).sum()) for v, (t, m) in trend_maps(s).items()}
+              for s in SLUGS}
     mo.vstack([
         mo.md(r"""
         A tendência também tem geografia. A Figura 10 repete o cálculo em cada célula, para
         quatro grandezas, e marca com pontos as células em que a tendência é significativa
-        depois de corrigir para o número de células testadas, pelo método de
+        depois de corrigir para o número de células testadas em cada bacia, pelo método de
         Benjamini–Hochberg [10].
         """),
-        book.figure(plot_trend_maps(cells, trend_maps, limit, rivers), "mapas_tendencia",
-                    "Figura 10. Tendência de Theil–Sen de 1990 a 2024 por célula; pontos: "
-                    "q < 0,05 (Benjamini–Hochberg sobre as células, com o p de Mann–Kendall "
-                    "corrigido para autocorrelação).", region=slug),
-        mo.callout(mo.md(nb.pt("Fração de células com tendência significativa: " + ", ".join(
-            f"{name} {100 * _share[v]:.0f}%" for v, name in [
-                ("cell_t2m", "temperatura"), ("hottest_day", "dia mais quente"),
-                ("cell_vpd", "VPD"), ("cell_precip", "chuva")]) + ".")), kind="info"),
+        book.figure(plot_trend_maps(), "mapas_tendencia",
+                    "Figura 10. Tendência de Theil–Sen de 1990 a 2024 por célula, nas duas "
+                    "bacias; pontos: q < 0,05 (Benjamini–Hochberg sobre as células de cada "
+                    "bacia, com o p de Mann–Kendall corrigido para autocorrelação)."),
+        mo.callout(mo.md(nb.pt("Fração de células com tendência significativa. " + " ".join(
+            f"{SHORT[s]}: " + ", ".join(
+                f"{name} {100 * _share[s][v]:.0f}%" for v, name in [
+                    ("cell_t2m", "temperatura"), ("hottest_day", "dia mais quente"),
+                    ("cell_vpd", "VPD"), ("cell_precip", "chuva")]) + "." for s in SLUGS))),
+            kind="info"),
         mo.md(r"""
         O aquecimento e o aumento do VPD são gerais: aparecem em praticamente todas as
         células, com significância na grande maioria delas. A intensidade varia, com núcleos
         mais fortes em algumas faixas e um aquecimento menor perto da foz, mas o padrão é
-        largo e suave, como se espera de uma mudança regional, e não tem o desenho recortado
-        do desmatamento que veremos no próximo capítulo. A tendência da chuva
-        é mais fraca e significativa em menos células. Células vizinhas não são
-        independentes, e por isso os mapas devem ser lidos pelo padrão de conjunto, e não
-        célula por célula.
+        largo e suave, contínuo de uma bacia para a outra, como se espera de uma mudança
+        regional, e não tem o desenho recortado do desmatamento que veremos no próximo
+        capítulo. A tendência da chuva é mais fraca e significativa em menos células. Células
+        vizinhas não são independentes, e por isso os mapas devem ser lidos pelo padrão de
+        conjunto, e não célula por célula.
         """),
     ])
     return
 
 
 @app.function(hide_code=True)
-def plot_monthly_anomalies(daily, agg):
-    months = daily.resample("MS").agg(agg)
+def plot_monthly_anomalies(slug):
+    daily = basin(slug)["daily"]
+    months = daily.resample("MS").agg(agg_of(daily))
     normal = months.loc[BASE[0]:BASE[1]].groupby(lambda d: d.month).mean()
     t_anom = months.t2m - normal.t2m.reindex(months.index.month).values
     r_anom = 100 * (months.precip / normal.precip.reindex(months.index.month).values - 1)
@@ -703,125 +764,96 @@ def plot_monthly_anomalies(daily, agg):
                yticklabels=data.index[::2], title=label)
         ax.grid(False)
         fig.colorbar(im, ax=ax, shrink=0.6)
+    fig.suptitle(basin(slug)["name"], x=0.02, ha="left", fontsize=13)
     return fig
 
 
 @app.function(hide_code=True)
-def plot_extremes(daily, annual, summary):
-    t_daily, _ = anomalies(daily.tmax, BASE)
+def hot_days(slug):
+    t_daily, _ = anomalies(basin(slug)["daily"].tmax, BASE)
     threshold = t_daily.loc[BASE[0]:BASE[1]].quantile(0.9)
-    hot_days = (t_daily > threshold).groupby(t_daily.index.year).sum()
-    w = summary.weight_km2
-    rain_days = (summary.rain_days * w).sum(("latitude", "longitude")).values / float(w.sum())
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4.2), layout="constrained")
-    axes[0].bar(hot_days.index, hot_days,
-                color=[COLORS["tmax"] if v > 36.5 else "#e2a39a" for v in hot_days])
-    axes[0].axhline(36.5, color=COLORS["ink"], ls=":", lw=1)
-    axes[0].set(title='Dias "quentes para a época" por ano', ylabel="dias")
-    axes[1].plot(annual.index, annual.dry_spell, "o-", color="#b0523b", ms=3.5)
-    axes[1].set(title="Maior sequência sem chuva (< 1 mm/dia)", ylabel="dias")
-    axes[2].plot(annual.index, rain_days, "o-", color=COLORS["precip"], ms=3.5)
-    axes[2].set(title="Dias com chuva (≥ 1 mm) por ano", ylabel="dias")
-    return fig, hot_days
-
-
-@app.cell(hide_code=True)
-def _(agg, annual, daily, slug, summary):
-    _fig, _hot = plot_extremes(daily, annual, summary)
-    mo.vstack([
-        mo.md(r"""
-        ## ⚡ Anomalias e extremos
-
-        Médias anuais escondem quando, dentro do ano, as coisas aconteceram. Na Figura 11,
-        cada quadrado é um mês de um ano, colorido pela sua anomalia em relação à normal
-        daquele mês: vermelho é mais quente e marrom é mais seco que o normal.
-        """),
-        book.figure(plot_monthly_anomalies(daily, agg), "anomalias_mensais",
-                    "Figura 11. Anomalias mensais de temperatura (°C) e de chuva (%) em "
-                    "relação à normal 1991–2020 de cada mês.", region=slug),
-        mo.md(r"""
-        Os episódios conhecidos aparecem com clareza. Os El Niño fortes de 1997–1998,
-        2015–2016 e 2023–2024 formam blocos vermelhos de muitos meses seguidos, e o último
-        é o mais quente de todos. As secas de 2005 e 2010, ligadas ao aquecimento do
-        Atlântico Norte tropical [11], aparecem como estações secas mais quentes e mais
-        longas. O vermelho vai ficando mais frequente de baixo para cima, a mesma tendência
-        das listras, agora mês a mês. A Figura 12 olha para três tipos de extremo.
-        """),
-        book.figure(_fig, "extremos",
-                    "Figura 12. Dias por ano com a máxima da bacia acima do 90º percentil das "
-                    "anomalias de 1991–2020 (cerca de 36,5 por ano, por construção, no período "
-                    "de referência; barras escuras acima disso), maior sequência de dias secos "
-                    "(calculada por célula e promediada) e número de dias com chuva.",
-                    region=slug),
-        mo.callout(mo.md(nb.pt(
-            f"Dias quentes para a época em 2024: {int(_hot.loc[2024])}, contra uma média de "
-            f"{_hot.loc[1991:2020].mean():.0f} na normal.")), kind="info"),
-        mo.md(r"""
-        O número de dias quentes para a época, que por construção é de cerca de 36 por ano
-        na normal, fica acima disso na maioria dos anos desde 2015 e chega a três ou quatro
-        vezes o normal nos anos de El Niño, como 2015–2016 e 2023–2024; a seca de 2010 já
-        tinha mostrado um salto parecido. As sequências secas mais longas e o número de
-        dias de chuva oscilam mais e mostram tendências menos nítidas, coerentes com o que a
-        Figura 9 mostrou para a chuva.
-        """),
-    ])
-    return
+    return (t_daily > threshold).groupby(t_daily.index.year).sum()
 
 
 @app.function(hide_code=True)
-def compare_regions(slugs):
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4.3), layout="constrained")
-    for slug, kw in zip(slugs, [{"color": COLORS["t2m"]},
-                                {"color": COLORS["ink"], "ls": "--"}], strict=True):
-        cfg = load_region(slug)
-        frame = regional_frame(summarize(cfg, 1990, 2024))
-        agg = {c: MONTHLY.get(c, "mean") for c in frame.columns}
-        monthly = frame.loc[BASE[0]:BASE[1]].resample("MS").agg(agg)
-        normal = monthly.groupby(monthly.index.month).mean()
-        for ax, var in zip(axes, ["t2m", "precip", "vpd"], strict=True):
-            ax.plot(MONTHS, normal[var], marker="o", label=cfg["name"], **kw)
-    for ax, title in zip(axes, ["Temperatura média (°C)", "Chuva (mm/mês)", "VPD (kPa)"],
-                         strict=True):
-        ax.set_title(title)
+def plot_extremes():
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.4), layout="constrained")
+    for k, slug in enumerate(SLUGS):
+        d = basin(slug)
+        hot = hot_days(slug)
+        axes[0].bar(hot.index + (k - 0.5) * 0.4, hot, width=0.4, color=BASIN_COLORS[slug],
+                    label=SHORT[slug])
+        w = d["summary"].weight_km2
+        rain_days = ((d["summary"].rain_days * w).sum(("latitude", "longitude")).values
+                     / float(w.sum()))
+        axes[1].plot(d["annual"].index, d["annual"].dry_spell, "o-", color=BASIN_COLORS[slug],
+                     ms=3, label=SHORT[slug])
+        axes[2].plot(d["annual"].index, rain_days, "o-", color=BASIN_COLORS[slug], ms=3,
+                     label=SHORT[slug])
+    axes[0].axhline(36.5, color=COLORS["muted"], ls=":", lw=1)
+    axes[0].set(title='Dias "quentes para a época" por ano', ylabel="dias")
+    axes[1].set(title="Maior sequência sem chuva (< 1 mm/dia)", ylabel="dias")
+    axes[2].set(title="Dias com chuva (≥ 1 mm) por ano", ylabel="dias")
     axes[0].legend(fontsize=9)
     return fig
 
 
 @app.cell(hide_code=True)
 def _():
+    anomaly_basin = basin_picker()
+    return (anomaly_basin,)
+
+
+@app.cell(hide_code=True)
+def _(anomaly_basin):
+    _hot = {s: hot_days(s) for s in SLUGS}
     mo.vstack([
         mo.md(r"""
-        ## 🤝 As duas bacias lado a lado
+        ## ⚡ Anomalias e extremos
 
-        A Figura 13 compara o ano normal das duas bacias em temperatura, chuva e VPD.
+        Médias anuais escondem quando, dentro do ano, as coisas aconteceram. Na Figura 11,
+        cada quadrado é um mês de um ano, colorido pela sua anomalia em relação à normal
+        daquele mês: vermelho é mais quente e marrom é mais seco que o normal. O seletor
+        escolhe a bacia; a versão impressa traz as duas.
         """),
-        book.figure(compare_regions(["xingu", "tapajos"]), "duas_bacias",
-                    "Figura 13. Normais mensais de 1991–2020 da temperatura, da chuva e do VPD "
-                    "médios das duas bacias."),
+        anomaly_basin,
+        book.figure(plot_monthly_anomalies(anomaly_basin.value), "anomalias_mensais",
+                    "Figura 11. Anomalias mensais de temperatura (°C) e de chuva (%) em "
+                    "relação à normal 1991–2020 de cada mês.", save=False),
         mo.md(r"""
-        As duas bacias têm quase o mesmo clima médio, o que é esperado para vizinhas que
-        atravessam a mesma faixa de latitude. O Tapajós chove um pouco mais, cerca de 200 mm
-        por ano, distribuídos ao longo de quase todos os meses, e tem uma estação seca que
-        termina um pouco antes, com setembro menos seco; o Xingu tem um VPD ligeiramente maior em setembro. As diferenças
-        são pequenas diante do contraste entre o norte e o sul de cada bacia, e é isso que
-        torna as duas um bom par: se um resultado aparece em uma e não na outra, não é por
-        terem climas de fundo diferentes.
+        Os episódios conhecidos aparecem com clareza. Os El Niño fortes de 1997–1998,
+        2015–2016 e 2023–2024 formam blocos vermelhos de muitos meses seguidos, e o último
+        é o mais quente de todos. As secas de 2005 e 2010, ligadas ao aquecimento do
+        Atlântico Norte tropical [11], aparecem como estações secas mais quentes e mais
+        longas. O vermelho vai ficando mais frequente de baixo para cima, a mesma tendência
+        das listras, agora mês a mês. A Figura 12 olha para três tipos de extremo nas duas
+        bacias.
+        """),
+        book.figure(plot_extremes(), "extremos",
+                    "Figura 12. Dias por ano com a máxima da bacia acima do 90º percentil das "
+                    "anomalias de 1991–2020 (cerca de 36,5 por ano, por construção, no período "
+                    "de referência, pontilhado), maior sequência de dias secos (calculada por "
+                    "célula e promediada) e número de dias com chuva, nas duas bacias."),
+        mo.callout(mo.md(nb.pt("Dias quentes para a época em 2024: " + "; ".join(
+            f"{SHORT[s]} {int(_hot[s].loc[2024])}, contra uma média de "
+            f"{_hot[s].loc[1991:2020].mean():.0f} na normal" for s in SLUGS) + ".")),
+            kind="info"),
+        mo.md(r"""
+        O número de dias quentes para a época, que por construção é de cerca de 36 por ano
+        na normal, fica acima disso na maioria dos anos desde 2015 e chega a três ou quatro
+        vezes o normal nos anos de El Niño, como 2015–2016 e 2023–2024; a seca de 2010 já
+        tinha mostrado um salto parecido. A maior sequência seca cresce nas duas bacias,
+        como a Figura 9 já mostrou, e chega a mais de cem dias em 2024; e o número de dias
+        com chuva caiu cerca de catorze por década. A chuva se concentra em menos dias e
+        deixa intervalos secos mais longos.
         """),
     ])
     return
 
 
-@app.cell(hide_code=True)
-def _():
-    std_variable = mo.ui.radio(options={"temperatura": "t2m",
-                                        "déficit de pressão de vapor": "vpd"},
-                               value="temperatura", label="Variável", inline=True)
-    return (std_variable,)
-
-
 @app.function(hide_code=True)
-def plot_standardization(daily, variable, region):
-    raw = daily[variable]
+def plot_standardization(slug, variable):
+    raw = basin(slug)["daily"][variable]
     anomaly, normal = anomalies(raw, BASE)
     z, sd = standardized_anomalies(raw, BASE)
     years = slice("2019-01-01", "2024-12-31")
@@ -846,13 +878,11 @@ def plot_standardization(daily, variable, region):
     ax_sd = fig.add_subplot(grid[:, 1])
     days = pd.date_range("2001-01-01", periods=365)
     ax_sd.plot(sd.iloc[:365].to_numpy(), days, color=COLORS[variable], lw=2)
-    ax_sd.yaxis.set_major_locator(mdates.MonthLocator())
-    ax_sd.yaxis.set_major_formatter(mdates.DateFormatter("%b"))
     ax_sd.set_yticks(pd.date_range("2001-01-01", periods=12, freq="MS"), MONTHS)
     ax_sd.invert_yaxis()
     ax_sd.set(xlabel=unit, title="Desvio típico da anomalia\nao longo do ano")
-    fig.suptitle(f"{region} · da série diária à anomalia padronizada", x=0.02, ha="left",
-                 fontsize=13)
+    fig.suptitle(f"{basin(slug)['name']} · da série diária à anomalia padronizada", x=0.02,
+                 ha="left", fontsize=13)
     blocks = [anomaly.loc[SCIENCE[0]:SCIENCE[1]], z.loc[SCIENCE[0]:SCIENCE[1]]]
     spread = [float(b.groupby(b.index.month).std().max() / b.groupby(b.index.month).std().min())
               for b in blocks]
@@ -861,8 +891,17 @@ def plot_standardization(daily, variable, region):
 
 
 @app.cell(hide_code=True)
-def _(daily, region, slug, std_variable):
-    _fig, _ratio, _spread, _peak = plot_standardization(daily, std_variable.value, region)
+def _():
+    std_basin = basin_picker()
+    std_variable = mo.ui.radio(options={"temperatura": "t2m",
+                                        "déficit de pressão de vapor": "vpd"},
+                               value="temperatura", label="Variável", inline=True)
+    return std_basin, std_variable
+
+
+@app.cell(hide_code=True)
+def _(std_basin, std_variable):
+    _fig, _ratio, _spread, _peak = plot_standardization(std_basin.value, std_variable.value)
     mo.vstack([
         mo.md(r"""
         ## 🔧 A série que os próximos capítulos analisam
@@ -870,7 +909,7 @@ def _(daily, region, slug, std_variable):
         Os métodos não lineares dos capítulos seguintes procuram estrutura na sucessão dos
         dias. O ciclo anual é a estrutura mais forte que existe nessas séries, e é
         trivialmente previsível; se ficasse na série, dominaria todos os descritores. Por
-        isso trabalhamos com anomalias, em dois passos que a Figura 14 mostra, para os seis
+        isso trabalhamos com anomalias, em dois passos que a Figura 13 mostra, para os seis
         últimos anos. No primeiro, subtraímos de cada dia a normal daquele dia do calendário.
         No segundo, dividimos o resultado pelo desvio típico das anomalias naquele dia do
         ano, também estimado na normal de 1991–2020 e suavizado em 31 dias,
@@ -882,13 +921,12 @@ def _(daily, region, slug, std_variable):
 
         em que $d(t)$ é o dia do ano de $t$ e a soma corre sobre os anos da normal.
         """),
-        std_variable,
+        mo.hstack([std_basin, std_variable], justify="start", gap=1),
         book.figure(_fig, "padronizacao",
-                    "Figura 14. Da série diária à anomalia padronizada, de 2019 a 2024: a série "
+                    "Figura 13. Da série diária à anomalia padronizada, de 2019 a 2024: a série "
                     "e a sua normal, a anomalia e a anomalia dividida pelo desvio típico de "
                     "cada dia do ano; à direita, esse desvio ao longo do ano. Na versão "
-                    "impressa, temperatura.", region=slug,
-                    save=std_variable.value == "t2m"),
+                    "impressa, temperatura.", save=False),
         mo.callout(mo.md(nb.pt(
             f"O desvio típico do dia mais variável do ano, em {_peak}, é {_ratio:.1f} vezes o "
             f"do menos variável. De 2001 a 2024, o mês mais variável da anomalia simples "
@@ -914,6 +952,32 @@ def _(daily, region, slug, std_variable):
             "padronizada, diária, de 2001 a 2024, em cada célula e na média de cada bacia."),
             kind="success"),
     ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    # Versões impressas das figuras de uma só bacia, para as duas (sem exibição).
+    for _slug in SLUGS:
+        book.figure(plot_series(_slug), "serie_35_anos",
+                    "Figura 1. Temperatura média diária da bacia (faixa: entre a mínima e a "
+                    "máxima do dia; linha grossa: média móvel de 365 dias) e chuva mensal, de "
+                    "1990 a 2024.", region=_slug)
+        book.figure(plot_year(_slug, 2024), "ano",
+                    "Figura 2. O ano de 2024 dia a dia (temperatura, umidade relativa, VPD, "
+                    "vento e chuva) contra o ciclo anual normal de 1991–2020.", region=_slug)
+        book.figure(plot_climogram(_slug), "climograma",
+                    "Figura 3. Climograma da normal 1991–2020: chuva mensal (barras claras: "
+                    "meses com menos de 100 mm; hastes: 10º e 90º percentis entre os anos) e "
+                    "temperaturas média, mínima e máxima.", region=_slug)
+        book.figure(plot_monthly_anomalies(_slug), "anomalias_mensais",
+                    "Figura 11. Anomalias mensais de temperatura (°C) e de chuva (%) em "
+                    "relação à normal 1991–2020 de cada mês.", region=_slug)
+        book.figure(plot_standardization(_slug, "t2m")[0], "padronizacao",
+                    "Figura 13. Da série diária de temperatura à anomalia padronizada, de 2019 "
+                    "a 2024: a série e a sua normal, a anomalia e a anomalia dividida pelo "
+                    "desvio típico de cada dia do ano; à direita, esse desvio ao longo do "
+                    "ano.", region=_slug)
     return
 
 

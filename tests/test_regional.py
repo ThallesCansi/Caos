@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -59,7 +61,7 @@ def test_map_colors_follow_vmin_vmax():
 
 
 def test_summarize_weights_and_cache(tmp_path):
-    cfg = load_region("tapajos_caixa")
+    cfg = load_region(Path(__file__).parent / "fixtures" / "regiao_caixa.yaml")
     cfg["spatial"]["area"] = [-2.25, -56, -2.5, -55.75]
     base = tmp_path / cfg["experiment_id"]
     base.mkdir()

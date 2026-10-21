@@ -14,16 +14,21 @@ hipóteses nulas contempla.
 from __future__ import annotations
 
 import hashlib
+import warnings
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
+from statsmodels.stats.diagnostic import breaks_cusumolsresid
 from statsmodels.stats.multitest import multipletests
+from statsmodels.tsa.stattools import acf, adfuller, kpss
 
 from amazon_chaos import regions
 from amazon_chaos.nonlinear.batch import NORMAL
 from amazon_chaos.nonlinear.suite import batch_hash, surrogate_suite
+from amazon_chaos.nonlinear.surrogates import validate_series
 from amazon_chaos.regional import regional_frame, standardized_anomalies, summarize
 
 N_SURROGATES = 199
@@ -101,3 +106,48 @@ def load(cfg, spec) -> tuple[pd.DataFrame, pd.DataFrame]:
     for _, part in table[table.descriptor.isin(primary)].groupby(["region", "method"]):
         table.loc[part.index, "holm"] = multipletests(part.pvalue.fillna(1), method="holm")[1]
     return table, null
+
+
+def stationarity_diagnostics(series, blocks=4, hac_lags=14):
+    """Complementary diagnostics, never a certificate of stationarity.
+
+    ADF fixed lag 14 and KPSS automatic bandwidth; trend HAC and CUSUM are
+    descriptive with serial-dependence caveats. Thresholds are protocol flags,
+    not calibrated stationarity tests. No detrending follows these diagnostics.
+    """
+    x = validate_series(series, min_length=64)
+    chunks = np.array_split(x, blocks)
+    block = pd.DataFrame([{"block": i + 1, "n": len(y), "mean": y.mean(),
+                           "std": y.std(), "acf1": acf(y, nlags=1, fft=True)[1]}
+                          for i, y in enumerate(chunks)])
+    # Scale time to the whole record; slope is total change in original units.
+    trend = sm.OLS(x, sm.add_constant(np.linspace(0, 1, len(x)))).fit(
+        cov_type="HAC", cov_kwds={"maxlags": hac_lags})
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        adf_p = adfuller(x, maxlag=min(hac_lags, len(x) // 4), autolag=None)[1]
+        kpss_p = kpss(x, regression="c", nlags="auto")[1]
+    # CUSUM around a constant mean, not around an automatically detrended signal.
+    cusum_p = breaks_cusumolsresid(x - x.mean(), ddof=1)[1]
+    variance_ratio = float(block["std"].max() / max(block["std"].min(), 1e-15))
+    mean_range = float(np.ptp(block["mean"]) / x.std())
+    acf_range = float(np.ptp(block["acf1"]))
+    flags = []
+    if trend.pvalues[1] < .05:
+        flags.append("tendência HAC")
+    if kpss_p < .05:
+        flags.append("KPSS rejeita nível estacionário")
+    if adf_p >= .05:
+        flags.append("ADF não rejeita raiz unitária")
+    if variance_ratio > 1.5:
+        flags.append("heterogeneidade de variância")
+    if mean_range > .5:
+        flags.append("heterogeneidade de média")
+    if acf_range > .25:
+        flags.append("heterogeneidade de ACF")
+    return {"adf_p": adf_p, "kpss_p": kpss_p, "trend_hac_p": trend.pvalues[1],
+            "trend_total": trend.params[1], "cusum_p_descriptive": cusum_p,
+            "block_std_ratio": variance_ratio, "block_mean_range_sigma": mean_range,
+            "block_acf1_range": acf_range, "flags": "; ".join(flags),
+            "status": "exploratório" if flags else "sem alerta; premissas não comprovadas",
+            "warnings": "; ".join(str(w.message) for w in caught)}, block

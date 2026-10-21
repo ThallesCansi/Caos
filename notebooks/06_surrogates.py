@@ -17,7 +17,6 @@ with app.setup(hide_code=True):
     from amazon_chaos.nonlinear import basin_test as B
     from amazon_chaos.nonlinear import results as R
     from amazon_chaos.nonlinear.suite import load_spec, surrogates
-    from amazon_chaos.nonlinear.surrogate_study import stationarity_diagnostics
     from amazon_chaos.viz import COLORS
 
     book = nb.notebook("06_surrogates")
@@ -259,7 +258,7 @@ def _():
     _rows = []
     for _slug in SLUGS:
         for _var in R.VARIABLES:
-            _diag, _ = stationarity_diagnostics(basin_series(_slug, _var).to_numpy())
+            _diag, _ = B.stationarity_diagnostics(basin_series(_slug, _var).to_numpy())
             _rows.append({
                 "Bacia": load_region(_slug)["name"].replace("Bacia do Rio ", ""),
                 "Variável": R.VARIABLES[_var],

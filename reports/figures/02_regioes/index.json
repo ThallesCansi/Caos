@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/02_regioes/tapajos/grade.png",
     "pdf": "reports/figures/02_regioes/tapajos/grade.pdf",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   },
   {
     "name": "mapa",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/02_regioes/tapajos/mapa.png",
     "pdf": "reports/figures/02_regioes/tapajos/mapa.pdf",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   },
   {
     "name": "grade",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/02_regioes/xingu/grade.png",
     "pdf": "reports/figures/02_regioes/xingu/grade.pdf",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   },
   {
     "name": "mapa",
@@ -33,6 +33,6 @@
     "overleaf": true,
     "png": "reports/figures/02_regioes/xingu/mapa.png",
     "pdf": "reports/figures/02_regioes/xingu/mapa.pdf",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   }
 ]

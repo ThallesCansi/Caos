@@ -50,8 +50,6 @@ dev = [
   "pytest-cov>=5",
   "ruff>=0.9",
 ]
-# Só para reproduzir as séries regionais antigas do MapBiomas (legacy/, D-012).
-gee = ["earthengine-api>=1.7.49"]
 
 [project.scripts]
 amazon-chaos = "amazon_chaos.cli:app"
@@ -66,7 +64,6 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = ["legacy"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

@@ -1,56 +1,29 @@
 [
   {
     "name": "completude",
-    "region": "tapajos",
-    "caption": "Tabela 1. Células-dia com as 24 horas válidas, de 1990 a 2024, por variável.",
+    "region": null,
+    "caption": "Tabela 1. Porcentagem de células-dia com as 24 horas válidas, de 1990 a 2024, por variável e bacia.",
     "overleaf": true,
-    "csv": "reports/tables/03_clima/tapajos/completude.csv",
-    "tex": "reports/tables/03_clima/tapajos/completude.tex",
-    "commit": "32a09b5+modificado"
+    "csv": "reports/tables/03_clima/completude.csv",
+    "tex": "reports/tables/03_clima/completude.tex",
+    "commit": "57fe776+modificado"
   },
   {
     "name": "normais_mensais",
-    "region": "tapajos",
-    "caption": "Tabela 2. Normais mensais de 1991–2020, médias da bacia (chuva em mm/mês).",
+    "region": null,
+    "caption": "Tabela 2. Normais mensais de 1991–2020, médias de cada bacia (chuva em mm/mês).",
     "overleaf": true,
-    "csv": "reports/tables/03_clima/tapajos/normais_mensais.csv",
-    "tex": "reports/tables/03_clima/tapajos/normais_mensais.tex",
-    "commit": "32a09b5+modificado"
+    "csv": "reports/tables/03_clima/normais_mensais.csv",
+    "tex": "reports/tables/03_clima/normais_mensais.tex",
+    "commit": "57fe776+modificado"
   },
   {
     "name": "tendencias",
-    "region": "tapajos",
-    "caption": "Tabela 3. Tendências de Theil–Sen por década e p de Mann–Kendall com a correção de Hamed e Rao, em 1990–2024 e em 2001–2024.",
+    "region": null,
+    "caption": "Tabela 3. Tendências de Theil–Sen por década e p de Mann–Kendall com a correção de Hamed e Rao, em 1990–2024 e em 2001–2024, nas duas bacias.",
     "overleaf": true,
-    "csv": "reports/tables/03_clima/tapajos/tendencias.csv",
-    "tex": "reports/tables/03_clima/tapajos/tendencias.tex",
-    "commit": "32a09b5+modificado"
-  },
-  {
-    "name": "completude",
-    "region": "xingu",
-    "caption": "Tabela 1. Células-dia com as 24 horas válidas, de 1990 a 2024, por variável.",
-    "overleaf": true,
-    "csv": "reports/tables/03_clima/xingu/completude.csv",
-    "tex": "reports/tables/03_clima/xingu/completude.tex",
-    "commit": "32a09b5+modificado"
-  },
-  {
-    "name": "normais_mensais",
-    "region": "xingu",
-    "caption": "Tabela 2. Normais mensais de 1991–2020, médias da bacia (chuva em mm/mês).",
-    "overleaf": true,
-    "csv": "reports/tables/03_clima/xingu/normais_mensais.csv",
-    "tex": "reports/tables/03_clima/xingu/normais_mensais.tex",
-    "commit": "32a09b5+modificado"
-  },
-  {
-    "name": "tendencias",
-    "region": "xingu",
-    "caption": "Tabela 3. Tendências de Theil–Sen por década e p de Mann–Kendall com a correção de Hamed e Rao, em 1990–2024 e em 2001–2024.",
-    "overleaf": true,
-    "csv": "reports/tables/03_clima/xingu/tendencias.csv",
-    "tex": "reports/tables/03_clima/xingu/tendencias.tex",
-    "commit": "32a09b5+modificado"
+    "csv": "reports/tables/03_clima/tendencias.csv",
+    "tex": "reports/tables/03_clima/tendencias.tex",
+    "commit": "57fe776+modificado"
   }
 ]

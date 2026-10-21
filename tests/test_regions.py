@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import geopandas as gpd
 import pytest
@@ -8,6 +9,8 @@ from typer.testing import CliRunner
 from amazon_chaos.cli import app
 from amazon_chaos.config import list_regions, load_region, merge
 from amazon_chaos.regions import envelope, intersect_grid
+
+CAIXA = Path(__file__).parent / "fixtures" / "regiao_caixa.yaml"
 
 
 def test_merge_is_recursive_and_replaces_lists():
@@ -19,7 +22,7 @@ def test_merge_is_recursive_and_replaces_lists():
 
 def test_every_region_config_is_complete():
     regions = list_regions()
-    assert {"xingu", "tapajos", "tapajos_caixa"} <= set(regions)
+    assert {"xingu", "tapajos"} <= set(regions)
     for slug in regions:
         cfg = load_region(slug)
         assert cfg["slug"] == slug
@@ -33,7 +36,7 @@ def test_region_defaults_and_overrides():
     assert tapajos["spatial"]["basin_source"] == "data/external/tapajos/limite.geojson"
     xingu = load_region("xingu")
     assert xingu["spatial"]["basin_source"].endswith("bacia_ibge_bhb250_2021.geojson")
-    caixa = load_region("tapajos_caixa")
+    caixa = load_region(CAIXA)
     assert "basin_source" not in caixa["spatial"]
     assert caixa["context"]["layers"] == ["rios", "ucs"]
     with pytest.raises(FileNotFoundError, match="Disponíveis"):
@@ -54,7 +57,7 @@ def test_cli_lists_regions_and_plans_without_network():
     runner = CliRunner()
     listed = runner.invoke(app, ["region", "list"])
     assert listed.exit_code == 0 and "xingu" in listed.stdout
-    planned = runner.invoke(app, ["era5", "plan", "tapajos_caixa", "2024-01-01", "2024-01-31"])
+    planned = runner.invoke(app, ["era5", "plan", str(CAIXA), "2024-01-01", "2024-01-31"])
     assert planned.exit_code == 0
     jobs = json.loads(planned.stdout)
     assert len(jobs) == 4 and jobs[-1]["request"]["month"] == ["02"]

@@ -1,25 +1,17 @@
 import numpy as np
 import pandas as pd
 import pytest
-import xarray as xr
 
+from amazon_chaos.nonlinear.basin_test import stationarity_diagnostics
 from amazon_chaos.nonlinear.statistics import (
     nonlinear_prediction_error,
     time_reversal_asymmetry,
-)
-from amazon_chaos.nonlinear.surrogate_study import (
-    adjust_results,
-    load_local_region,
-    local_inventory,
-    prepare_climate_series,
-    stationarity_diagnostics,
 )
 from amazon_chaos.nonlinear.surrogates import (
     iaaft_surrogate,
     monte_carlo_pvalue,
     phase_randomized_surrogate,
     spectral_error,
-    surrogate_test,
     validate_series,
 )
 from amazon_chaos.nonlinear.synthetic import logistic_map
@@ -107,99 +99,8 @@ def test_reversal_sign_and_prediction_controls():
         nonlinear_prediction_error(x, theiler=1000)
 
 
-def test_ensemble_reproducible_and_varied():
-    x = np.random.default_rng(9).normal(size=128)
-    for method in ["FT", "IAAFT"]:
-        a = surrogate_test(x, time_reversal_asymmetry, method=method, n_surrogates=9)
-        b = surrogate_test(x, time_reversal_asymmetry, method=method, n_surrogates=9)
-        np.testing.assert_array_equal(a.null_statistics, b.null_statistics)
-        assert not np.array_equal(a.examples[0], a.examples[1])
-
-
-def test_complete_day_aggregation_rain_sum_temperature_mean():
-    idx = pd.date_range("2001-01-01", periods=71)
-    s = pd.Series(np.arange(1., 72), index=idx)
-    options = {"version": "original", "resolution": "7D",
-               "period": ("2001-01-01", "2001-03-12")}
-    rain = prepare_climate_series(s, variable="precip", **options)
-    temp = prepare_climate_series(s, variable="t2m", **options)
-    assert len(rain) == 10 and rain.iloc[0] == 28 and temp.iloc[0] == 4
-    assert rain.iloc[-1] == s.iloc[63:70].sum()
-    with pytest.raises(ValueError):
-        prepare_climate_series(s.drop(s.index[30]), **options)
-    with pytest.raises(ValueError):
-        prepare_climate_series(s, period=options["period"], version="anomaly")
-
-
 def test_stationarity_flags_do_not_hide_trend():
     x = np.linspace(0, 10, 512) + np.random.default_rng(8).normal(size=512)
     report, blocks = stationarity_diagnostics(x)
     assert report["status"] == "exploratório" and "tendência" in report["flags"]
     assert len(blocks) == 4 and report["trend_total"] > 8
-
-
-def test_holm_keeps_blocked_primary_and_bh_separate():
-    frame = pd.DataFrame({"family": ["primary", "primary", "exploratory"],
-                          "p_raw": [.03, np.nan, .03]})
-    result = adjust_results(frame)
-    assert result.p_adjusted.iloc[0] == .06
-    assert result.p_adjusted.iloc[2] == .03
-    assert result.decision.iloc[1] == "não executado"
-
-
-def test_inventory_reports_actual_files():
-    inventory = local_inventory(".")
-    assert sum(inventory.kind == "daily") == 70
-    assert inventory.path.str.contains("summary_1990_2024.nc").sum() == 2
-
-
-def test_transferred_cache_reuses_units_and_marks_unverified(tmp_path):
-    # A small synthetic fixture exercises the adapter; it is never ERA5 output.
-    config_dir = tmp_path / "configs"
-    (config_dir / "regions").mkdir(parents=True)
-    (config_dir / "study.yaml").write_text("time: {}\n", encoding="utf-8")
-    (config_dir / "regions" / "tapajos_caixa.yaml").write_text(
-        "name: teste\nexperiment_id: test\nboundary: {source: bbox}\n"
-        "spatial:\n  area: [-2, -56, -3, -54]\n  pilot_point: [-2.5, -55]\n",
-        encoding="utf-8")
-    base = tmp_path / "data/processed/test"
-    base.mkdir(parents=True)
-    times = pd.date_range("2001-01-01", periods=100)
-    ds = xr.Dataset({"region_t2m": ("time", np.arange(100.) + 20),
-                     "region_precip": ("time", np.arange(100.))}, coords={"time": times})
-    ds.region_t2m.attrs["units"] = "degC"
-    ds.region_precip.attrs["units"] = "mm"
-    ds.to_netcdf(base / "summary_1990_2024.nc")
-    frame, units, provenance = load_local_region(tmp_path, "tapajos")
-    assert units == {"t2m": "degC", "precip": "mm"}
-    assert frame.index.equals(times) and len(frame) == 100
-    assert "não verificáveis" in provenance
-
-
-def test_complete_climatology_reuses_project_and_missing_baseline_fails():
-    times = pd.date_range("1991-01-01", "2024-12-31")
-    x = pd.Series(25 + 3 * np.sin(2 * np.pi * times.dayofyear / 365.25), index=times)
-    result = prepare_climate_series(x)
-    assert len(result) == 8766 and abs(result).max() < .05
-    with pytest.raises(ValueError):
-        prepare_climate_series(x.drop(times[15]))
-
-
-def test_generated_notebook_cells_compile_and_follow_required_order():
-    import importlib.util
-    from pathlib import Path
-
-    path = Path(__file__).resolve().parents[1] / "legacy/jupyter/build_surrogate_notebook.py"
-    spec = importlib.util.spec_from_file_location("surrogate_notebook_builder", path)
-    builder = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(builder)
-    notebook = builder.build()
-    titles = []
-    for i, cell in enumerate(notebook.cells):
-        if cell.cell_type == "code":
-            compile(cell.source, f"cell_{i}", "exec")
-        else:
-            titles.extend(line for line in cell.source.splitlines() if line.startswith("## "))
-    assert len(titles) == 11
-    assert [title.split('.')[0].removeprefix('## ') for title in titles] == [
-        str(i) for i in range(1, 12)]

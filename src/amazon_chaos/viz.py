@@ -41,15 +41,15 @@ def save(fig, folder, name):
 
 
 def map_cells(ax, cells, field, cmap, label, outline=None, norm=None, stipple=None, lines=None,
-              **kw):
+              legend=True, **kw):
     """Colore cada polígono de célula pelo valor de `field` (DataArray latitude × longitude)."""
     table = field.rename("value").to_dataframe().reset_index()[["latitude", "longitude", "value"]]
     mapped = cells.merge(table, on=["latitude", "longitude"])
     mapped = mapped[np.isfinite(mapped.value)]
     if norm is None:  # o geopandas aplica vmin/vmax só à barra de cor; a norma vale para ambos
         norm = Normalize(kw.pop("vmin", mapped.value.min()), kw.pop("vmax", mapped.value.max()))
-    mapped.plot(column="value", ax=ax, cmap=cmap, norm=norm, legend=True, edgecolor="none",
-                legend_kwds={"shrink": 0.7, "label": label}, **kw)
+    mapped.plot(column="value", ax=ax, cmap=cmap, norm=norm, legend=legend, edgecolor="none",
+                **({"legend_kwds": {"shrink": 0.7, "label": label}} if legend else {}), **kw)
     if stipple is not None:
         flags = stipple.rename("flag").to_dataframe().reset_index()
         flagged = cells.merge(flags[flags.flag.astype(bool)], on=["latitude", "longitude"])
@@ -64,6 +64,31 @@ def map_cells(ax, cells, field, cmap, label, outline=None, norm=None, stipple=No
     ax.grid(False)
     ax.tick_params(labelsize=8)
     return mapped
+
+
+def map_basins(ax, parts, cmap, label, norm=None, vmin=None, vmax=None, lines=None):
+    """As duas bacias (vizinhas) no mesmo mapa, com uma só escala de cor.
+
+    `parts` é uma lista de (células, campo, limite) ou (células, campo, limite, pontilhado);
+    cada bacia usa as suas células recortadas, então a faixa do divisor não se sobrepõe.
+    """
+    if norm is None:
+        values = np.concatenate([np.ravel(p[1].values) for p in parts])
+        values = values[np.isfinite(values)]
+        norm = Normalize(values.min() if vmin is None else vmin,
+                         values.max() if vmax is None else vmax)
+    for k, part in enumerate(parts):
+        cells, field, limit = part[:3]
+        map_cells(ax, cells, field, cmap, label, outline=limit, norm=norm,
+                  stipple=part[3] if len(part) > 3 else None, legend=k == 0)
+    w = min(p[0].total_bounds[0] for p in parts)
+    s_ = min(p[0].total_bounds[1] for p in parts)
+    e = max(p[0].total_bounds[2] for p in parts)
+    n = max(p[0].total_bounds[3] for p in parts)
+    if lines is not None:
+        lines.plot(ax=ax, color="#1d5d7a", linewidth=1.0, alpha=0.7)
+    ax.set(xlim=(w - 0.1, e + 0.1), ylim=(s_ - 0.1, n + 0.1))
+    return norm
 
 
 NUMBER = re.compile(

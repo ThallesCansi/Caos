@@ -1,7 +1,5 @@
 # Atalhos do projeto. `make` sem alvo lista os comandos.
 REGION ?= xingu
-REGIONS ?= xingu tapajos
-NOTEBOOKS_BY_REGION := 03_clima 04_perturbacao
 HTML := reports/html
 
 .PHONY: help sync test check notebooks overleaf pull pull-gate hpc-status hpc-code
@@ -19,20 +17,14 @@ check:  ## estilo (ruff) e cadernos (marimo check)
 	uv run --frozen ruff check .
 	uv run --frozen marimo check notebooks/
 
-notebooks:  ## executa todos os cadernos e exporta HTML (um por região quando couber)
+notebooks:  ## executa todos os cadernos e exporta HTML (reports/html/)
 	@mkdir -p $(HTML)
 	@rm -f reports/figures/*/index.json reports/tables/*/index.json  # índices refeitos pela execução
+	@rm -f $(HTML)/*.html
 	@for nb in notebooks/[0-9]*.py; do \
 	  name=$$(basename $$nb .py); \
-	  if echo " $(NOTEBOOKS_BY_REGION) " | grep -q " $$name "; then \
-	    for r in $(REGIONS); do \
-	      echo "→ $$name ($$r)"; \
-	      uv run --frozen marimo export html $$nb -o $(HTML)/$${name}_$$r.html -f -- --region $$r || exit 1; \
-	    done; \
-	  else \
-	    echo "→ $$name"; \
-	    uv run --frozen marimo export html $$nb -o $(HTML)/$$name.html -f || exit 1; \
-	  fi; \
+	  echo "→ $$name"; \
+	  uv run --frozen marimo export html $$nb -o $(HTML)/$$name.html -f || exit 1; \
 	done
 
 overleaf:  ## copia figuras e tabelas finais para reports/overleaf (nomes estáveis)

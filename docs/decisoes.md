@@ -142,3 +142,13 @@ Ambas são relatadas como complementares, ao lado do resultado pré-registrado, 
 **Motivo:** a série da bacia é uma só, então cabe uma resolução de Monte Carlo maior (p mínimo de 0,005, unilateral), que evita a limitação de D-013. A comparação FT × IAAFT separa a assimetria da distribuição (que a FT confunde com dinâmica) de estrutura temporal. A variante sem tendência é necessária porque as séries sobem de 0,8 a 1,1 desvio-padrão em 24 anos (o KPSS rejeita a estacionariedade em todas), e uma tendência é uma não estacionariedade que nenhuma das duas nulas contempla.
 
 **Natureza:** análise complementar, não pré-registrada. Não substitui o resultado por célula (caderno 07), que segue o pré-registro.
+
+## D-017 — Limpeza final do repositório e cadernos com as duas bacias juntas
+
+**Status:** aceito em 21/10/2026.
+
+**Decisão:** saem do repositório a pasta `legacy/` (cadernos Jupyter e seus geradores), as figuras e tabelas do fluxo antigo em `reports/` (`mapbiomas`, `surrogates`, `*_1990_2024`), o módulo `nonlinear/surrogate_study.py` (o diagnóstico de estacionariedade passou para `nonlinear/basin_test.py`), a função `surrogate_test`, os auxiliares de cabeçalho e aviso de `nb.py` e o grupo opcional `gee` do `pyproject.toml`. A caixa antiga do Tapajós deixa de ser uma região e vira um arquivo de teste (`tests/fixtures/regiao_caixa.yaml`), o único exemplo de limite por caixa. Tudo continua recuperável pela tag `v0-jupyter` e pelo histórico do Git.
+
+Os cadernos 03 e 04 deixam de ter um seletor de região que trocava o capítulo inteiro: os mapas mostram as duas bacias juntas, os gráficos de linhas as sobrepõem e só as figuras de uma única série têm um seletor próprio, com as versões impressas das duas bacias gravadas. Com isso, o HTML estático mostra o trabalho inteiro, e o `--region` deixou de existir. As figuras passam a ser exibidas em resolução de tela (110 dpi), e os arquivos da monografia continuam em 300 dpi, o que mantém cada célula abaixo do limite de saída do Marimo.
+
+Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-009 (caixa como plano B) e D-012 (grupo `gee`).

@@ -1,21 +1,30 @@
 [
   {
+    "name": "concordancia",
+    "region": null,
+    "caption": "Tabela 2. Correlação de postos de Spearman entre medidas de fontes diferentes, sobre as células de cada bacia.",
+    "overleaf": true,
+    "csv": "reports/tables/04_perturbacao/concordancia.csv",
+    "tex": "reports/tables/04_perturbacao/concordancia.tex",
+    "commit": "57fe776+modificado"
+  },
+  {
+    "name": "fontes",
+    "region": null,
+    "caption": "Tabela 1. As fontes de perturbação, o que cada uma mede, o período e a resolução usados e o principal cuidado de interpretação.",
+    "overleaf": true,
+    "csv": "reports/tables/04_perturbacao/fontes.csv",
+    "tex": "reports/tables/04_perturbacao/fontes.tex",
+    "commit": "57fe776+modificado"
+  },
+  {
     "name": "celulas",
     "region": "tapajos",
     "caption": "Medidas de perturbação por célula, de todas as fontes.",
     "overleaf": false,
     "csv": "reports/tables/04_perturbacao/tapajos/celulas.csv",
     "tex": "reports/tables/04_perturbacao/tapajos/celulas.tex",
-    "commit": "32a09b5+modificado"
-  },
-  {
-    "name": "concordancia",
-    "region": "tapajos",
-    "caption": "Tabela 2. Correlação de postos de Spearman entre medidas de fontes diferentes, sobre as células da bacia.",
-    "overleaf": true,
-    "csv": "reports/tables/04_perturbacao/tapajos/concordancia.csv",
-    "tex": "reports/tables/04_perturbacao/tapajos/concordancia.tex",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   },
   {
     "name": "celulas",
@@ -24,15 +33,6 @@
     "overleaf": false,
     "csv": "reports/tables/04_perturbacao/xingu/celulas.csv",
     "tex": "reports/tables/04_perturbacao/xingu/celulas.tex",
-    "commit": "32a09b5+modificado"
-  },
-  {
-    "name": "concordancia",
-    "region": "xingu",
-    "caption": "Tabela 2. Correlação de postos de Spearman entre medidas de fontes diferentes, sobre as células da bacia.",
-    "overleaf": true,
-    "csv": "reports/tables/04_perturbacao/xingu/concordancia.csv",
-    "tex": "reports/tables/04_perturbacao/xingu/concordancia.tex",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   }
 ]

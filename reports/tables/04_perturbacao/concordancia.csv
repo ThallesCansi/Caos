@@ -1,0 +1,9 @@
+Par,Bacia,ρ de Spearman,Células
+Desmatamento 2013–2024: PRODES × MapBiomas,Xingu,0.89,779
+Desmatamento 2013–2024: PRODES × MapBiomas,Tapajós,0.89,762
+Corte raso: DETER 2016–2024 × PRODES 2013–2024,Xingu,0.96,779
+Corte raso: DETER 2016–2024 × PRODES 2013–2024,Tapajós,0.94,762
+Fogo: focos BDQueimadas × frequência MapBiomas,Xingu,0.75,779
+Fogo: focos BDQueimadas × frequência MapBiomas,Tapajós,0.65,762
+"Acumulado: PRODES × agropecuária MapBiomas, 2024",Xingu,0.79,779
+"Acumulado: PRODES × agropecuária MapBiomas, 2024",Tapajós,0.68,762

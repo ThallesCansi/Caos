@@ -8,25 +8,25 @@ Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Perí
 
 ## Cadernos (Marimo)
 
-Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e gera as figuras da monografia. Os cadernos que servem a mais de uma região recebem `--region`.
+Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzidos e gera as figuras da monografia. Os mapas mostram as duas bacias juntas; as figuras de uma só série têm um seletor de bacia, e as versões impressas das duas são gravadas.
 
 | Caderno | Capítulo | Estado |
 |---|---|---|
 | `00_inicio` | apresentação, percurso, legenda das caixas e resumo dos resultados | pronto |
 | `01_laboratorio` | sistemas dinâmicos conhecidos (teoria, interativo) | pronto |
 | `02_regioes` | as bacias, a grade ERA5 e as células da comparação | pronto |
-| `03_clima` | o clima de 1990–2024 e a anomalia padronizada (`--region`) | pronto |
-| `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes (`--region`) | pronto (MODIS pendente) |
+| `03_clima` | o clima de 1990–2024 e a anomalia padronizada | pronto |
+| `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes | pronto (MODIS pendente) |
 | `05_validacao_metodos` | o portão: descritores em controles sintéticos | pronto |
 | `06_surrogates` | substitutas FT/IAAFT nas séries das bacias (D-016) | pronto |
 | `07_descritores` | descritores por célula, robustez, EWS | pronto |
 | `08_gradiente` | perturbação × dinâmica (D-014, D-015) | pronto (MODIS pendente) |
 
-Os cadernos Jupyter anteriores estão em [`legacy/`](legacy/README.md) e na tag `v0-jupyter`.
+O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 
 ```bash
 uv run marimo edit notebooks/03_clima.py                                  # editar
-uv run marimo export html notebooks/03_clima.py -o reports/html/03_clima_xingu.html -- --region xingu
+uv run marimo export html notebooks/03_clima.py -o reports/html/03_clima.html
 ```
 
 ## Começo rápido
@@ -55,7 +55,6 @@ O ERA5 de 1990–2024 é baixado no HPC pelo Earth Data Hub (`sbatch --export=AL
 configs/      regiões, variáveis e análise pré-registrada (YAML)
 data/         dados locais, fora do Git
 docs/         metodologia, dados, decisões, HPC; entregas/ (projeto aprovado, relatório parcial)
-legacy/       fluxo Jupyter anterior, só para auditoria
 notebooks/    cadernos Marimo
 reports/      figuras e tabelas finais; registro de experimentos
 scripts/hpc/  jobs Slurm, setup e sincronização com o HPC

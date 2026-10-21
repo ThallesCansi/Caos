@@ -4,7 +4,6 @@ IAAFT calibration is approximate: empirical amplitudes are exact, spectra are no
 """
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -127,42 +126,3 @@ def monte_carlo_pvalue(observed, null, alternative="greater"):
     if alternative == "absolute":
         return float((1 + np.count_nonzero(abs(null) >= abs(observed))) / (len(null) + 1))
     raise ValueError("alternative desconhecida")
-
-
-@dataclass(frozen=True)
-class SurrogateTest:
-    observed: float
-    null_statistics: np.ndarray
-    pvalue: float
-    examples: np.ndarray
-    diagnostics: pd.DataFrame
-
-
-def surrogate_test(series, statistic: Callable, *, method="IAAFT", n_surrogates=199,
-                   seed=2026, alternative="absolute", max_iter=1000, tolerance=1e-8):
-    x = validate_series(series)
-    if not isinstance(n_surrogates, (int, np.integer)) or n_surrogates < 1:
-        raise ValueError("n_surrogates deve ser inteiro positivo")
-    if method not in {"FT", "IAAFT"}:
-        raise ValueError("Método deve ser FT ou IAAFT")
-    observed = float(statistic(x))
-    values, examples, diagnostics = [], [], []
-    for child in np.random.SeedSequence(seed).spawn(n_surrogates):
-        rng = np.random.default_rng(child)
-        if method == "IAAFT":
-            result = iaaft_surrogate(x, rng, max_iter=max_iter, tolerance=tolerance)
-            y = result.values
-            row = {"iterations": result.iterations, "converged": result.converged,
-                   "stop_reason": result.stop_reason, "spectral_error": result.spectral_error}
-        else:
-            y = phase_randomized_surrogate(x, rng)
-            row = {"iterations": 1, "converged": True, "stop_reason": "exact_FT",
-                   "spectral_error": spectral_error(x, y)}
-        row["amplitude_max_error"] = float(np.max(abs(np.sort(x) - np.sort(y))))
-        diagnostics.append(row)
-        values.append(float(statistic(y)))
-        if len(examples) < 3:
-            examples.append(y)
-    values = np.array(values)
-    return SurrogateTest(observed, values, monte_carlo_pvalue(observed, values, alternative),
-                         np.array(examples), pd.DataFrame(diagnostics))

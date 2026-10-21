@@ -80,7 +80,7 @@ Os alvos usam o alias `hpc`; para outro host, defina `HPC_HOST` (e `HPC_DIR`, pa
 2. **Preparar.** `uv run amazon-chaos region prepare <slug>` (local) baixa o limite e a cartografia, confere a caixa e grava a grade em `data/processed/<experimento>/basin_grid.geojson`. Confira o mapa no caderno `02_regioes` **antes** de baixar o clima.
 3. **Commit e envio** do YAML: `git commit` + `make hpc-code`.
 4. **ERA5 no HPC:** `sbatch --export=ALL,REGION=<slug> scripts/hpc/era5.sbatch`. Teste antes com um mês: `…,START=2024-01-01,END=2024-01-31`.
-5. **Trazer:** `make pull REGION=<slug>`. Os cadernos com `--region <slug>` passam a funcionar.
+5. **Trazer:** `make pull REGION=<slug>`. Para a região aparecer nos cadernos, acrescente o slug à lista `SLUGS` de cada um.
 
 Nada de região fica no código: tudo vem do YAML (D-008).
 

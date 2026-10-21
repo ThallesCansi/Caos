@@ -1,0 +1,6 @@
+Fonte,O que mede,Período,Resolução,Cuidado
+PRODES (INPE),corte raso da floresta primária,até 2007 em bloco; anual de 2008 a 2024,"polígonos, 6,25 ha",não registra a conversão de vegetação não florestal; ano de agosto a julho
+DETER (INPE),alertas de corte raso e de degradação,2016 a 2024,"polígonos, 3 ha","a data é a da detecção; é um sistema de alerta, não a taxa oficial"
+BDQueimadas (INPE),focos de fogo ativo,2003 a 2024,"pontos, pixel de ~1 km",um foco não é um incêndio nem uma área queimada
+MapBiomas Cobertura,"floresta, agropecuária e água","1990, 2000, 2012 e 2024","raster, 30 m",mudança de classe não é o mesmo que desmatamento do PRODES
+MapBiomas Fogo,frequência e recência do fogo,1985 a 2024,"raster, 30 m","conta anos com fogo, não eventos dentro do ano"

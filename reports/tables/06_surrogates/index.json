@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/estacionariedade.csv",
     "tex": "reports/tables/06_surrogates/estacionariedade.tex",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   },
   {
     "name": "resultado_bacias",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/resultado_bacias.csv",
     "tex": "reports/tables/06_surrogates/resultado_bacias.tex",
-    "commit": "32a09b5+modificado"
+    "commit": "57fe776+modificado"
   }
 ]

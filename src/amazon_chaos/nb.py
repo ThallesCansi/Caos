@@ -1,11 +1,9 @@
-"""Kit dos cadernos Marimo: cabeçalho, região, figuras, tabelas, avisos e proveniência.
+"""Kit dos cadernos Marimo: figuras e tabelas com nomes estáveis para a monografia.
 
 Uso típico, na primeira célula de um caderno:
 
-    import marimo as mo
     from amazon_chaos import nb
     book = nb.notebook("03_clima")
-    picker = nb.region_picker()
 
 `book.figure(fig, "ciclo_anual", "Legenda…", region="xingu")` grava PNG (300 dpi) e PDF
 em `reports/figures/03_clima/xingu/` e registra a legenda no índice usado por
@@ -14,20 +12,20 @@ em `reports/figures/03_clima/xingu/` e registra a legenda no índice usado por
 
 from __future__ import annotations
 
+import base64
+import io
 import json
 import os
 import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 
 import marimo as mo
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from amazon_chaos.config import list_regions, load_region
 from amazon_chaos.paths import project_root
 from amazon_chaos.viz import pt, style
 
@@ -60,6 +58,9 @@ def _register(folder: Path, entry: dict) -> None:
     path.write_text(json.dumps(items, ensure_ascii=False, indent=2))
 
 
+SCREEN_DPI = 110
+
+
 @dataclass
 class Notebook:
     """Saídas de um caderno, com nomes estáveis para a monografia."""
@@ -90,10 +91,14 @@ class Notebook:
                 "png": str(folder / f"{name}.png"), "pdf": str(folder / f"{name}.pdf"),
                 "commit": _git_commit(),
             })
-        html = mo.as_html(fig)
+        # na tela, PNG em resolução de tela: a 300 dpi um mapa passa de 1 MB e o caderno
+        # estoura o limite de saída do Marimo; os arquivos da monografia ficam em 300 dpi
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format="png", dpi=SCREEN_DPI, bbox_inches="tight")
         plt.close(fig)
+        data = base64.b64encode(buffer.getvalue()).decode()
         return mo.vstack([
-            mo.Html(f'<div style="width:{width}">{html.text}</div>'),
+            mo.Html(f'<img src="data:image/png;base64,{data}" style="width:{width}">'),
             mo.Html(f'<p style="font-size:0.88em;color:#5b6770;margin:0 0 0.6em 0">'
                     f'{pt(caption)}</p>'),
         ], gap=0.25)
@@ -126,79 +131,6 @@ def notebook(name: str) -> Notebook:
     style()
     plt.rcParams.update({"figure.dpi": 100, "savefig.dpi": 300})
     return Notebook(name)
-
-
-def region_picker(default: str = "xingu", regions: list[str] | None = None):
-    """Seletor de região; `marimo export html … -- --region tapajos` fixa o valor."""
-    regions = regions or [r for r in list_regions() if r != "tapajos_caixa"]
-    chosen = mo.cli_args().get("region", default)
-    if chosen not in list_regions():
-        raise ValueError(f"--region {chosen}: use uma de {list_regions()}")
-    options = {load_region(r)["name"]: r for r in dict.fromkeys([*regions, chosen])}
-    label = next(k for k, v in options.items() if v == chosen)
-    return mo.ui.dropdown(options=options, value=label, label="Bacia")
-
-
-def header(title: str, question: str, *, stage: str, inputs: list[str], outputs: list[str],
-           status: str | None = None):
-    """Cabeçalho padrão: título, pergunta do caderno e o que ele lê e grava."""
-    rows = "".join(
-        f"<tr><th style='text-align:left;padding-right:1em'>{k}</th><td>{v}</td></tr>"
-        for k, v in [("Etapa", stage), ("Lê", "<br>".join(inputs)),
-                     ("Grava", "<br>".join(outputs))]
-    )
-    parts = [
-        mo.md(f"# {title}"),
-        mo.callout(mo.md(f"**Pergunta.** {question}"), kind="info"),
-        mo.Html(f"<table style='font-size:0.9em'>{rows}</table>"),
-    ]
-    if status:
-        parts.append(mo.callout(mo.md(status), kind="neutral"))
-    return mo.vstack(parts, gap=0.6)
-
-
-def caveat(text: str, kind: str = "warn"):
-    """Limitação ou cuidado de leitura, destacado."""
-    return mo.callout(mo.md(text), kind=kind)
-
-
-def stats(items: dict[str, object], caption: str | None = None):
-    """Linha de números-chave (`{"Células": 779, …}`)."""
-    cards = [mo.stat(value=pt(f"{v:,}" if isinstance(v, int) else str(v)), label=k,
-                     bordered=True) for k, v in items.items()]
-    row = mo.hstack(cards, justify="start", gap=1, wrap=True)
-    return mo.vstack([row, mo.md(f"<small>{caption}</small>")]) if caption else row
-
-
-def missing(paths: list[Path | str], command: str):
-    """Aviso padronizado quando faltam dados locais, com o comando que os produz."""
-    names = "\n".join(f"- `{p}`" for p in paths)
-    return mo.callout(mo.md(f"**Dados ausentes.**\n\n{names}\n\nPara produzi-los:\n\n"
-                            f"```bash\n{command}\n```"), kind="danger")
-
-
-def provenance(cfg: dict | None = None, files: list[Path | str] = ()):
-    """Bloco recolhido com commit, configuração, versões e arquivos lidos."""
-    import importlib.metadata as md
-
-    lines = [f"- **Commit:** `{_git_commit()}`",
-             f"- **Executado em:** {datetime.now(UTC):%Y-%m-%d %H:%M} UTC",
-             f"- **Python:** {sys.version.split()[0]} · marimo {md.version('marimo')}"]
-    if cfg:
-        lines.append(f"- **Região:** `{cfg['slug']}` · experimento `{cfg['experiment_id']}`")
-    rows = []
-    for f in files:
-        p = Path(f)
-        if p.exists():
-            stat = p.stat()
-            rows.append(f"| `{p}` | {stat.st_size / 2**20:.1f} MiB | "
-                        f"{datetime.fromtimestamp(stat.st_mtime, UTC):%Y-%m-%d %H:%M} |")
-        else:
-            rows.append(f"| `{p}` | ausente | — |")
-    body = "\n".join(lines)
-    if rows:
-        body += "\n\n| Arquivo | Tamanho | Modificado (UTC) |\n|---|---|---|\n" + "\n".join(rows)
-    return mo.accordion({"Proveniência": mo.md(body)})
 
 
 # ── make overleaf ───────────────────────────────────────────────────────────

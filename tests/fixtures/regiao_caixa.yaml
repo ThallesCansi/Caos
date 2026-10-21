@@ -1,0 +1,15 @@
+# Região definida por caixa (bbox), para os testes: a antiga caixa do Baixo Tapajós.
+name: Baixo Tapajós (caixa)
+experiment_id: teste-caixa
+
+boundary:
+  source: bbox
+
+spatial:
+  area: [-2.25, -56.0, -3.75, -54.25]
+  pilot_point: [-2.75, -55.0]
+
+context:
+  layers: [rios, ucs]
+  municipios: {"1506807": Santarém, "1501451": Belterra, "1504752": Mojuí dos Campos}
+  margin_degrees: 0.5
