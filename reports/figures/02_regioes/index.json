@@ -1,20 +1,38 @@
 [
   {
+    "name": "grade",
+    "region": "tapajos",
+    "caption": "Fração dentro da bacia, fração em terra e células na comparação final.",
+    "overleaf": true,
+    "png": "reports/figures/02_regioes/tapajos/grade.png",
+    "pdf": "reports/figures/02_regioes/tapajos/grade.pdf",
+    "commit": "18739fe+modificado"
+  },
+  {
     "name": "mapa",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: limite BHB250 (IBGE/ANA, 2021), 762 células ERA5 de 0,25° com interseção, biomas, Terras Indígenas, UCs federais, rios e cidades. Limites atuais, para contexto: não medem cobertura florestal nem sua história.",
+    "caption": "Limite BHB250, células ERA5, biomas, TIs, UCs, rios e cidades.",
     "overleaf": true,
     "png": "reports/figures/02_regioes/tapajos/mapa.png",
     "pdf": "reports/figures/02_regioes/tapajos/mapa.pdf",
-    "commit": "912567a+modificado"
+    "commit": "18739fe+modificado"
+  },
+  {
+    "name": "grade",
+    "region": "xingu",
+    "caption": "Fração dentro da bacia, fração em terra e células na comparação final.",
+    "overleaf": true,
+    "png": "reports/figures/02_regioes/xingu/grade.png",
+    "pdf": "reports/figures/02_regioes/xingu/grade.pdf",
+    "commit": "18739fe+modificado"
   },
   {
     "name": "mapa",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: limite BHB250 (IBGE/ANA, 2021), 779 células ERA5 de 0,25° com interseção, biomas, Terras Indígenas, UCs federais, rios e cidades. Limites atuais, para contexto: não medem cobertura florestal nem sua história.",
+    "caption": "Limite BHB250, células ERA5, biomas, TIs, UCs, rios e cidades.",
     "overleaf": true,
     "png": "reports/figures/02_regioes/xingu/mapa.png",
     "pdf": "reports/figures/02_regioes/xingu/mapa.pdf",
-    "commit": "912567a+modificado"
+    "commit": "18739fe+modificado"
   }
 ]

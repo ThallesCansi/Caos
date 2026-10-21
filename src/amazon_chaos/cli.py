@@ -240,6 +240,19 @@ def descriptors_run(
     typer.echo(target)
 
 
+@descriptors_app.command("basin")
+def descriptors_basin(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: um por teste")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = False,
+) -> None:
+    """Teste FT e IAAFT (199 substitutas) na série média da bacia (caderno 06, D-016)."""
+    from amazon_chaos.nonlinear.basin_test import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    typer.echo(run(load_region(region), load_spec(), workers=workers, report=reporter(notify)))
+
+
 # ── MODIS ───────────────────────────────────────────────────────────────────
 
 

@@ -132,3 +132,13 @@ Ambas são relatadas como complementares, ao lado do resultado pré-registrado, 
 **Problema:** o pré-registro escolhe m pelo critério dos falsos vizinhos em cada janela. Entre 2001–2012 e 2013–2024, m muda em 20% a 33% das células (t2m e VPD, Xingu). Os descritores que dependem do espaço de fases (DET, LAM, D2, Lyapunov) saltam junto com m: a mudança de DET fica em três faixas (cerca de −0,03, +0,01 e +0,04 para m −1, igual e +1), e esse salto é maior que a mudança climática que se quer medir. A entropia e a complexidade de permutação têm ordem fixa e não dependem de m; o erro de previsão quase não reage.
 
 **Decisão:** o resultado longitudinal pré-registrado é relatado como está. Como sensibilidade complementar, repetimos a análise só nas células em que m é o mesmo nas duas metades (`dm_{var} == 0` em `gradient.cell_table`). As conclusões não mudam: nenhuma associação longitudinal se destaca. As frações de células em que DET e LAM aumentam (caderno 07) também misturam esse efeito e devem ser lidas com essa ressalva.
+
+## D-016 — Teste de substitutas na série média de cada bacia
+
+**Status:** aceito em 21/10/2026, para o caderno 06.
+
+**Decisão:** o caderno 06 aplica os oito descritores pré-registrados à série média diária de cada bacia (ponderada pela área; anomalia padronizada; 2001–2024), com a mesma regra de (τ, m, w) do lote por célula, mas com 199 substitutas em vez de 39 e com três variantes: FT, IAAFT (a nula do pré-registro) e IAAFT depois de retirar a tendência linear (`amazon-chaos descriptors basin`, módulo `nonlinear.basin_test`). A correção de Holm é feita sobre os descritores primários das duas variáveis, separadamente por bacia e variante.
+
+**Motivo:** a série da bacia é uma só, então cabe uma resolução de Monte Carlo maior (p mínimo de 0,005, unilateral), que evita a limitação de D-013. A comparação FT × IAAFT separa a assimetria da distribuição (que a FT confunde com dinâmica) de estrutura temporal. A variante sem tendência é necessária porque as séries sobem de 0,8 a 1,1 desvio-padrão em 24 anos (o KPSS rejeita a estacionariedade em todas), e uma tendência é uma não estacionariedade que nenhuma das duas nulas contempla.
+
+**Natureza:** análise complementar, não pré-registrada. Não substitui o resultado por célula (caderno 07), que segue o pré-registro.

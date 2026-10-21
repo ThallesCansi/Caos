@@ -1,0 +1,20 @@
+[
+  {
+    "name": "estacionariedade",
+    "region": null,
+    "caption": "Tabela 1. Diagnósticos de estacionariedade das séries médias das bacias (anomalia padronizada, 2001–2024): p do teste ADF (hipótese nula: raiz unitária) e do KPSS (hipótese nula: estacionariedade em nível), tendência linear total em desvios-padrão com p robusto à autocorrelação (HAC) e razão entre o maior e o menor desvio-padrão em quatro blocos de seis anos.",
+    "overleaf": true,
+    "csv": "reports/tables/06_surrogates/estacionariedade.csv",
+    "tex": "reports/tables/06_surrogates/estacionariedade.tex",
+    "commit": "18739fe+modificado"
+  },
+  {
+    "name": "resultado_bacias",
+    "region": null,
+    "caption": "Tabela 2. Teste de substitutas nas séries médias das bacias: valor observado, escore z e p de Monte Carlo contra 199 substitutas IAAFT, p corrigido por Holm sobre os descritores primários das duas variáveis em cada bacia, e escore z contra 199 substitutas FT e contra 199 IAAFT da série sem a tendência linear.",
+    "overleaf": true,
+    "csv": "reports/tables/06_surrogates/resultado_bacias.csv",
+    "tex": "reports/tables/06_surrogates/resultado_bacias.tex",
+    "commit": "18739fe+modificado"
+  }
+]

@@ -2,10 +2,10 @@
   {
     "name": "comparacao",
     "region": null,
-    "caption": "Xingu e Tapajós: limite BHB250, grade ERA5, biomas (IBGE), TIs (FUNAI) e UCs federais (ICMBio), sem dupla contagem, e situação dos dados climáticos locais.",
+    "caption": "Tabela 1. As duas bacias: código de Otto Pfafstetter (BHB250, nível 3), área, células ERA5 que as intersectam e que entram na comparação final, faixa de latitudes dos centros das células, participação dos biomas (IBGE) e de Terras Indígenas ou Unidades de Conservação federais, sem contar duas vezes as áreas sobrepostas.",
     "overleaf": true,
     "csv": "reports/tables/02_regioes/comparacao.csv",
     "tex": "reports/tables/02_regioes/comparacao.tex",
-    "commit": "912567a+modificado"
+    "commit": "18739fe+modificado"
   }
 ]

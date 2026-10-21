@@ -1,0 +1,5 @@
+Bacia,Variável,ADF (p),KPSS (p),Tendência em 24 anos (σ),"Tendência (p, HAC)",Razão de desvios entre blocos
+Xingu,temperatura,0.0,0.01,0.841,0.0,1.124
+Xingu,déficit de pressão de vapor,0.0,0.01,0.858,0.0,1.086
+Tapajós,temperatura,0.0,0.01,0.86,0.0,1.221
+Tapajós,déficit de pressão de vapor,0.0,0.01,1.066,0.0,1.281

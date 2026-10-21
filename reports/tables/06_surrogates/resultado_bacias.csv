@@ -1,0 +1,33 @@
+Bacia,Variável,Descritor,Observado,z (IAAFT),p (IAAFT),p Holm,z (FT),z (sem tendência)
+Tapajós,déficit de pressão de vapor,RQA · determinismo,0.831,13.208,0.005,0.04,19.068,18.858
+Tapajós,déficit de pressão de vapor,Entropia de permutação,0.938,-8.079,0.005,0.04,-10.754,-8.416
+Tapajós,déficit de pressão de vapor,Complexidade estatística,0.099,6.866,0.005,0.04,9.259,7.115
+Tapajós,déficit de pressão de vapor,Erro de previsão não linear,0.838,4.934,1.0,1.0,7.871,4.79
+Tapajós,déficit de pressão de vapor,Dimensão de correlação,4.29,-20.309,0.005,,-22.7,-19.392
+Tapajós,déficit de pressão de vapor,RQA · laminaridade,0.701,13.045,0.01,,18.953,17.686
+Tapajós,déficit de pressão de vapor,Assimetria temporal,-0.042,-3.42,0.005,,-6.216,-3.792
+Tapajós,déficit de pressão de vapor,Lyapunov (Rosenstein),0.377,-1.772,0.08,,-0.336,-0.776
+Tapajós,temperatura,RQA · determinismo,0.825,14.459,0.005,0.04,18.916,13.975
+Tapajós,temperatura,Entropia de permutação,0.931,-2.034,0.04,0.16,-4.267,-1.653
+Tapajós,temperatura,Complexidade estatística,0.109,1.141,0.12,0.36,3.171,0.874
+Tapajós,temperatura,Erro de previsão não linear,0.838,4.504,1.0,1.0,5.846,4.22
+Tapajós,temperatura,Dimensão de correlação,4.38,-15.016,0.005,,-19.16,-20.842
+Tapajós,temperatura,RQA · laminaridade,0.705,14.555,0.01,,19.891,12.26
+Tapajós,temperatura,Assimetria temporal,-0.176,-11.312,0.005,,-21.542,-10.719
+Tapajós,temperatura,Lyapunov (Rosenstein),0.382,-1.224,0.22,,-1.392,-0.255
+Xingu,déficit de pressão de vapor,RQA · determinismo,0.829,14.73,0.005,0.04,17.517,17.016
+Xingu,déficit de pressão de vapor,Entropia de permutação,0.933,-5.922,0.005,0.04,-7.036,-6.561
+Xingu,déficit de pressão de vapor,Complexidade estatística,0.107,5.289,0.005,0.04,6.264,5.644
+Xingu,déficit de pressão de vapor,Erro de previsão não linear,0.75,3.144,0.995,1.0,3.664,2.315
+Xingu,déficit de pressão de vapor,Dimensão de correlação,4.463,-12.307,0.005,,-13.552,-11.354
+Xingu,déficit de pressão de vapor,RQA · laminaridade,0.701,13.645,0.01,,18.308,15.216
+Xingu,déficit de pressão de vapor,Assimetria temporal,-0.017,-1.739,0.09,,-2.372,-1.908
+Xingu,déficit de pressão de vapor,Lyapunov (Rosenstein),0.381,-1.042,0.28,,-0.111,-0.865
+Xingu,temperatura,RQA · determinismo,0.815,10.744,0.005,0.04,10.84,9.658
+Xingu,temperatura,Entropia de permutação,0.935,-2.442,0.02,0.08,-3.335,-2.418
+Xingu,temperatura,Complexidade estatística,0.103,1.64,0.05,0.15,2.395,1.591
+Xingu,temperatura,Erro de previsão não linear,0.787,4.802,1.0,1.0,4.389,3.071
+Xingu,temperatura,Dimensão de correlação,4.595,-5.205,0.005,,-5.686,-6.392
+Xingu,temperatura,RQA · laminaridade,0.666,9.697,0.01,,12.039,10.686
+Xingu,temperatura,Assimetria temporal,-0.089,-9.793,0.005,,-12.174,-9.958
+Xingu,temperatura,Lyapunov (Rosenstein),0.383,1.074,0.25,,0.694,-0.274

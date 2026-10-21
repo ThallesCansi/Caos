@@ -1,0 +1,38 @@
+[
+  {
+    "name": "anatomia",
+    "region": null,
+    "caption": "Figura 1. Série média da bacia (anomalia padronizada, 2001–2024) e uma substituta FT e uma IAAFT: os três últimos anos, o espectro de potência (estimador de Welch), a distribuição dos valores, a das variações diárias, com a assimetria de cada uma, e a autocorrelação dos choques de um passo ao quadrado. Na versão impressa, temperatura do Tapajós.",
+    "overleaf": true,
+    "png": "reports/figures/06_surrogates/anatomia.png",
+    "pdf": "reports/figures/06_surrogates/anatomia.pdf",
+    "commit": "18739fe+modificado"
+  },
+  {
+    "name": "bacia_celulas",
+    "region": null,
+    "caption": "Figura 4. Escore z contra substitutas IAAFT: distribuição nas células de cada bacia (caixas: quartis; hastes: 1,5 intervalo interquartil; 39 substitutas por célula) e valor na série média da bacia (estrela; 199 substitutas). Na versão impressa, temperatura.",
+    "overleaf": true,
+    "png": "reports/figures/06_surrogates/bacia_celulas.png",
+    "pdf": "reports/figures/06_surrogates/bacia_celulas.pdf",
+    "commit": "18739fe+modificado"
+  },
+  {
+    "name": "ft_iaaft",
+    "region": null,
+    "caption": "Figura 3. Escore z de cada descritor contra 199 substitutas FT (círculos vazios), IAAFT (losangos) e IAAFT depois de retirar a tendência linear (cruzes), nas duas bacias e nas duas variáveis. Faixa cinza: |z| < 1,96. Eixo em escala simétrica logarítmica, linear entre −2 e 2.",
+    "overleaf": true,
+    "png": "reports/figures/06_surrogates/ft_iaaft.png",
+    "pdf": "reports/figures/06_surrogates/ft_iaaft.pdf",
+    "commit": "18739fe+modificado"
+  },
+  {
+    "name": "nulas",
+    "region": null,
+    "caption": "Figura 2. Distribuição de cada descritor nas 199 substitutas (barras) e valor na série observada (linha), com o escore z e o p de Monte Carlo. Na versão impressa, temperatura do Xingu com substitutas IAAFT.",
+    "overleaf": true,
+    "png": "reports/figures/06_surrogates/nulas.png",
+    "pdf": "reports/figures/06_surrogates/nulas.pdf",
+    "commit": "18739fe+modificado"
+  }
+]
