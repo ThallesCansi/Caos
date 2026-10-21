@@ -269,10 +269,16 @@ def _():
     for _slug in SLUGS:
         _d = region(_slug)
         book.figure(regions.plot_region(_d["cfg"], _d["limit"], _d["cells"], _d["context"]),
-                    "mapa", "Limite BHB250, células ERA5, biomas, TIs, UCs, rios e cidades.",
+                    "mapa", "Figura 1. A bacia no território brasileiro e no detalhe: limite da "
+                    "base hidrográfica BHB250 (IBGE/ANA, 2021), células ERA5 de 0,25° que a "
+                    "intersectam, biomas (IBGE), Terras Indígenas (FUNAI), Unidades de "
+                    "Conservação federais (ICMBio), rios e cidades. Os limites são atuais e "
+                    "servem de contexto; não medem a cobertura florestal nem a sua história.",
                     region=_slug)
         book.figure(plot_grid(_slug), "grade",
-                    "Fração dentro da bacia, fração em terra e células na comparação final.",
+                    "Figura 2. Fração de cada célula ERA5 dentro da bacia, fração em terra "
+                    "(MapBiomas, 2000) e células que entram na comparação entre perturbação e "
+                    "dinâmica (ao menos metade dentro da bacia e metade em terra).",
                     region=_slug)
     return
 

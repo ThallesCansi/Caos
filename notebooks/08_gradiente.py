@@ -574,8 +574,9 @@ def _():
     # Versão de referência da Figura 1 para as duas bacias (sem exibição).
     for _slug in SLUGS:
         book.figure(plot_landscape(_slug), "paisagem",
-                    "Fração sem floresta em 2000 e desmatada em 2000–2024 (MapBiomas) e "
-                    "vegetação alta fixa do ERA5, por célula.", region=_slug)
+                    "Figura 1. Fração da área terrestre de cada célula sem floresta em 2000 "
+                    "(perda antecedente) e desmatada entre 2000 e 2024, segundo o MapBiomas, "
+                    "e fração de vegetação alta fixa usada pelo ERA5.", region=_slug)
     return
 
 

@@ -21,6 +21,7 @@ check:  ## estilo (ruff) e cadernos (marimo check)
 
 notebooks:  ## executa todos os cadernos e exporta HTML (um por região quando couber)
 	@mkdir -p $(HTML)
+	@rm -f reports/figures/*/index.json reports/tables/*/index.json  # índices refeitos pela execução
 	@for nb in notebooks/[0-9]*.py; do \
 	  name=$$(basename $$nb .py); \
 	  if echo " $(NOTEBOOKS_BY_REGION) " | grep -q " $$name "; then \

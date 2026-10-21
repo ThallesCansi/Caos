@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/duas_bacias.png",
     "pdf": "reports/figures/03_clima/duas_bacias.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "ano",
@@ -15,16 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/ano.png",
     "pdf": "reports/figures/03_clima/tapajos/ano.pdf",
-    "commit": "892c606+modificado"
-  },
-  {
-    "name": "ano_2024",
-    "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: 2024 dia a dia (temperatura, umidade relativa, VPD, vento e chuva) contra o ciclo anual normal de 1991–2020.",
-    "overleaf": true,
-    "png": "reports/figures/03_clima/tapajos/ano_2024.png",
-    "pdf": "reports/figures/03_clima/tapajos/ano_2024.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "anomalias_mensais",
@@ -33,16 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/anomalias_mensais.png",
     "pdf": "reports/figures/03_clima/tapajos/anomalias_mensais.pdf",
-    "commit": "892c606+modificado"
-  },
-  {
-    "name": "arquivo_vs_janela",
-    "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: ciclo anual de 2001–2024 menos o de 1990–2000 (temperatura, VPD e chuva).",
-    "overleaf": true,
-    "png": "reports/figures/03_clima/tapajos/arquivo_vs_janela.png",
-    "pdf": "reports/figures/03_clima/tapajos/arquivo_vs_janela.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "ciclo_anual",
@@ -51,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/ciclo_anual.png",
     "pdf": "reports/figures/03_clima/tapajos/ciclo_anual.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "climograma",
@@ -60,16 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/climograma.png",
     "pdf": "reports/figures/03_clima/tapajos/climograma.pdf",
-    "commit": "892c606+modificado"
-  },
-  {
-    "name": "duas_bacias",
-    "region": "tapajos",
-    "caption": "Normais 1991–2020 de Bacia do Rio Tapajós e Bacia do Rio Xingu: temperatura, chuva e VPD regionais.",
-    "overleaf": true,
-    "png": "reports/figures/03_clima/tapajos/duas_bacias.png",
-    "pdf": "reports/figures/03_clima/tapajos/duas_bacias.pdf",
-    "commit": "22045dd+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "estacoes",
@@ -78,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/estacoes.png",
     "pdf": "reports/figures/03_clima/tapajos/estacoes.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "extremos",
@@ -87,7 +60,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/extremos.png",
     "pdf": "reports/figures/03_clima/tapajos/extremos.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "listras",
@@ -96,7 +69,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/listras.png",
     "pdf": "reports/figures/03_clima/tapajos/listras.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "mapas_normal",
@@ -105,7 +78,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/mapas_normal.png",
     "pdf": "reports/figures/03_clima/tapajos/mapas_normal.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "mapas_tendencia",
@@ -114,7 +87,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/mapas_tendencia.png",
     "pdf": "reports/figures/03_clima/tapajos/mapas_tendencia.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "padronizacao",
@@ -123,7 +96,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/padronizacao.png",
     "pdf": "reports/figures/03_clima/tapajos/padronizacao.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "perfil_norte_sul",
@@ -132,7 +105,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/perfil_norte_sul.png",
     "pdf": "reports/figures/03_clima/tapajos/perfil_norte_sul.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "serie_35_anos",
@@ -141,7 +114,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/serie_35_anos.png",
     "pdf": "reports/figures/03_clima/tapajos/serie_35_anos.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "series_anuais",
@@ -150,7 +123,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/series_anuais.png",
     "pdf": "reports/figures/03_clima/tapajos/series_anuais.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "ano",
@@ -159,16 +132,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/ano.png",
     "pdf": "reports/figures/03_clima/xingu/ano.pdf",
-    "commit": "892c606+modificado"
-  },
-  {
-    "name": "ano_2024",
-    "region": "xingu",
-    "caption": "Bacia do Rio Xingu: 2024 dia a dia (temperatura, umidade relativa, VPD, vento e chuva) contra o ciclo anual normal de 1991–2020.",
-    "overleaf": true,
-    "png": "reports/figures/03_clima/xingu/ano_2024.png",
-    "pdf": "reports/figures/03_clima/xingu/ano_2024.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "anomalias_mensais",
@@ -177,16 +141,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/anomalias_mensais.png",
     "pdf": "reports/figures/03_clima/xingu/anomalias_mensais.pdf",
-    "commit": "892c606+modificado"
-  },
-  {
-    "name": "arquivo_vs_janela",
-    "region": "xingu",
-    "caption": "Bacia do Rio Xingu: ciclo anual de 2001–2024 menos o de 1990–2000 (temperatura, VPD e chuva).",
-    "overleaf": true,
-    "png": "reports/figures/03_clima/xingu/arquivo_vs_janela.png",
-    "pdf": "reports/figures/03_clima/xingu/arquivo_vs_janela.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "ciclo_anual",
@@ -195,7 +150,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/ciclo_anual.png",
     "pdf": "reports/figures/03_clima/xingu/ciclo_anual.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "climograma",
@@ -204,16 +159,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/climograma.png",
     "pdf": "reports/figures/03_clima/xingu/climograma.pdf",
-    "commit": "892c606+modificado"
-  },
-  {
-    "name": "duas_bacias",
-    "region": "xingu",
-    "caption": "Normais 1991–2020 de Bacia do Rio Xingu e Bacia do Rio Tapajós: temperatura, chuva e VPD regionais.",
-    "overleaf": true,
-    "png": "reports/figures/03_clima/xingu/duas_bacias.png",
-    "pdf": "reports/figures/03_clima/xingu/duas_bacias.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "estacoes",
@@ -222,7 +168,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/estacoes.png",
     "pdf": "reports/figures/03_clima/xingu/estacoes.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "extremos",
@@ -231,7 +177,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/extremos.png",
     "pdf": "reports/figures/03_clima/xingu/extremos.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "listras",
@@ -240,7 +186,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/listras.png",
     "pdf": "reports/figures/03_clima/xingu/listras.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "mapas_normal",
@@ -249,7 +195,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/mapas_normal.png",
     "pdf": "reports/figures/03_clima/xingu/mapas_normal.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "mapas_tendencia",
@@ -258,7 +204,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/mapas_tendencia.png",
     "pdf": "reports/figures/03_clima/xingu/mapas_tendencia.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "padronizacao",
@@ -267,7 +213,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/padronizacao.png",
     "pdf": "reports/figures/03_clima/xingu/padronizacao.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "perfil_norte_sul",
@@ -276,7 +222,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/perfil_norte_sul.png",
     "pdf": "reports/figures/03_clima/xingu/perfil_norte_sul.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "serie_35_anos",
@@ -285,7 +231,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/serie_35_anos.png",
     "pdf": "reports/figures/03_clima/xingu/serie_35_anos.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "series_anuais",
@@ -294,6 +240,6 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/series_anuais.png",
     "pdf": "reports/figures/03_clima/xingu/series_anuais.pdf",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   }
 ]

@@ -1,21 +1,12 @@
 [
   {
-    "name": "comprimento_ruido",
-    "region": null,
-    "caption": "Gate F4: taxa de rejeição por controle em cada combinação de comprimento e ruído de observação; pontilhado: tamanho máximo aceito.",
-    "overleaf": true,
-    "png": "reports/figures/05_validacao_metodos/comprimento_ruido.png",
-    "pdf": "reports/figures/05_validacao_metodos/comprimento_ruido.pdf",
-    "commit": "3f1689b+modificado"
-  },
-  {
     "name": "controles",
     "region": null,
     "caption": "Figura 1. Um controle do portão: os primeiros 400 passos com o ruído escolhido e a reconstrução em duas dimensões, com o atraso escolhido pela informação mútua, com esse ruído e sem ruído. Na versão impressa, Lorenz com ruído 0,2.",
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/controles.png",
     "pdf": "reports/figures/05_validacao_metodos/controles.pdf",
-    "commit": "4664853+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "diagnosticos",
@@ -24,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/diagnosticos.png",
     "pdf": "reports/figures/05_validacao_metodos/diagnosticos.pdf",
-    "commit": "4664853+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "padronizacao",
@@ -33,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/padronizacao.png",
     "pdf": "reports/figures/05_validacao_metodos/padronizacao.pdf",
-    "commit": "4664853+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "taxas_rejeicao",
@@ -42,6 +33,6 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/taxas_rejeicao.png",
     "pdf": "reports/figures/05_validacao_metodos/taxas_rejeicao.pdf",
-    "commit": "4664853+modificado"
+    "commit": "32a09b5+modificado"
   }
 ]

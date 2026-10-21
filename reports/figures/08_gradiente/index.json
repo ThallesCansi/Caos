@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/dispersao.png",
     "pdf": "reports/figures/08_gradiente/dispersao.pdf",
-    "commit": "d8f080b+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "longitudinal",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/longitudinal.png",
     "pdf": "reports/figures/08_gradiente/longitudinal.pdf",
-    "commit": "d8f080b+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "modelos",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modelos.png",
     "pdf": "reports/figures/08_gradiente/modelos.pdf",
-    "commit": "d8f080b+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "outras_exposicoes",
@@ -33,24 +33,24 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/outras_exposicoes.png",
     "pdf": "reports/figures/08_gradiente/outras_exposicoes.pdf",
-    "commit": "d8f080b+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "paisagem",
     "region": "tapajos",
-    "caption": "Fração sem floresta em 2000 e desmatada em 2000–2024 (MapBiomas) e vegetação alta fixa do ERA5, por célula.",
+    "caption": "Figura 1. Fração da área terrestre de cada célula sem floresta em 2000 (perda antecedente) e desmatada entre 2000 e 2024, segundo o MapBiomas, e fração de vegetação alta fixa usada pelo ERA5.",
     "overleaf": true,
     "png": "reports/figures/08_gradiente/tapajos/paisagem.png",
     "pdf": "reports/figures/08_gradiente/tapajos/paisagem.pdf",
-    "commit": "d8f080b+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "paisagem",
     "region": "xingu",
-    "caption": "Fração sem floresta em 2000 e desmatada em 2000–2024 (MapBiomas) e vegetação alta fixa do ERA5, por célula.",
+    "caption": "Figura 1. Fração da área terrestre de cada célula sem floresta em 2000 (perda antecedente) e desmatada entre 2000 e 2024, segundo o MapBiomas, e fração de vegetação alta fixa usada pelo ERA5.",
     "overleaf": true,
     "png": "reports/figures/08_gradiente/xingu/paisagem.png",
     "pdf": "reports/figures/08_gradiente/xingu/paisagem.pdf",
-    "commit": "d8f080b+modificado"
+    "commit": "32a09b5+modificado"
   }
 ]

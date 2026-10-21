@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/tapajos/completude.csv",
     "tex": "reports/tables/03_clima/tapajos/completude.tex",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "normais_mensais",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/tapajos/normais_mensais.csv",
     "tex": "reports/tables/03_clima/tapajos/normais_mensais.tex",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "tendencias",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/tapajos/tendencias.csv",
     "tex": "reports/tables/03_clima/tapajos/tendencias.tex",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "completude",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/xingu/completude.csv",
     "tex": "reports/tables/03_clima/xingu/completude.tex",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "normais_mensais",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/xingu/normais_mensais.csv",
     "tex": "reports/tables/03_clima/xingu/normais_mensais.tex",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "tendencias",
@@ -51,6 +51,6 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/xingu/tendencias.csv",
     "tex": "reports/tables/03_clima/xingu/tendencias.tex",
-    "commit": "892c606+modificado"
+    "commit": "32a09b5+modificado"
   }
 ]

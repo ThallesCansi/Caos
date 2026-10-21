@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/cobertura.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/cobertura.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "concordancia",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/concordancia.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/concordancia.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "mapas",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/mapas.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/mapas.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "perda_antecedente",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/perda_antecedente.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/perda_antecedente.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "series_anuais",
@@ -42,34 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/series_anuais.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/series_anuais.pdf",
-    "commit": "cb4c433+modificado"
-  },
-  {
-    "name": "concordancia",
-    "region": "tapajos_caixa",
-    "caption": "Baixo Tapajós (caixa): concordância entre fontes independentes de perturbação, célula a célula (ρ de Spearman).",
-    "overleaf": true,
-    "png": "reports/figures/04_perturbacao/tapajos_caixa/concordancia.png",
-    "pdf": "reports/figures/04_perturbacao/tapajos_caixa/concordancia.pdf",
-    "commit": "4ecdcae"
-  },
-  {
-    "name": "mapas",
-    "region": "tapajos_caixa",
-    "caption": "Baixo Tapajós (caixa): floresta (MapBiomas, 2000 e 2024), desmatamento PRODES acumulado e de 2013–2024, degradação DETER, densidade de focos (BDQueimadas), frequência de fogo (MapBiomas) e agropecuária, por célula ERA5. Frações sobre a área terrestre observada.",
-    "overleaf": true,
-    "png": "reports/figures/04_perturbacao/tapajos_caixa/mapas.png",
-    "pdf": "reports/figures/04_perturbacao/tapajos_caixa/mapas.pdf",
-    "commit": "4ecdcae"
-  },
-  {
-    "name": "series_anuais",
-    "region": "tapajos_caixa",
-    "caption": "Baixo Tapajós (caixa): focos de fogo por ano (2003–2024) e desmatamento anual PRODES (2008–2024) dentro da região.",
-    "overleaf": true,
-    "png": "reports/figures/04_perturbacao/tapajos_caixa/series_anuais.png",
-    "pdf": "reports/figures/04_perturbacao/tapajos_caixa/series_anuais.pdf",
-    "commit": "4ecdcae"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "cobertura",
@@ -78,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/cobertura.png",
     "pdf": "reports/figures/04_perturbacao/xingu/cobertura.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "concordancia",
@@ -87,7 +60,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/concordancia.png",
     "pdf": "reports/figures/04_perturbacao/xingu/concordancia.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "mapas",
@@ -96,7 +69,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/mapas.png",
     "pdf": "reports/figures/04_perturbacao/xingu/mapas.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "perda_antecedente",
@@ -105,7 +78,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/perda_antecedente.png",
     "pdf": "reports/figures/04_perturbacao/xingu/perda_antecedente.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   },
   {
     "name": "series_anuais",
@@ -114,6 +87,6 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/series_anuais.png",
     "pdf": "reports/figures/04_perturbacao/xingu/series_anuais.pdf",
-    "commit": "cb4c433+modificado"
+    "commit": "32a09b5+modificado"
   }
 ]
