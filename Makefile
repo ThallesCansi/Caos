@@ -1,7 +1,7 @@
 # Atalhos do projeto. `make` sem alvo lista os comandos.
 REGION ?= xingu
 REGIONS ?= xingu tapajos
-NOTEBOOKS_BY_REGION := 03_clima
+NOTEBOOKS_BY_REGION := 03_clima 04_perturbacao
 HTML := reports/html
 
 .PHONY: help sync test check notebooks overleaf pull pull-gate hpc-status hpc-code

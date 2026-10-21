@@ -1,30 +1,48 @@
 [
   {
+    "name": "cobertura",
+    "region": "tapajos",
+    "caption": "Figura 1. Fração da área terrestre de cada célula coberta por floresta e por agropecuária no ano escolhido e perda de floresta desde 1990 (MapBiomas Cobertura, coleção 11). Na versão impressa, 2000.",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/tapajos/cobertura.png",
+    "pdf": "reports/figures/04_perturbacao/tapajos/cobertura.pdf",
+    "commit": "cb4c433+modificado"
+  },
+  {
     "name": "concordancia",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: concordância entre fontes independentes de perturbação, célula a célula (ρ de Spearman).",
+    "caption": "Figura 4. Concordância entre fontes independentes, célula a célula, com a correlação de postos de Spearman.",
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/concordancia.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/concordancia.pdf",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "mapas",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: floresta (MapBiomas, 2000 e 2024), desmatamento PRODES acumulado e de 2013–2024, degradação DETER, densidade de focos (BDQueimadas), frequência de fogo (MapBiomas) e agropecuária, por célula ERA5. Frações sobre a área terrestre observada.",
+    "caption": "Figura 2. Perturbação por célula: desmatamento acumulado até 2024 e de 2013 a 2024 (PRODES), alertas de corte raso e de degradação de 2016 a 2024 (DETER), densidade de focos de fogo nas duas décadas (BDQueimadas), número de anos com fogo e fração da área queimada ao menos uma vez, de 1985 a 2024 (MapBiomas Fogo). Frações sobre a área terrestre, limitadas a 1.",
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/mapas.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/mapas.pdf",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
+  },
+  {
+    "name": "perda_antecedente",
+    "region": "tapajos",
+    "caption": "Figura 5. A perda antecedente de floresta (1 − fração de floresta em 2000) e as suas duas componentes principais: a agropecuária e a vegetação natural não florestal em 2000 (MapBiomas).",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/tapajos/perda_antecedente.png",
+    "pdf": "reports/figures/04_perturbacao/tapajos/perda_antecedente.pdf",
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "series_anuais",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: focos de fogo por ano (2003–2024) e desmatamento anual PRODES (2008–2024) dentro da região.",
+    "caption": "Figura 3. Focos de fogo ativo por ano, de 2003 a 2024 (BDQueimadas, satélite de referência), e desmatamento anual de 2008 a 2024 (PRODES), somados sobre a bacia.",
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/tapajos/series_anuais.png",
     "pdf": "reports/figures/04_perturbacao/tapajos/series_anuais.pdf",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "concordancia",
@@ -54,30 +72,48 @@
     "commit": "4ecdcae"
   },
   {
+    "name": "cobertura",
+    "region": "xingu",
+    "caption": "Figura 1. Fração da área terrestre de cada célula coberta por floresta e por agropecuária no ano escolhido e perda de floresta desde 1990 (MapBiomas Cobertura, coleção 11). Na versão impressa, 2000.",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/xingu/cobertura.png",
+    "pdf": "reports/figures/04_perturbacao/xingu/cobertura.pdf",
+    "commit": "cb4c433+modificado"
+  },
+  {
     "name": "concordancia",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: concordância entre fontes independentes de perturbação, célula a célula (ρ de Spearman).",
+    "caption": "Figura 4. Concordância entre fontes independentes, célula a célula, com a correlação de postos de Spearman.",
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/concordancia.png",
     "pdf": "reports/figures/04_perturbacao/xingu/concordancia.pdf",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "mapas",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: floresta (MapBiomas, 2000 e 2024), desmatamento PRODES acumulado e de 2013–2024, degradação DETER, densidade de focos (BDQueimadas), frequência de fogo (MapBiomas) e agropecuária, por célula ERA5. Frações sobre a área terrestre observada.",
+    "caption": "Figura 2. Perturbação por célula: desmatamento acumulado até 2024 e de 2013 a 2024 (PRODES), alertas de corte raso e de degradação de 2016 a 2024 (DETER), densidade de focos de fogo nas duas décadas (BDQueimadas), número de anos com fogo e fração da área queimada ao menos uma vez, de 1985 a 2024 (MapBiomas Fogo). Frações sobre a área terrestre, limitadas a 1.",
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/mapas.png",
     "pdf": "reports/figures/04_perturbacao/xingu/mapas.pdf",
-    "commit": "5ebcf55"
+    "commit": "cb4c433+modificado"
+  },
+  {
+    "name": "perda_antecedente",
+    "region": "xingu",
+    "caption": "Figura 5. A perda antecedente de floresta (1 − fração de floresta em 2000) e as suas duas componentes principais: a agropecuária e a vegetação natural não florestal em 2000 (MapBiomas).",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/xingu/perda_antecedente.png",
+    "pdf": "reports/figures/04_perturbacao/xingu/perda_antecedente.pdf",
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "series_anuais",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: focos de fogo por ano (2003–2024) e desmatamento anual PRODES (2008–2024) dentro da região.",
+    "caption": "Figura 3. Focos de fogo ativo por ano, de 2003 a 2024 (BDQueimadas, satélite de referência), e desmatamento anual de 2008 a 2024 (PRODES), somados sobre a bacia.",
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/xingu/series_anuais.png",
     "pdf": "reports/figures/04_perturbacao/xingu/series_anuais.pdf",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   }
 ]

@@ -2,20 +2,20 @@
   {
     "name": "celulas",
     "region": "tapajos",
-    "caption": "Métricas de perturbação por célula (todas as fontes).",
+    "caption": "Medidas de perturbação por célula, de todas as fontes.",
     "overleaf": false,
     "csv": "reports/tables/04_perturbacao/tapajos/celulas.csv",
     "tex": "reports/tables/04_perturbacao/tapajos/celulas.tex",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "concordancia",
     "region": "tapajos",
-    "caption": "Bacia do Rio Tapajós: correlação de postos entre métricas de fontes diferentes. Células vizinhas não são independentes: o p é só indicativo.",
+    "caption": "Tabela 2. Correlação de postos de Spearman entre medidas de fontes diferentes, sobre as células da bacia.",
     "overleaf": true,
     "csv": "reports/tables/04_perturbacao/tapajos/concordancia.csv",
     "tex": "reports/tables/04_perturbacao/tapajos/concordancia.tex",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "celulas",
@@ -38,19 +38,19 @@
   {
     "name": "celulas",
     "region": "xingu",
-    "caption": "Métricas de perturbação por célula (todas as fontes).",
+    "caption": "Medidas de perturbação por célula, de todas as fontes.",
     "overleaf": false,
     "csv": "reports/tables/04_perturbacao/xingu/celulas.csv",
     "tex": "reports/tables/04_perturbacao/xingu/celulas.tex",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   },
   {
     "name": "concordancia",
     "region": "xingu",
-    "caption": "Bacia do Rio Xingu: correlação de postos entre métricas de fontes diferentes. Células vizinhas não são independentes: o p é só indicativo.",
+    "caption": "Tabela 2. Correlação de postos de Spearman entre medidas de fontes diferentes, sobre as células da bacia.",
     "overleaf": true,
     "csv": "reports/tables/04_perturbacao/xingu/concordancia.csv",
     "tex": "reports/tables/04_perturbacao/xingu/concordancia.tex",
-    "commit": "5ebcf55+modificado"
+    "commit": "cb4c433+modificado"
   }
 ]
