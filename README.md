@@ -19,7 +19,7 @@ Cada etapa é um caderno Marimo em `notebooks/`, que lê dados já produzidos e 
 | `04_perturbacao` | PRODES, DETER, BDQueimadas, MapBiomas por célula (MODIS pendente) | pronto |
 | `05_validacao_metodos` | gate dos descritores em sistemas sintéticos | pronto (aguarda revisão) |
 | `06_surrogates` | testes FT/IAAFT | a migrar (antigo 06) |
-| `07_descritores` | descritores por célula, robustez, EWS | a fazer |
+| `07_descritores` | descritores por célula, robustez, EWS | pronto |
 | `08_gradiente` | perturbação × dinâmica | a fazer |
 
 Os cadernos Jupyter anteriores estão em [`legacy/`](legacy/README.md) e na tag `v0-jupyter`.

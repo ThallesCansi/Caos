@@ -1,0 +1,92 @@
+[
+  {
+    "name": "distribuicao_z_t2m",
+    "region": null,
+    "caption": "Figura 3. Distribuição do z contra as substitutas nas células de cada bacia, por descritor, janela 2001–2024. Pontilhado: ±1,96. Na versão impressa, as duas variáveis.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/distribuicao_z_t2m.png",
+    "pdf": "reports/figures/07_descritores/distribuicao_z_t2m.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "distribuicao_z_vpd",
+    "region": null,
+    "caption": "Distribuição do z contra as substitutas nas células de cada bacia, por descritor, déficit de pressão de vapor, 2001–2024.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/distribuicao_z_vpd.png",
+    "pdf": "reports/figures/07_descritores/distribuicao_z_vpd.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "janelas_rqa_det_t2m",
+    "region": null,
+    "caption": "Figura 5. Valor do descritor em cada célula em 2001–2012 (horizontal) e 2013–2024 (vertical); tracejado: sem mudança. Na versão impressa, determinismo da recorrência da temperatura.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/janelas_rqa_det_t2m.png",
+    "pdf": "reports/figures/07_descritores/janelas_rqa_det_t2m.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "rejeicao_global",
+    "region": null,
+    "caption": "Figura 1. Fração das células com p ≤ 0,05 contra 39 substitutas IAAFT, por descritor, variável e bacia, com IC 95% por bootstrap em blocos de 1°. Linha tracejada: 5%, o esperado se não houvesse estrutura não linear. Na versão impressa, janela 2001–2024.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/rejeicao_global.png",
+    "pdf": "reports/figures/07_descritores/rejeicao_global.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "sensibilidade_t2m",
+    "region": null,
+    "caption": "Figura 4. Variação relativa de cada descritor, em %, ao trocar τ = 1 por τ = 2 ou m pelo valor vizinho, em relação aos parâmetros da regra. Entropia, complexidade e assimetria não dependem de τ e m. Na versão impressa, as duas variáveis.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/sensibilidade_t2m.png",
+    "pdf": "reports/figures/07_descritores/sensibilidade_t2m.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "sensibilidade_vpd",
+    "region": null,
+    "caption": "Variação relativa de cada descritor do déficit de pressão de vapor ao trocar τ = 1 por τ = 2 ou m pelo valor vizinho.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/sensibilidade_vpd.png",
+    "pdf": "reports/figures/07_descritores/sensibilidade_vpd.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "ews_t2m",
+    "region": "tapajos",
+    "caption": "Tendência (τ de Kendall) da variância e da autocorrelação de um passo da temperatura em janelas móveis de 12 anos; pontos: p ≤ 0,05.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/tapajos/ews_t2m.png",
+    "pdf": "reports/figures/07_descritores/tapajos/ews_t2m.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "mapa_z_pe_complexity_t2m",
+    "region": "tapajos",
+    "caption": "Complexidade estatística da temperatura: z contra 39 substitutas IAAFT por célula, 2001–2024, e o mesmo z em função da latitude.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/tapajos/mapa_z_pe_complexity_t2m.png",
+    "pdf": "reports/figures/07_descritores/tapajos/mapa_z_pe_complexity_t2m.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "ews_t2m",
+    "region": "xingu",
+    "caption": "Tendência (τ de Kendall) da variância e da autocorrelação de um passo da temperatura em janelas móveis de 12 anos; pontos: p ≤ 0,05.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/xingu/ews_t2m.png",
+    "pdf": "reports/figures/07_descritores/xingu/ews_t2m.pdf",
+    "commit": "1e2fa69"
+  },
+  {
+    "name": "mapa_z_pe_complexity_t2m",
+    "region": "xingu",
+    "caption": "Complexidade estatística da temperatura: z contra 39 substitutas IAAFT por célula, 2001–2024, e o mesmo z em função da latitude.",
+    "overleaf": true,
+    "png": "reports/figures/07_descritores/xingu/mapa_z_pe_complexity_t2m.png",
+    "pdf": "reports/figures/07_descritores/xingu/mapa_z_pe_complexity_t2m.pdf",
+    "commit": "1e2fa69"
+  }
+]

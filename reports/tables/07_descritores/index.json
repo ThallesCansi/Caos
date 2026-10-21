@@ -1,0 +1,11 @@
+[
+  {
+    "name": "rejeicao_bh",
+    "region": null,
+    "caption": "Tabela 1. Resultado pré-registrado: fração das células que rejeitam a hipótese linear depois da correção de Benjamini–Hochberg, por bacia, descritor e variável, e z mediano.",
+    "overleaf": true,
+    "csv": "reports/tables/07_descritores/rejeicao_bh.csv",
+    "tex": "reports/tables/07_descritores/rejeicao_bh.tex",
+    "commit": "1e2fa69"
+  }
+]
