@@ -27,6 +27,7 @@ import marimo as mo
 import matplotlib.pyplot as plt
 import pandas as pd
 
+import amazon_chaos.plots  # noqa: F401  (registra o tema Plotly)
 from amazon_chaos.config import list_regions, load_region
 from amazon_chaos.paths import project_root
 from amazon_chaos.viz import pt, style
@@ -72,23 +73,39 @@ class Notebook:
         return folder
 
     def figure(self, fig, name: str, caption: str, region: str | None = None,
-               overleaf: bool = True, width: str = "100%"):
-        """Grava a figura, registra a legenda e devolve figura + legenda para exibir."""
-        folder = self._folder(FIGURES, region)
-        # Metadados fixos: o mesmo conteúdo gera o mesmo arquivo (diffs só quando muda).
-        fig.savefig(folder / f"{name}.png", dpi=300, bbox_inches="tight",
-                    metadata={"Software": None})
-        fig.savefig(folder / f"{name}.pdf", bbox_inches="tight",
-                    metadata={"CreationDate": None, "Producer": None, "Creator": None})
-        _register(folder.parent if region else folder, {
-            "name": name, "region": region, "caption": caption, "overleaf": overleaf,
-            "png": str(folder / f"{name}.png"), "pdf": str(folder / f"{name}.pdf"),
-            "commit": _git_commit(),
-        })
-        html = mo.as_html(fig)
-        plt.close(fig)
+               overleaf: bool = True, width: str = "100%", save: bool = True):
+        """Exibe a figura com a legenda e, se `save`, grava PNG (300 dpi) e PDF.
+
+        Aceita figuras Plotly (interativas no caderno; a mesma figura vai para a Overleaf) e
+        matplotlib. Com controles interativos, passe `save=False` fora do valor de referência,
+        para que mexer num controle não sobrescreva a figura da monografia.
+        """
+        interactive = hasattr(fig, "write_image")
+        if save:
+            folder = self._folder(FIGURES, region)
+            if interactive:
+                w, h = fig.layout.width or 1100, fig.layout.height or 450
+                fig.write_image(folder / f"{name}.png", scale=3, width=w, height=h)
+                fig.write_image(folder / f"{name}.pdf", width=w, height=h)
+            else:
+                # metadados fixos: o mesmo conteúdo gera o mesmo arquivo
+                fig.savefig(folder / f"{name}.png", dpi=300, bbox_inches="tight",
+                            metadata={"Software": None})
+                fig.savefig(folder / f"{name}.pdf", bbox_inches="tight",
+                            metadata={"CreationDate": None, "Producer": None, "Creator": None})
+            _register(folder.parent if region else folder, {
+                "name": name, "region": region, "caption": caption, "overleaf": overleaf,
+                "png": str(folder / f"{name}.png"), "pdf": str(folder / f"{name}.pdf"),
+                "commit": _git_commit(),
+            })
+        if interactive:
+            fig.update_layout(width=None, autosize=True)
+            shown = mo.as_html(fig)
+        else:
+            shown = mo.Html(f'<div style="width:{width}">{mo.as_html(fig).text}</div>')
+            plt.close(fig)
         return mo.vstack([
-            mo.Html(f'<div style="width:{width}">{html.text}</div>'),
+            shown,
             mo.Html(f'<p style="font-size:0.88em;color:#5b6770;margin:0 0 0.6em 0">'
                     f'{pt(caption)}</p>'),
         ], gap=0.25)

@@ -5,11 +5,11 @@ app = marimo.App(width="medium", app_title="01 · Laboratório de sistemas dinâ
 
 with app.setup(hide_code=True):
     import marimo as mo
-    import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
+    import plotly.graph_objects as go
 
-    from amazon_chaos import nb
+    from amazon_chaos import nb, plots
     from amazon_chaos.nonlinear.embedding import delay_embedding
     from amazon_chaos.nonlinear.lyapunov import rosenstein
     from amazon_chaos.nonlinear.models import MemoryMap, MoistureVegetation
@@ -22,6 +22,8 @@ with app.setup(hide_code=True):
     FLOW = MoistureVegetation()
     MAP = MemoryMap()
     MU_CHAOS = 11.5
+    INITIALS = [(0.15, 0.1), (0.3, 0.7), (0.6, 0.2), (1.0, 0.8), (1.2, 0.45)]
+    PALETTE = [COLORS["ink"], COLORS["t2m"], COLORS["precip"], COLORS["q"], COLORS["vpd"]]
 
 
 @app.cell(hide_code=True)
@@ -30,31 +32,47 @@ def _():
     # 🌀 Laboratório de sistemas dinâmicos
 
     Antes de perguntar se o clima da Amazônia esconde algum traço de caos, precisamos saber
-    reconhecer caos quando ele está diante de nós, e, talvez mais importante, saber quando
+    reconhecer caos quando ele está diante de nós e, talvez mais importante, saber quando
     ele não está. Este capítulo é um laboratório: trabalhamos com sistemas cujas equações
     conhecemos por inteiro, de modo que cada resposta pode ser conferida. É aqui que
     aprendemos o vocabulário que o resto do trabalho usa, o que é um equilíbrio, quando ele
     é estável, o que é uma bifurcação, o que mede o expoente de Lyapunov, e é aqui também que
-    descobrimos as armadilhas em que é fácil cair quando só temos uma série de dados.
+    encontramos as armadilhas em que é fácil cair quando só temos uma série de dados.
 
     O percurso tem cinco movimentos. Começamos por um modelo mínimo de floresta e umidade,
     um sistema contínuo de duas variáveis, onde estudamos equilíbrios, estabilidade e a
     perda da vegetação quando a umidade disponível cai abaixo de um limiar. Em seguida
     passamos a um mapa discreto com memória, capaz de ciclos e de caos, e acompanhamos o
-    caminho que leva da ordem à desordem. No terceiro movimento medimos o caos de duas
-    maneiras, primeiro pela equação e depois fingindo não conhecê-la, a partir de uma única
-    série observada, que é a situação real dos dados climáticos. O quarto movimento
-    contamina essa série com sazonalidade e ruído e coloca ao lado um processo puramente
-    aleatório, para mostrar como um indicador de caos pode enganar. Por fim, apresentamos as
-    duas ferramentas que nos protegem desse engano, as séries substitutas e os gráficos de
-    recorrência, e explicamos como tudo isso desemboca na análise das bacias do Xingu e do
-    Tapajós.
+    caminho que leva da ordem à desordem e, surpreendentemente, de volta à ordem. No
+    terceiro movimento medimos o caos de duas maneiras, primeiro pela equação e depois
+    fingindo não conhecê-la, a partir de uma única série observada, que é a situação real
+    dos dados climáticos. O quarto movimento contamina essa série com sazonalidade e ruído e
+    coloca ao lado um processo puramente aleatório, para mostrar como um indicador de caos
+    pode enganar. Por fim, apresentamos as duas ferramentas que nos protegem desse engano, as
+    séries substitutas e os gráficos de recorrência, e explicamos como tudo isso desemboca na
+    análise das bacias do Xingu e do Tapajós. Um glossário ao fim reúne os termos técnicos.
 
     Os modelos daqui não pretendem reproduzir a Amazônia em números. São caricaturas
     propositais, simples o bastante para que cada efeito possa ser rastreado até a sua
-    causa. O código que gera cada figura está recolhido; quem quiser vê-lo pode abrir a
-    célula correspondente.
+    causa. Todos os gráficos são interativos: passe o mouse para ler os valores, arraste para
+    ampliar uma região, clique duas vezes para voltar e clique na legenda para esconder ou
+    mostrar uma curva. Onde houver um controle deslizante, a figura e o texto logo abaixo
+    dela se recalculam a cada mudança. O código que gera cada figura está recolhido e pode
+    ser aberto por quem quiser vê-lo.
+
+    Ao longo do capítulo, quatro tipos de caixa colorida destacam o que merece atenção:
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.hstack([
+        mo.callout(mo.md("Verde: uma ideia-chave, que vale guardar."), kind="success"),
+        mo.callout(mo.md("Azul: a leitura do que um controle mostra agora."), kind="info"),
+        mo.callout(mo.md("Amarelo: um cuidado de interpretação."), kind="warn"),
+        mo.callout(mo.md("Vermelho: um alerta central para o trabalho."), kind="danger"),
+    ], widths="equal", gap=0.5)
     return
 
 
@@ -99,9 +117,9 @@ def _():
     ## ⚖️ Equilíbrios e estabilidade
 
     Um equilíbrio é um estado em que nada muda, ou seja, em que $\dot m = 0$ e $\dot v = 0$
-    ao mesmo tempo. Mas existir não basta: um lápis equilibrado sobre a ponta também está em
-    equilíbrio, só que qualquer sopro o derruba. Dizemos que um equilíbrio é estável quando
-    pequenas perturbações se apagam com o tempo, e instável quando crescem.
+    ao mesmo tempo. Existir, porém, não basta: um lápis equilibrado sobre a ponta também está
+    em equilíbrio, só que qualquer sopro o derruba. Dizemos que um equilíbrio é estável
+    quando pequenas perturbações se apagam com o tempo, e instável quando crescem.
 
     Formalmente, seja $\mathbf x = (m, v)$ e $\dot{\mathbf x} = \mathbf f(\mathbf x)$. Perto
     de um equilíbrio $\mathbf x^*$, escrevemos $\mathbf x = \mathbf x^* + \boldsymbol\delta$
@@ -138,7 +156,7 @@ def _():
     $$
 
     O sinal de $\lambda_2$ responde a uma pergunta ecológica simples: se aparecer um pouco
-    de vegetação num lugar sem nenhuma, ela consegue se estabelecer? Ela consegue se
+    de vegetação num lugar sem nenhuma, ela consegue se estabelecer? Consegue se
     $\lambda_2 > 0$. A fronteira $\lambda_2 = 0$ define um limiar de umidade externa:
 
     $$
@@ -154,9 +172,9 @@ def _():
 def _():
     mo.callout(mo.md(nb.pt(
         f"Com os parâmetros escolhidos, o limiar vale P_c = {FLOW.critical_p:.4f}. Abaixo dele, "
-        "o deserto é estável e nenhuma vegetação se sustenta; acima, o deserto se torna "
-        "instável e a vegetação ocupa o sistema. Toda a física do modelo, nesse ponto, cabe "
-        "em uma única desigualdade.")), kind="success")
+        "o estado sem vegetação é estável e nenhuma vegetação se sustenta; acima, esse estado "
+        "se torna instável e a vegetação ocupa o sistema. Toda a física do modelo, nesse ponto, "
+        "cabe em uma única desigualdade.")), kind="success")
     return
 
 
@@ -169,62 +187,71 @@ def _():
 
 @app.function(hide_code=True)
 def plot_flow(p):
+    fig = plots.grid(1, 2, [nb.pt(f"Uma trajetória a partir de (0,45; 0,35) · P = {p:.2f}"),
+                            "Retrato de fase: cinco estados iniciais"], height=430)
     t, y = FLOW.simulate(p)
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.3), layout="constrained")
-    ax1.plot(t, y[0], color=COLORS["precip"], lw=2, label="m(t), umidade")
-    ax1.plot(t, y[1], color=COLORS["q"], lw=2, label="v(t), vegetação")
-    ax1.set(xlabel="tempo", ylabel="estado (adimensional)",
-            title=nb.pt(f"Uma trajetória a partir de (0,45; 0,35) · P = {p:.2f}"))
-    ax1.legend()
-    for z0 in [(0.15, 0.1), (0.3, 0.7), (0.6, 0.2), (1.0, 0.8), (1.2, 0.45)]:
-        _, y = FLOW.simulate(p, z0=z0, t_max=35)
-        ax2.plot(y[0], y[1], lw=1.5)
-        ax2.scatter(y[0, 0], y[1, 0], s=22, zorder=3)
-    ax2.set(xlabel="m, umidade", ylabel="v, vegetação",
-            title="Retrato de fase: cinco estados iniciais")
+    fig.add_trace(go.Scatter(x=t, y=y[0], name="m(t), umidade",
+                             line=dict(color=COLORS["precip"], width=2.4)), 1, 1)
+    fig.add_trace(go.Scatter(x=t, y=y[1], name="v(t), vegetação",
+                             line=dict(color=COLORS["q"], width=2.4)), 1, 1)
+    for k, z0 in enumerate(INITIALS):
+        _, yy = FLOW.simulate(p, z0=z0, t_max=35)
+        color = PALETTE[k]
+        fig.add_trace(go.Scatter(x=yy[0], y=yy[1], mode="lines", showlegend=False,
+                                 line=dict(color=color, width=1.8),
+                                 hovertemplate="m=%{x:.3f}<br>v=%{y:.3f}"), 1, 2)
+        fig.add_trace(go.Scatter(x=[z0[0]], y=[z0[1]], mode="markers", showlegend=False,
+                                 marker=dict(color=color, size=9),
+                                 hovertemplate="início<br>m=%{x}<br>v=%{y}"), 1, 2)
+    fig.update_xaxes(title_text="tempo", row=1, col=1)
+    fig.update_yaxes(title_text="estado (adimensional)", row=1, col=1)
+    fig.update_xaxes(title_text="m, umidade", row=1, col=2)
+    fig.update_yaxes(title_text="v, vegetação", row=1, col=2)
+    fig.update_layout(legend=dict(x=0.01, y=0.99))
     return fig
 
 
 @app.cell(hide_code=True)
 def _(p_slider):
-    _side = "acima" if p_slider.value > FLOW.critical_p else "abaixo"
+    _p = p_slider.value
+    _above = _p > FLOW.critical_p
     mo.vstack([
         mo.md(r"""
-        Vamos ver o limiar em ação. O controle abaixo muda a entrada de umidade $P$, e as
-        duas figuras se recalculam. À esquerda está uma única trajetória ao longo do tempo,
-        com a umidade em azul e a vegetação em verde. À direita está o retrato de fase: cada
-        curva parte de um estado inicial diferente (o ponto) e mostra o caminho que o sistema
-        percorre no plano $(m, v)$. Comece no valor inicial, bem acima do limiar, e depois
-        desça $P$ devagar, passando por 0,08.
+        Vamos ver o limiar em ação. O controle abaixo muda a entrada de umidade $P$, e a
+        figura se recalcula. À esquerda está uma única trajetória ao longo do tempo, com a
+        umidade em azul e a vegetação em verde. À direita está o retrato de fase: cada curva
+        parte de um estado inicial diferente, marcado pelo ponto, e mostra o caminho que o
+        sistema percorre no plano $(m, v)$. Comece no valor inicial, bem acima do limiar, e
+        depois desça $P$ devagar, passando por 0,08.
         """),
         p_slider,
-        mo.as_html(plot_flow(p_slider.value)),
-        mo.md(nb.pt(
-            f"Com P = {p_slider.value:.2f}, estamos {_side} do limiar P_c ≈ "
-            f"{FLOW.critical_p:.3f}. " + (
+        book.figure(plot_flow(_p), "trajetorias",
+                    "Figura 1. Modelo umidade–vegetação. Esquerda: umidade m(t) e vegetação "
+                    "v(t) a partir de (0,45; 0,35). Direita: trajetórias a partir de cinco "
+                    "estados iniciais (pontos). Na versão impressa, P = 0,25.",
+                    save=_p == 0.25),
+        mo.callout(mo.md(nb.pt(
+            f"Com P = {_p:.2f}, estamos {'acima' if _above else 'abaixo'} do limiar "
+            f"P_c ≈ {FLOW.critical_p:.3f}. " + (
                 "Todas as curvas do retrato de fase convergem para um mesmo ponto com "
                 "vegetação: é o equilíbrio vegetado, estável, que atrai qualquer estado "
-                "inicial razoável. Na série temporal, a vegetação sobe e se acomoda num "
-                "patamar, e a umidade fica acima do que a entrada externa sustentaria "
-                "sozinha, porque a vegetação recicla parte dela." if _side == "acima" else
+                "inicial. Na série temporal, a vegetação sobe e se acomoda num patamar, e a "
+                "umidade fica acima do que a entrada externa sustentaria sozinha, porque a "
+                "vegetação recicla parte dela." if _above else
                 "Agora todas as curvas terminam sobre o eixo horizontal, com v = 0: a "
-                "vegetação desaparece, não importa de onde começou, e a umidade se acomoda "
-                "em P/β, só com a contribuição externa. O equilíbrio sem vegetação passou a "
-                "ser o atrator."))),
+                "vegetação desaparece, qualquer que seja o estado de partida, e a umidade se "
+                "acomoda em P/β, só com a contribuição externa. O equilíbrio sem vegetação "
+                "passou a ser o atrator."))), kind="info"),
+        mo.md(r"""
+        Perto do limiar, as trajetórias demoram cada vez mais para chegar ao equilíbrio.
+        Isso acontece porque $\lambda_2$ se aproxima de zero quando $P \to P_c$, e o tempo
+        típico de recuperação de uma perturbação é da ordem de $1/|\lambda_2|$, que cresce
+        sem limite. Esse alongamento do tempo de resposta perto de uma mudança de
+        estabilidade é a base dos chamados sinais precoces de transição, que retomaremos na
+        análise dos dados. O desaparecimento da vegetação, aqui, também não é um ponto de não
+        retorno, como a próxima figura deixa claro.
+        """),
     ])
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    mo.md(r"""
-    Duas dúvidas costumam surgir aqui. A primeira é por que a vegetação não some de uma vez
-    quando $P$ cruza o limiar: perto de $P_c$ o autovalor $\lambda_2$ é quase zero, e as
-    perturbações se desfazem cada vez mais devagar. Esse alongamento do tempo de resposta
-    perto de uma mudança de estabilidade é a base dos chamados sinais precoces, que
-    retomaremos na análise dos dados. A segunda é se o desaparecimento da vegetação aqui é
-    um "ponto de não retorno". Não exatamente, como mostra a próxima figura.
-    """)
     return
 
 
@@ -232,18 +259,22 @@ def _():
 def plot_stability():
     ps = np.linspace(0.015, 0.40, 280)
     bare, vegetated, stable = FLOW.equilibria(ps)
-    fig, ax = plt.subplots(figsize=(10, 4.6), layout="constrained")
-    ax.plot(ps[bare], np.zeros(bare.sum()), ".", ms=4, color=COLORS["ink"],
-            label="sem vegetação, estável")
-    ax.plot(ps[~bare], np.zeros((~bare).sum()), ".", ms=4, color="#c9ced2",
-            label="sem vegetação, instável")
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=ps[bare], y=np.zeros(bare.sum()), mode="markers",
+                             marker=dict(color=COLORS["ink"], size=5),
+                             name="sem vegetação, estável"))
+    fig.add_trace(go.Scatter(x=ps[~bare], y=np.zeros((~bare).sum()), mode="markers",
+                             marker=dict(color="#c9ced2", size=5),
+                             name="sem vegetação, instável"))
     ok = np.isfinite(vegetated) & stable
-    ax.plot(ps[ok], vegetated[ok], ".", ms=4, color=COLORS["q"], label="vegetado, estável")
-    ax.axvline(FLOW.critical_p, ls="--", color=COLORS["t2m"],
-               label=nb.pt(f"limiar P_c = {FLOW.critical_p:.3f}"))
-    ax.set(xlabel="P, entrada externa de umidade", ylabel="v*, vegetação no equilíbrio",
-           title="Equilíbrios do modelo umidade–vegetação em função de P")
-    ax.legend()
+    fig.add_trace(go.Scatter(x=ps[ok], y=vegetated[ok], mode="markers",
+                             marker=dict(color=COLORS["q"], size=5),
+                             name="com vegetação, estável",
+                             hovertemplate="P=%{x:.3f}<br>v*=%{y:.3f}"))
+    plots.vline(fig, FLOW.critical_p, text=nb.pt(f"P_c = {FLOW.critical_p:.3f}"))
+    fig.update_layout(height=430, title="Equilíbrios do modelo umidade–vegetação em função de P",
+                      xaxis_title="P, entrada externa de umidade",
+                      yaxis_title="v*, vegetação no equilíbrio", legend=dict(x=0.01, y=0.98))
     return fig
 
 
@@ -260,30 +291,29 @@ def _():
         quando um parâmetro cruza um valor crítico [1].
         """),
         book.figure(plot_stability(), "troca_estabilidade",
-                    "Figura 1. Equilíbrios do modelo umidade–vegetação. Pontos escuros: "
+                    "Figura 2. Equilíbrios do modelo umidade–vegetação. Pontos escuros: "
                     "equilíbrio sem vegetação estável; claros: o mesmo equilíbrio, instável; "
-                    "verdes: equilíbrio vegetado estável. A linha tracejada marca P_c."),
+                    "verdes: equilíbrio com vegetação, estável. A linha tracejada marca P_c."),
         mo.md(r"""
         Leia a figura da esquerda para a direita. Enquanto $P < P_c$, só existe o estado sem
-        vegetação, e ele é estável. Em $P = P_c$ os dois ramos se encontram, e a partir daí o
-        estado sem vegetação continua existindo, mas instável (pontos claros), enquanto um
-        ramo vegetado estável cresce continuamente. Esse cruzamento, em que dois equilíbrios
+        vegetação, e ele é estável. Em $P = P_c$ os dois ramos se encontram; a partir daí o
+        estado sem vegetação continua existindo, mas instável, enquanto um ramo com
+        vegetação, estável, cresce continuamente. Esse cruzamento, em que dois equilíbrios
         trocam de estabilidade ao se encontrarem, chama-se bifurcação transcrítica.
 
-        O detalhe importante está na palavra "continuamente". Ao reduzir $P$, a vegetação de
+        O detalhe decisivo está na palavra "continuamente". Ao reduzir $P$, a vegetação de
         equilíbrio diminui aos poucos até chegar a zero em $P_c$, sem saltos, e se $P$ voltar
-        a subir ela volta pelo mesmo caminho. Isso é uma transição, mas não é um ponto de não
+        a subir ela volta pelo mesmo caminho. É uma transição, mas não um ponto de não
         retorno. Os pontos de não retorno discutidos para a Amazônia supõem biestabilidade:
         dois estados estáveis coexistindo, floresta e savana, separados por um limiar a
-        partir do qual o sistema salta de um ao outro e não volta pelo mesmo caminho
-        (histerese) [10, 13]. Nosso modelo mínimo não tem essa propriedade, e é bom que o
-        leitor saiba disso antes de ver qualquer gráfico de dados reais.
+        partir do qual o sistema salta de um para o outro e não volta pelo mesmo caminho, um
+        fenômeno chamado histerese [10, 13]. Nosso modelo mínimo não tem essa propriedade.
         """),
         mo.callout(mo.md(
             "Caos e ponto de não retorno são conceitos diferentes. Uma transição pode ser "
             "suave, como aqui; pode ser abrupta e com histerese, numa biestabilidade; e "
-            "nenhuma das duas exige caos. Ao longo do trabalho, nunca tratamos um indicador "
-            "de caos como evidência de um ponto de não retorno."), kind="warn"),
+            "nenhuma das duas exige caos. Ao longo do trabalho, nenhum indicador de caos é "
+            "tratado como evidência de um ponto de não retorno."), kind="warn"),
     ])
     return
 
@@ -296,7 +326,7 @@ def _():
     Sistemas contínuos de duas variáveis, como o anterior, não podem ser caóticos: o teorema
     de Poincaré–Bendixson garante que suas trajetórias limitadas terminam em equilíbrios ou
     em ciclos [1]. Para encontrar caos com poucas variáveis, passamos a um sistema discreto,
-    em que o tempo avança em passos, como de um ano para o outro.
+    em que o tempo avança em passos, como de um ano para o seguinte.
 
     Seja $x_n \in (0, 1)$ um índice agregado do estado floresta–atmosfera no passo $n$.
     Propomos
@@ -308,18 +338,18 @@ def _():
     $$
 
     O termo $\mu x_n(1 - x_n)$ é uma realimentação não linear do estado atual, a mesma do
-    célebre mapa logístico: favorece crescimento em estados intermediários e o freia nos
+    célebre mapa logístico: favorece o crescimento em estados intermediários e o freia nos
     extremos. O termo $-\kappa x_{n-1}$ é uma memória: o passo anterior ainda pesa no
-    presente, como solo seco de um ano que reduz a umidade do seguinte. O forçamento $b$ é
-    um nível basal, e a sigmoide $S$ mantém o índice entre 0 e 1. Usamos $a = 2$,
-    $\kappa = 1$ e $b = -0{,}4$, e o parâmetro de controle é a intensidade da realimentação,
-    $\mu$.
+    presente, como o solo seco de um ano que reduz a umidade do seguinte. O forçamento $b$ é
+    um nível basal, e a sigmoide $S$ mantém o índice entre 0 e 1, do mesmo modo que um
+    sistema físico tem limites que não pode ultrapassar. Usamos $a = 2$, $\kappa = 1$ e
+    $b = -0{,}4$, e o parâmetro de controle é a intensidade da realimentação, $\mu$.
 
     Embora observemos uma única variável, o estado completo é bidimensional,
     $\mathbf z_n = (x_n,\, x_{n-1})$, e o mapa se escreve como
-    $\mathbf z_{n+1} = F(\mathbf z_n)$. Essa observação parece um detalhe técnico, mas é a
-    semente de uma ideia central deste trabalho: valores atrasados da própria série podem
-    reconstruir o estado de um sistema que não observamos por inteiro.
+    $\mathbf z_{n+1} = F(\mathbf z_n)$. Essa observação é a semente de uma ideia central do
+    trabalho: valores atrasados da própria série podem reconstruir o estado de um sistema que
+    não observamos por inteiro.
 
     Um ponto fixo satisfaz $x^* = S[\,b + \mu x^*(1 - x^*) - \kappa x^*]$, que resolvemos
     numericamente. Para estudar sua estabilidade, repetimos o raciocínio do caso contínuo,
@@ -354,23 +384,22 @@ def _():
                       "λ₁ de Lyapunov": round(MAP.lyapunov(_mu), 3)})
     mo.vstack([
         mo.md("A tabela mostra, para alguns valores de $\\mu$, o ponto fixo, o maior módulo "
-              "dos autovalores da jacobiana nele e o expoente de Lyapunov, que definiremos "
-              "logo adiante."),
+              "dos autovalores da jacobiana nele e o expoente de Lyapunov, definido mais "
+              "adiante como a taxa média de crescimento de pequenas perturbações."),
         book.table(pd.DataFrame(_rows), "pontos_fixos",
                    "Tabela 1. Ponto fixo do mapa com memória, maior módulo dos autovalores da "
                    "jacobiana e maior expoente de Lyapunov, para alguns valores de μ.",
                    selection=None),
         mo.md(r"""
         Entre $\mu = 7$ e $\mu = 8$ o maior módulo atravessa 1 e o ponto fixo perde a
-        estabilidade. Note que o ponto fixo continua existindo; o que muda é que as
-        trajetórias deixam de ser atraídas para ele. Para onde elas vão então? Como a
-        sigmoide impede que $x$ escape de $(0, 1)$, elas não divergem: passam a oscilar,
-        primeiro de forma regular e, para $\mu$ maior, de forma irregular. A última coluna
-        antecipa o desfecho: o expoente de Lyapunov, negativo enquanto há um atrator
-        regular, torna-se positivo quando a dinâmica é caótica, como em $\mu = 11{,}5$ e
-        $12{,}5$. O valor negativo em $\mu = 14$ não é um erro: ali o mapa cai numa janela
-        de ordem, um intervalo estreito de $\mu$ em que um ciclo estável reaparece no meio
-        do caos, como veremos no diagrama de bifurcação.
+        estabilidade. O ponto fixo continua existindo; o que muda é que as trajetórias
+        deixam de ser atraídas para ele. Como a sigmoide impede que $x$ escape de $(0, 1)$,
+        elas não divergem: passam a oscilar, primeiro de forma regular e, para $\mu$ maior,
+        de forma irregular. A última coluna antecipa o desfecho: o expoente de Lyapunov,
+        negativo enquanto há um atrator regular, torna-se positivo quando a dinâmica é
+        caótica, como em $\mu = 11{,}5$ e $12{,}5$. Em $\mu = 14$ ele volta a ser negativo,
+        porque ali o mapa já entrou num ciclo estável de período 3, cuja origem veremos no
+        diagrama de bifurcação.
         """),
     ])
     return
@@ -386,89 +415,143 @@ def _():
 @app.function(hide_code=True)
 def plot_map(mu):
     tr = MAP.simulate(mu, n=5000, discard=1000)
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.2), layout="constrained")
-    ax1.plot(tr[:200, 0], lw=1, color=COLORS["ink"], marker=".", ms=3)
-    ax1.set(xlabel="passo n", ylabel="x_n", title=nb.pt(f"Série · μ = {mu:.1f}"))
-    ax2.scatter(tr[:, 0], tr[:, 1], s=2, alpha=0.5, color=COLORS["t2m"])
-    ax2.set(xlabel="x_n", ylabel="x_{n−1}", title="Espaço de estados (4.000 passos)")
+    fig = plots.grid(1, 2, [nb.pt(f"Série · μ = {mu:.1f}"), "Espaço de estados (4.000 passos)"],
+                     height=420)
+    fig.add_trace(go.Scatter(y=tr[:200, 0], mode="lines+markers", showlegend=False,
+                             line=dict(color=COLORS["ink"], width=1),
+                             marker=dict(size=4), hovertemplate="n=%{x}<br>x=%{y:.4f}"), 1, 1)
+    fig.add_trace(go.Scattergl(x=tr[:, 0], y=tr[:, 1], mode="markers", showlegend=False,
+                               marker=dict(color=COLORS["t2m"], size=3, opacity=0.5),
+                               hovertemplate="x_n=%{x:.4f}<br>x_{n−1}=%{y:.4f}"), 1, 2)
+    fig.update_xaxes(title_text="passo n", row=1, col=1)
+    fig.update_yaxes(title_text="x_n", row=1, col=1)
+    fig.update_xaxes(title_text="x_n", row=1, col=2)
+    fig.update_yaxes(title_text="x_{n−1}", row=1, col=2)
     return fig
 
 
 @app.cell(hide_code=True)
 def _(mu_slider):
-    _lam = MAP.lyapunov(mu_slider.value)
+    _mu = mu_slider.value
+    _lam = MAP.lyapunov(_mu)
     mo.vstack([
         mo.md(r"""
-        Experimente. O controle muda $\mu$. À esquerda vemos 200 passos da série, já sem o
+        O controle abaixo muda $\mu$. À esquerda vemos 200 passos da série, já sem o
         transiente inicial; à direita, os 4.000 estados seguintes no plano
         $(x_n, x_{n-1})$. Um ponto fixo aparece como um único ponto; um ciclo de período
-        $k$, como $k$ pontos; um regime caótico, como uma nuvem com forma definida, que não
-        se fecha nunca. Procure $\mu = 7$, $8$, $10$, $11{,}5$ e $14$.
+        $k$, como $k$ pontos; um regime caótico, como uma nuvem com forma definida que nunca
+        se fecha. Vale visitar $\mu = 7$, $8$, $10$, $11{,}5$ e $14$.
         """),
         mu_slider,
-        mo.as_html(plot_map(mu_slider.value)),
+        book.figure(plot_map(_mu), "mapa_memoria",
+                    "Figura 3. Mapa com memória. Esquerda: 200 passos da série x_n. Direita: "
+                    "4.000 estados no plano (x_n, x_{n−1}). Na versão impressa, μ = 11,5.",
+                    save=_mu == MU_CHAOS),
         mo.callout(mo.md(nb.pt(
-            f"Para μ = {mu_slider.value:.1f}, o expoente de Lyapunov calculado pela equação "
-            f"é λ₁ = {_lam:+.3f} por passo. " + (
-                "Positivo: perturbações minúsculas crescem exponencialmente e a nuvem do "
+            f"Para μ = {_mu:.1f}, o expoente de Lyapunov calculado pela equação é "
+            f"λ₁ = {_lam:+.3f} por passo. " + (
+                "Positivo: perturbações minúsculas crescem exponencialmente, e a nuvem do "
                 "espaço de estados é um atrator caótico." if _lam > 0.005 else
-                "Negativo ou nulo: as perturbações se contraem e a trajetória se acomoda num "
-                "atrator regular, um ponto ou um ciclo."))),
-            kind="success" if _lam > 0.005 else "info"),
+                "Negativo: as perturbações se contraem e a trajetória se acomoda num atrator "
+                "regular, um ponto ou um ciclo, cujos pontos aparecem à direita."))),
+            kind="info"),
     ])
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mu_range = mo.ui.range_slider(6.0, 30.0, value=[6.0, 16.0], step=0.5,
+                                  label="Intervalo de μ", show_value=True)
+    return (mu_range,)
+
+
 @app.function(hide_code=True)
-def plot_bifurcation():
-    mus = np.linspace(6.0, 16.0, 750)
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7.8), sharex=True, layout="constrained")
-    for mu in mus:
-        values = MAP.simulate(mu, n=1400, discard=1260)[:, 0]
-        ax1.plot(np.full(len(values), mu), values, ",k", alpha=0.35)
-    ax1.set(ylabel="valores de x no longo prazo",
-            title="Diagrama de bifurcação do mapa com memória")
-    grid = np.linspace(6.0, 16.0, 260)
+@mo.cache
+def bifurcation_data(lo, hi):
+    mus = np.linspace(lo, hi, 750)
+    points = np.array([(mu, v) for mu in mus
+                       for v in MAP.simulate(mu, n=1400, discard=1260)[:, 0]])
+    grid = np.linspace(lo, hi, 260)
     lyap = np.array([MAP.lyapunov(mu, n=4200, transient=700) for mu in grid])
-    ax2.fill_between(grid, 0, lyap, where=lyap > 0, color=COLORS["t2m"], alpha=0.25)
-    ax2.plot(grid, lyap, lw=1.2, color=COLORS["t2m"])
-    ax2.axhline(0, ls="--", color=COLORS["ink"])
-    ax2.set(xlabel="μ, intensidade da realimentação", ylabel="λ₁ por passo",
-            title="Maior expoente de Lyapunov, calculado pela equação")
+    return points, grid, lyap
+
+
+@app.function(hide_code=True)
+def plot_bifurcation(lo, hi):
+    points, grid, lyap = bifurcation_data(lo, hi)
+    fig = plots.grid(2, 1, ["Diagrama de bifurcação: valores de x no longo prazo",
+                            "Maior expoente de Lyapunov, calculado pela equação"],
+                     height=680, shared_xaxes=True, vertical_spacing=0.1)
+    fig.add_trace(go.Scattergl(x=points[:, 0], y=points[:, 1], mode="markers",
+                               showlegend=False,
+                               marker=dict(color=COLORS["ink"], size=1.6, opacity=0.45),
+                               hovertemplate="μ=%{x:.2f}<br>x=%{y:.3f}"), 1, 1)
+    fig.add_trace(go.Scatter(x=grid, y=np.where(lyap > 0, lyap, 0), fill="tozeroy",
+                             mode="none", fillcolor="rgba(192,80,77,0.25)", showlegend=False,
+                             hoverinfo="skip"), 2, 1)
+    fig.add_trace(go.Scatter(x=grid, y=lyap, mode="lines", showlegend=False,
+                             line=dict(color=COLORS["t2m"], width=1.6),
+                             hovertemplate="μ=%{x:.2f}<br>λ₁=%{y:+.3f}"), 2, 1)
+    fig.add_hline(y=0, line=dict(color=COLORS["ink"], dash="dash", width=1), row=2, col=1)
+    fig.update_yaxes(title_text="x", row=1, col=1)
+    fig.update_yaxes(title_text="λ₁ por passo", row=2, col=1)
+    fig.update_xaxes(title_text="μ, intensidade da realimentação", row=2, col=1)
     return fig
 
 
 @app.cell(hide_code=True)
-def _():
+def _(mu_range):
+    _lo, _hi = mu_range.value
     mo.vstack([
         mo.md(r"""
-        ## 🌳 Da ordem ao caos, num único gráfico
+        ## 🌳 Da ordem ao caos, e de volta à ordem
 
         Para cada um de 750 valores de $\mu$, iteramos o mapa, descartamos os primeiros
         1.260 passos e marcamos os 140 valores seguintes de $x$. Se o atrator é um ponto
         fixo, todos caem no mesmo lugar e vemos um ponto; se é um ciclo de período 2, dois;
         se é caótico, um segmento inteiro se preenche. Embaixo, o expoente de Lyapunov para
-        os mesmos valores de $\mu$.
+        os mesmos valores de $\mu$. O controle escolhe o intervalo de $\mu$ exibido, até 30;
+        cada novo intervalo leva alguns segundos para ser calculado.
         """),
-        book.figure(plot_bifurcation(), "bifurcacao_lyapunov",
-                    "Figura 2. Acima, valores de longo prazo de x em função de μ. Abaixo, o "
-                    "maior expoente de Lyapunov pela dinâmica tangente; em vermelho, os "
-                    "intervalos com λ₁ > 0."),
+        mu_range,
+        book.figure(plot_bifurcation(_lo, _hi), "bifurcacao_lyapunov",
+                    "Figura 4. Acima, valores de longo prazo de x em função de μ. Abaixo, o "
+                    "maior expoente de Lyapunov pela dinâmica tangente; sombreados, os "
+                    "intervalos com λ₁ > 0. Na versão impressa, 6 ≤ μ ≤ 16.",
+                    save=(_lo, _hi) == (6.0, 16.0)),
         mo.md(r"""
         Percorrendo o diagrama da esquerda para a direita, o ponto fixo único se divide em
-        dois ramos, um ciclo de período 2, e depois os ramos se multiplicam e se misturam
-        numa faixa densa: é o regime caótico. Dentro dele aparecem janelas estreitas em que
-        a ordem volta por um intervalo curto de $\mu$, um fenômeno típico de mapas
-        não lineares. O painel de baixo confirma a leitura: enquanto o atrator é regular,
-        $\lambda_1 < 0$, tocando zero exatamente nas bifurcações; nas faixas densas,
-        $\lambda_1 > 0$; nas janelas de ordem, ele mergulha de novo abaixo de zero.
+        dois ramos, um ciclo de período 2, que depois se dividem em quatro e em oito, até que
+        os ramos se misturam numa faixa densa por volta de $\mu \approx 10{,}9$: é o regime
+        caótico, e é nele que o expoente de Lyapunov fica positivo. Esse caminho, chamado
+        cascata de duplicações de período, é um dos roteiros clássicos para o caos [1].
+        Dentro do caos há intervalos curtos em que a ordem reaparece, as janelas periódicas,
+        visíveis como faixas verticais quase vazias: perto de $\mu = 11{,}95$ surge um ciclo
+        de período 5, que se duplica em período 10 antes de o caos voltar, e perto de
+        $\mu = 13{,}2$ um ciclo de período 7. Nesses intervalos $\lambda_1$ mergulha abaixo
+        de zero, como se vê no painel de baixo; amplie a figura com o mouse sobre essas
+        regiões para ver os ciclos de perto.
 
-        Uma pergunta natural é se "caótico" quer dizer "aleatório". Não quer. O mapa é
-        inteiramente determinístico: o mesmo estado inicial produz sempre a mesma
-        sequência. O que o caos acrescenta é a impossibilidade prática de prever a longo
-        prazo, porque qualquer imprecisão no estado inicial cresce exponencialmente. É isso
-        que medimos a seguir.
+        A partir de $\mu \approx 13{,}45$ acontece algo menos comum: a trajetória cai num
+        ciclo de período 3, as três linhas que seguem até o fim do gráfico, e não volta a se
+        bifurcar. Ampliando o intervalo até 30, vemos que esse ciclo dura até
+        $\mu \approx 23{,}6$, quando é substituído por um ciclo de período 2. A explicação está
+        na sigmoide. Com realimentação forte, um dos três pontos do ciclo, o de
+        $x \approx 0{,}996$, é produzido por um argumento $q$ muito grande, onde a sigmoide já
+        saturou e sua derivada é quase nula ($S' \approx 0{,}008$). Nesse ponto o mapa é
+        praticamente plano: qualquer perturbação é quase apagada a cada volta do ciclo. Em
+        termos da jacobiana, o produto das três matrizes ao longo do ciclo tem um autovalor
+        próximo de zero e outro abaixo de 1 (0,79 em $\mu = 13{,}5$ e 0,91 em $\mu = 16$), e
+        por isso o ciclo resiste a um intervalo tão largo de $\mu$.
         """),
+        mo.callout(mo.md(
+            "Mais realimentação não significa mais caos. O caos precisa que o sistema estique "
+            "e dobre as trajetórias continuamente; quando um limite físico satura a resposta, "
+            "como a sigmoide aqui, o esticamento desaparece e a dinâmica volta a ser regular. "
+            "E caótico não quer dizer aleatório: o mapa é inteiramente determinístico, e o "
+            "mesmo estado inicial produz sempre a mesma sequência. O que o caos acrescenta é a "
+            "impossibilidade prática de prever a longo prazo."), kind="success"),
     ])
     return
 
@@ -499,8 +582,8 @@ def _():
     Para quase todo $\boldsymbol\delta_0$, esse limite seleciona a direção de maior
     expansão [1, 2]. Calcular o produto de jacobianas diretamente estoura a precisão
     numérica, porque o vetor cresce sem limite. O algoritmo de Benettin [5] contorna isso:
-    a cada passo aplicamos $J$ ao vetor tangente, guardamos o logaritmo do seu
-    comprimento e o renormalizamos para comprimento 1,
+    a cada passo aplicamos $J$ ao vetor tangente, guardamos o logaritmo do seu comprimento e
+    o renormalizamos para comprimento 1,
 
     $$
     \mathbf w_{n} = J(\mathbf z_n)\,\mathbf v_n, \qquad
@@ -508,12 +591,20 @@ def _():
     \lambda_1 \approx \frac{1}{N} \sum_{n=1}^{N} \ln \|\mathbf w_n\| .
     $$
 
-    Foi assim que calculamos a Tabela 1 e o painel inferior da Figura 2. O sinal tem uma
+    Foi assim que calculamos a Tabela 1 e o painel inferior da Figura 4. O sinal tem uma
     leitura direta: $\lambda_1 < 0$ significa que as perturbações se contraem, $\lambda_1 = 0$
     marca a fronteira e $\lambda_1 > 0$ significa dependência sensível às condições
     iniciais, a assinatura do caos determinístico. O inverso $1/\lambda_1$ é um tempo
     característico de previsibilidade: a cada $1/\lambda_1$ passos, um erro inicial cresce
-    por um fator $e$.
+    por um fator $e \approx 2{,}72$. Se o erro inicial é $\delta_0$ e toleramos um erro $D$,
+    o horizonte de previsão é
+
+    $$
+    n_{\text{prev}} \approx \frac{1}{\lambda_1} \ln\frac{D}{\delta_0},
+    $$
+
+    e a presença do logaritmo tem uma consequência pouco intuitiva: melhorar mil vezes a
+    precisão do estado inicial acrescenta apenas $\ln(1000)/\lambda_1$ passos ao horizonte.
 
     ## 🔭 E se não conhecêssemos a equação?
 
@@ -550,66 +641,99 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    delta_slider = mo.ui.slider(-12, -2, value=-8, step=1,
+                                label="Separação inicial Δx₀ = 10^k, com k =", show_value=True)
+    return (delta_slider,)
+
+
 @app.function(hide_code=True)
-def plot_sensitivity_and_rosenstein():
-    z1, z2 = np.array([0.30, 0.31]), np.array([0.30000001, 0.31])
+@mo.cache
+def rosenstein_curve():
+    series = MAP.simulate(MU_CHAOS, n=5500, discard=1000)[:, 0]
+    return rosenstein(series, 3, 1, theiler=20, fit=(1, 8), max_steps=30)
+
+
+@app.function(hide_code=True)
+def plot_sensitivity(exponent):
+    delta = 10.0**exponent
+    z1, z2 = np.array([0.30, 0.31]), np.array([0.30 + delta, 0.31])
     d, x1, x2 = [], [], []
-    for _ in range(80):
+    for _ in range(100):
         x1.append(z1[0])
         x2.append(z2[0])
         d.append(np.linalg.norm(z2 - z1))
         z1, z2 = MAP.step(z1, MU_CHAOS), MAP.step(z2, MU_CHAOS)
-    series = MAP.simulate(MU_CHAOS, n=5500, discard=1000)[:, 0]
-    result = rosenstein(series, 3, 1, theiler=20, fit=(1, 8), max_steps=30)
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4.4), layout="constrained")
-    axes[0].plot(x1, color=COLORS["ink"], lw=1.2, label="trajetória A")
-    axes[0].plot(x2, "--", color=COLORS["t2m"], lw=1.2, label="trajetória B, Δx₀ = 10⁻⁸")
-    axes[0].set(xlabel="passo n", ylabel="x_n", title="Duas condições iniciais quase iguais")
-    axes[0].legend(fontsize=8)
-    axes[1].semilogy(np.maximum(d, 1e-16), color=COLORS["ink"])
-    axes[1].set(xlabel="passo n", ylabel="distância (escala log)",
-                title="A distância entre elas")
+    result = rosenstein_curve()
+    fig = plots.grid(1, 3, ["Duas condições iniciais quase iguais", "A distância entre elas",
+                            "Rosenstein, só com a série"], height=440)
+    fig.add_trace(go.Scatter(y=x1, name="trajetória A",
+                             line=dict(color=COLORS["ink"], width=1.4)), 1, 1)
+    fig.add_trace(go.Scatter(y=x2, name="trajetória B",
+                             line=dict(color=COLORS["t2m"], width=1.4, dash="dash")), 1, 1)
+    fig.add_trace(go.Scatter(y=np.maximum(d, 1e-16), showlegend=False,
+                             line=dict(color=COLORS["ink"], width=1.8),
+                             hovertemplate="n=%{x}<br>distância=%{y:.2e}"), 1, 2)
     k = np.arange(len(result.divergence))
-    axes[2].plot(k, result.divergence, "o-", ms=3, color=COLORS["ink"], label="⟨ln d(k)⟩")
+    fig.add_trace(go.Scatter(x=k, y=result.divergence, mode="lines+markers", name="⟨ln d(k)⟩",
+                             line=dict(color=COLORS["ink"]), marker=dict(size=5)), 1, 3)
     fit = np.arange(result.fit[0], result.fit[1] + 1)
-    axes[2].plot(fit, result.intercept + result.exponent * fit, lw=3, color=COLORS["t2m"],
-                 label=nb.pt(f"inclinação = {result.exponent:.3f}"))
-    axes[2].set(xlabel="k, passos à frente", ylabel="⟨ln d(k)⟩",
-                title="Rosenstein, só com a série")
-    axes[2].legend(fontsize=8)
-    return fig, result.exponent
+    fig.add_trace(go.Scatter(x=fit, y=result.intercept + result.exponent * fit,
+                             name=nb.pt(f"inclinação {result.exponent:.3f}"),
+                             line=dict(color=COLORS["t2m"], width=4)), 1, 3)
+    fig.update_yaxes(type="log", exponentformat="power", row=1, col=2)
+    fig.update_xaxes(title_text="passo n", row=1, col=1)
+    fig.update_xaxes(title_text="passo n", row=1, col=2)
+    fig.update_xaxes(title_text="k, passos à frente", row=1, col=3)
+    fig.update_yaxes(title_text="x_n", row=1, col=1)
+    fig.update_yaxes(title_text="distância (escala log)", row=1, col=2)
+    fig.update_yaxes(title_text="⟨ln d(k)⟩", row=1, col=3)
+    fig.update_layout(legend=dict(orientation="h", y=-0.22))
+    steps = next((n for n, v in enumerate(d) if v > 0.01), None)
+    return fig, steps, result.exponent
 
 
 @app.cell(hide_code=True)
-def _():
-    _fig, _estimate = plot_sensitivity_and_rosenstein()
+def _(delta_slider):
+    _exp = delta_slider.value
+    _fig, _steps, _estimate = plot_sensitivity(_exp)
     _exact = MAP.lyapunov(MU_CHAOS)
+    _horizon = np.log(0.01 / 10.0**_exp) / _exact
     mo.vstack([
         mo.md(nb.pt(
-            "A Figura 3 junta as duas maneiras de ver o caos, com μ = 11,5. No painel da "
-            "esquerda, duas trajetórias que começam a 0,00000001 uma da outra; no do meio, a "
-            "distância entre elas em escala logarítmica; no da direita, a curva de "
-            "Rosenstein calculada apenas a partir da série de x, como se não soubéssemos "
-            "nada da equação.")),
+            "A Figura 5 junta as duas maneiras de ver o caos, com μ = 11,5. No painel da "
+            "esquerda estão duas trajetórias que começam separadas por Δx₀; no do meio, a "
+            "distância entre elas em escala logarítmica; no da direita, a curva de Rosenstein "
+            "calculada apenas a partir da série de x, como se não soubéssemos nada da "
+            "equação. O controle muda a separação inicial, de 10⁻¹² a 10⁻².")),
+        delta_slider,
         book.figure(_fig, "sensibilidade_rosenstein",
-                    "Figura 3. Mapa com memória, μ = 11,5. Esquerda: duas trajetórias com "
-                    "estados iniciais a 10⁻⁸ uma da outra. Centro: a distância entre elas, em "
+                    "Figura 5. Mapa com memória, μ = 11,5. Esquerda: duas trajetórias com "
+                    "estados iniciais separados por Δx₀. Centro: a distância entre elas, em "
                     "escala log. Direita: curva de divergência de Rosenstein (m = 3, τ = 1, "
-                    "janela de Theiler de 20 passos) e o ajuste nos passos 1 a 8."),
+                    "janela de Theiler de 20 passos) e o ajuste nos passos 1 a 8. Na versão "
+                    "impressa, Δx₀ = 10⁻⁸.", save=_exp == -8),
+        mo.callout(mo.md(nb.pt(
+            f"Com Δx₀ = 10^{_exp}, as trajetórias se afastam mais de 0,01 depois de "
+            f"{_steps} passos. A fórmula do horizonte de previsão, com λ₁ = {_exact:.3f}, "
+            f"prevê ln(0,01/Δx₀)/λ₁ ≈ {_horizon:.0f} passos. Cada fator de 10 a mais de "
+            f"precisão inicial compra só ln(10)/λ₁ ≈ {np.log(10) / _exact:.0f} passos de "
+            "previsão.")), kind="info"),
         mo.md(nb.pt(
-            "As duas trajetórias da esquerda são indistinguíveis por uns quarenta passos e "
-            "depois seguem caminhos sem relação. O painel do meio explica o porquê: numa "
-            "escala logarítmica, a distância cresce como uma reta, isto é, exponencialmente, "
-            "até atingir o tamanho do atrator, onde se estabiliza. A inclinação dessa reta é "
-            "o expoente de Lyapunov. O painel da direita mostra o mesmo fenômeno visto a "
-            "partir dos dados: a curva média de Rosenstein tem um trecho linear seguido de "
-            "saturação, e a inclinação do trecho linear estima λ₁ sem usar a equação.\n\n"
+            "No painel do meio, numa escala logarítmica, a distância cresce como uma reta, "
+            "isto é, exponencialmente, até atingir o tamanho do atrator, onde se estabiliza. A "
+            "inclinação dessa reta é o expoente de Lyapunov, e ela não depende da separação "
+            "inicial: mudar Δx₀ apenas desloca a reta para cima ou para baixo. O painel da "
+            "direita mostra o mesmo fenômeno visto a partir dos dados: a curva média de "
+            "Rosenstein tem um trecho linear seguido de saturação, e a inclinação desse trecho "
+            "estima λ₁ sem usar a equação.\n\n"
             f"Pela equação obtivemos λ₁ = {_exact:.3f} por passo; pela série, "
-            f"{_estimate:.3f}. Os valores não precisam coincidir: um usa a dinâmica exata, o "
-            "outro uma série finita, uma reconstrução escolhida por nós e uma janela de "
-            "ajuste. Que fiquem próximos num sistema conhecido é a primeira validação do "
-            "método. A pergunta que o resto do capítulo faz é mais incômoda: o método também "
-            "dá um número positivo quando não há caos nenhum?")),
+            f"{_estimate:.3f}. Os dois valores não precisam coincidir: um usa a dinâmica "
+            "exata, o outro uma série finita, uma reconstrução escolhida por nós e uma janela "
+            "de ajuste. Que fiquem próximos num sistema conhecido é a primeira validação do "
+            "método. Falta saber se o método também devolve um número positivo quando não há "
+            "caos nenhum.")),
     ])
     return
 
@@ -661,95 +785,78 @@ def contaminated(noise, n=3500, seed=2026):
                 + noise * clean.std() * rng.normal(size=n))
     noise_ar = ar1(phi=0.92, n=n + 500, seed=seed)[500:]
     noise_ar = clean.mean() + noise_ar / noise_ar.std() * clean.std()
-    return {"determinístico limpo": clean, "com sazonalidade e ruído": observed,
+    return {"caótico, limpo": clean, "caótico, com sazonalidade e ruído": observed,
             "AR(1), sem caos": noise_ar}
 
 
 @app.function(hide_code=True)
 def plot_contamination(series):
-    fig, axes = plt.subplots(2, 3, figsize=(15, 7.2), layout="constrained")
+    results = {name: rosenstein(s, 3, 1, theiler=25, fit=(1, 8), max_steps=30)
+               for name, s in series.items()}
+    titles = list(series) + [nb.pt(f"inclinação {r.exponent:.3f} · R² {r.r2:.2f}")
+                             for r in results.values()]
+    fig = plots.grid(2, 3, titles, height=640, vertical_spacing=0.16)
     colors = [COLORS["ink"], COLORS["t2m"], COLORS["precip"]]
-    for col, ((name, s), color) in enumerate(zip(series.items(), colors, strict=True)):
-        axes[0, col].plot(s[:300], lw=0.9, color=color)
-        axes[0, col].set(title=name, xlabel="passo n")
-        result = rosenstein(s, 3, 1, theiler=25, fit=(1, 8), max_steps=30)
-        axes[1, col].plot(result.divergence, "o-", ms=3, color=color)
+    for col, ((name, s), color) in enumerate(zip(series.items(), colors, strict=True), 1):
+        fig.add_trace(go.Scatter(y=s[:300], showlegend=False, line=dict(color=color, width=1),
+                                 hovertemplate="n=%{x}<br>%{y:.3f}"), 1, col)
+        r = results[name]
+        fig.add_trace(go.Scatter(y=r.divergence, mode="lines+markers", showlegend=False,
+                                 line=dict(color=color), marker=dict(size=5),
+                                 hovertemplate="k=%{x}<br>⟨ln d⟩=%{y:.2f}"), 2, col)
         fit = np.arange(1, 9)
-        axes[1, col].plot(fit, result.intercept + result.exponent * fit, lw=3, color="#222",
-                          alpha=0.6)
-        axes[1, col].set(xlabel="k, passos à frente", ylabel="⟨ln d(k)⟩",
-                         title=nb.pt(f"inclinação {result.exponent:.3f} · "
-                                     f"R² do ajuste {result.r2:.2f}"))
+        fig.add_trace(go.Scatter(x=fit, y=r.intercept + r.exponent * fit, showlegend=False,
+                                 line=dict(color="rgba(34,34,34,0.55)", width=4),
+                                 hoverinfo="skip"), 2, col)
+        fig.update_xaxes(title_text="passo n", row=1, col=col)
+        fig.update_xaxes(title_text="k, passos à frente", row=2, col=col)
+    fig.update_yaxes(title_text="⟨ln d(k)⟩", row=2, col=1)
     return fig
 
 
 @app.cell(hide_code=True)
 def _(noise_slider):
+    _sigma = noise_slider.value
+    _series = contaminated(_sigma)
+    _r = rosenstein(_series["caótico, com sazonalidade e ruído"], 3, 1, theiler=25, fit=(1, 8))
     mo.vstack([
         mo.md(r"""
-        Na linha de cima de cada figura estão 300 passos de cada série; na de baixo, a curva
-        de Rosenstein correspondente, com a reta ajustada nos passos 1 a 8, a mesma
-        configuração para as três. O título de cada curva mostra a inclinação e o
-        coeficiente de determinação $R^2$, que mede quão retilíneo é o trecho ajustado. O
-        controle muda o ruído da série do meio.
+        Na linha de cima da Figura 6 estão 300 passos de cada série; na de baixo, a curva de
+        Rosenstein correspondente, com a reta ajustada nos passos 1 a 8, a mesma configuração
+        para as três. O título de cada curva mostra a inclinação e o coeficiente de
+        determinação $R^2$, que mede quão retilíneo é o trecho ajustado (1 é uma reta
+        perfeita). O controle muda o ruído da série do meio.
         """),
         noise_slider,
-        mo.as_html(plot_contamination(contaminated(noise_slider.value))),
-    ])
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    mo.vstack([
-        book.figure(plot_contamination(contaminated(0.05)), "contaminacao",
-                    "Figura 4. Três séries (acima) e suas curvas de Rosenstein (abaixo), com "
+        book.figure(plot_contamination(_series), "contaminacao",
+                    "Figura 6. Três séries (acima) e suas curvas de Rosenstein (abaixo), com "
                     "m = 3, τ = 1, janela de Theiler de 25 passos e ajuste nos passos 1 a 8: "
-                    "dinâmica caótica limpa, a mesma com sazonalidade e 5% de ruído, e um "
-                    "AR(1) com φ = 0,92."),
+                    "dinâmica caótica limpa, a mesma com sazonalidade e ruído, e um AR(1) com "
+                    "φ = 0,92. Na versão impressa, σ = 0,05.", save=_sigma == 0.05),
+        mo.callout(mo.md(nb.pt(
+            f"Com σ = {_sigma:.2f}, a série contaminada dá inclinação {_r.exponent:.3f} com "
+            f"R² = {_r.r2:.2f}. Quanto maior o ruído, mais alto a curva começa e mais cedo ela "
+            "satura, até que o trecho linear quase desaparece.")), kind="info"),
         mo.md(r"""
-        A Figura 4 é talvez a mais importante do capítulo. A série caótica limpa produz o
-        que esperamos: uma subida retilínea seguida de saturação, $R^2$ próximo de 1. Com
-        sazonalidade e ruído, a curva começa mais alta, porque o ruído afasta os vizinhos
-        desde o início, e o trecho linear encurta; aumente o ruído no controle acima e veja
-        a inclinação se deformar. O AR(1), que não tem caos nenhum, também devolve uma
-        inclinação positiva.
-
-        Por que um processo aleatório "parece" caótico ao método? Porque, entre dois
-        vizinhos próximos, o primeiro sorteio de ruído já os separa por uma distância da
-        ordem do próprio ruído. A curva dá um salto nos primeiros passos e satura logo, e a
-        reta ajustada sobre esse salto tem inclinação positiva. O formato da curva denuncia
-        a diferença, um salto e não uma subida gradual, e o $R^2$ do ajuste é menor. Mas
-        olhar formatos de curva não é um teste, e um número positivo sozinho não distingue
-        caos de acaso.
+        A série caótica limpa produz o que esperamos: uma subida retilínea longa, seguida de
+        saturação, com $R^2$ próximo de 1. Com sazonalidade e ruído, a curva começa mais
+        alta, porque o ruído afasta os vizinhos desde o início, e o trecho linear encurta. O
+        AR(1), que não tem caos nenhum, também devolve uma inclinação positiva. Isso acontece
+        porque, entre dois vizinhos próximos, o primeiro sorteio de ruído já os separa por uma
+        distância da ordem do próprio ruído: a curva dá um salto nos primeiros passos e
+        satura logo, e a reta ajustada sobre esse salto tem inclinação positiva. O formato da
+        curva denuncia a diferença, um salto e não uma subida gradual, e o $R^2$ do ajuste é
+        menor; mas o formato de uma curva não é um teste, e um número positivo sozinho não
+        distingue caos de acaso.
         """),
         mo.callout(mo.md(
             "Um expoente de Lyapunov positivo, estimado a partir de dados, não é prova de "
             "caos. Ruído, sazonalidade e autocorrelação produzem inclinações positivas sem "
-            "nenhuma dinâmica caótica por trás. Para interpretar qualquer descritor, "
-            "precisamos compará-lo com o que um processo sem não linearidade produziria."),
+            "nenhuma dinâmica caótica por trás. Para interpretar qualquer descritor, é "
+            "preciso compará-lo com o que um processo sem não linearidade produziria."),
             kind="danger"),
     ])
     return
-
-
-@app.function(hide_code=True)
-def plot_surrogate_and_recurrence(series):
-    clean = series["determinístico limpo"]
-    sur = next(surrogates(clean, 1, method="FT", seed=7))
-    examples = {"determinístico": clean, "substituta do determinístico": sur,
-                "AR(1)": series["AR(1), sem caos"]}
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5), layout="constrained")
-    for ax, (name, s) in zip(axes, examples.items(), strict=True):
-        vectors = delay_embedding(s, 3, 1)[:550]
-        eps = recurrence_threshold(vectors, 0.08, theiler=0)
-        d = np.linalg.norm(vectors[:, None] - vectors[None, :], axis=2)
-        ax.imshow(d <= eps, origin="lower", cmap="binary", interpolation="nearest")
-        lam = rosenstein(s, 3, 1, theiler=25, fit=(1, 8)).exponent
-        ax.set(title=nb.pt(f"{name}\ninclinação de Rosenstein {lam:.3f}"), xlabel="tempo j",
-               ylabel="tempo i")
-        ax.grid(False)
-    return fig
 
 
 @app.cell(hide_code=True)
@@ -757,11 +864,11 @@ def _():
     mo.md(r"""
     ## 🎭 Substitutas e recorrência: aprendendo a duvidar
 
-    A saída para o impasse anterior é transformar a pergunta "o número é positivo?" em
-    outra, que pode ser testada: "o número é diferente do que obteríamos de uma série que
-    tem as mesmas propriedades lineares, mas nenhuma estrutura não linear?". Essas séries de
+    A saída para o impasse anterior é trocar a pergunta "o número é positivo?" por outra,
+    que pode ser testada: "o número é diferente do que obteríamos de uma série com as mesmas
+    propriedades lineares, mas sem nenhuma estrutura não linear?". Essas séries de
     comparação são as substitutas [6]. A mais simples preserva o espectro de potência da
-    série original e embaralha as fases. Se $X_k$ são os coeficientes da transformada de
+    série original e sorteia novas fases. Se $X_k$ são os coeficientes da transformada de
     Fourier de $x_n$, a substituta tem coeficientes
 
     $$
@@ -771,11 +878,11 @@ def _():
 
     com $\varphi_{N-k} = -\varphi_k$ para que a série volte a ser real. Pelo teorema de
     Wiener–Khinchin, preservar $|X_k|$ preserva a autocorrelação inteira; o que se perde é
-    qualquer relação de fases, que é onde mora a não linearidade. A hipótese nula que essas
-    substitutas representam é precisa: a série é a realização de um processo linear,
+    qualquer relação entre as fases, que é onde mora a não linearidade. A hipótese nula que
+    essas substitutas representam é precisa: a série é a realização de um processo linear,
     gaussiano e estacionário. Se a estatística da série original cai fora da distribuição
-    obtida em muitas substitutas, rejeitamos essa hipótese. Note o que isso não diz: rejeitar
-    um processo linear gaussiano não prova caos, só elimina uma explicação.
+    obtida em muitas substitutas, rejeitamos essa hipótese. Rejeitar um processo linear
+    gaussiano, no entanto, não prova caos: apenas elimina uma explicação.
 
     A segunda ferramenta é o gráfico de recorrência [7]. Depois de reconstruir os estados
     $\mathbf X_i$, marcamos
@@ -786,40 +893,78 @@ def _():
 
     em que $\Theta$ é a função degrau: $R_{ij} = 1$ quando o estado no instante $j$ volta a
     menos de $\varepsilon$ do estado no instante $i$. Escolhemos $\varepsilon$ de modo que
-    uma fração fixa dos pares seja recorrente, a taxa de recorrência, aqui de 8%. Linhas
-    diagonais no gráfico indicam trechos em que o sistema refaz um percurso parecido por
-    vários passos seguidos, uma marca de determinismo; pontos isolados, sem diagonais,
-    indicam que os retornos são casuais.
+    uma fração fixa dos pares seja recorrente, a taxa de recorrência. Linhas diagonais no
+    gráfico indicam trechos em que o sistema refaz um percurso parecido por vários passos
+    seguidos, uma marca de determinismo; pontos isolados e blocos sem diagonais indicam
+    retornos casuais ou lentos.
     """)
     return
 
 
 @app.cell(hide_code=True)
 def _():
+    rate_slider = mo.ui.slider(2, 15, value=8, step=1, label="Taxa de recorrência (%)",
+                               show_value=True)
+    return (rate_slider,)
+
+
+@app.function(hide_code=True)
+def plot_recurrence(series, rate):
+    clean = series["caótico, limpo"]
+    sur = next(surrogates(clean, 1, method="FT", seed=7))
+    examples = {"caótico": clean, "substituta do caótico": sur,
+                "AR(1)": series["AR(1), sem caos"]}
+    lams = {k: rosenstein(s, 3, 1, theiler=25, fit=(1, 8)).exponent
+            for k, s in examples.items()}
+    fig = plots.grid(1, 3, [nb.pt(f"{k} · inclinação de Rosenstein {v:.3f}")
+                            for k, v in lams.items()], height=470, horizontal_spacing=0.05)
+    for col, s in enumerate(examples.values(), 1):
+        vectors = delay_embedding(s, 3, 1)[:400]
+        eps = recurrence_threshold(vectors, rate, theiler=0)
+        d = np.linalg.norm(vectors[:, None] - vectors[None, :], axis=2)
+        fig.add_trace(go.Heatmap(z=(d <= eps).astype(int), showscale=False,
+                                 colorscale=[[0, "white"], [1, COLORS["ink"]]],
+                                 hovertemplate="i=%{y}<br>j=%{x}<extra></extra>"), 1, col)
+        fig.update_xaxes(title_text="tempo j", row=1, col=col)
+        fig.update_yaxes(title_text="tempo i" if col == 1 else None, scaleanchor=f"x{col}",
+                         row=1, col=col)
+    return fig
+
+
+@app.cell(hide_code=True)
+def _(rate_slider):
+    _rate = rate_slider.value
     mo.vstack([
-        book.figure(plot_surrogate_and_recurrence(contaminated(0.05)), "recorrencia",
-                    "Figura 5. Gráficos de recorrência (m = 3, τ = 1, taxa de recorrência de "
-                    "8%, primeiros 550 estados) da série caótica, de uma substituta com o "
-                    "mesmo espectro e de um AR(1). Pontos pretos: pares de instantes cujos "
-                    "estados estão próximos."),
         mo.md(r"""
-        Cada painel é uma matriz de 550 por 550 instantes, e o ponto $(j, i)$ está preto
-        quando os estados nesses dois instantes estão próximos. A diagonal principal é
-        sempre preta, porque todo estado é próximo de si mesmo; a informação está fora dela.
+        A Figura 7 compara três gráficos de recorrência, cada um uma matriz de 400 por 400
+        instantes em que um ponto escuro em $(j, i)$ significa que os estados nesses dois
+        instantes estão próximos. A diagonal principal é sempre escura, porque todo estado é
+        próximo de si mesmo; a informação está fora dela. Amplie uma região arrastando o
+        mouse para ver a textura de perto, e use o controle para mudar a taxa de recorrência.
+        """),
+        rate_slider,
+        book.figure(plot_recurrence(contaminated(0.05), _rate / 100), "recorrencia",
+                    "Figura 7. Gráficos de recorrência (m = 3, τ = 1, primeiros 400 estados) "
+                    "da série caótica, de uma substituta com o mesmo espectro e de um AR(1). "
+                    "Pontos escuros: pares de instantes cujos estados estão próximos. Na versão "
+                    "impressa, a taxa de recorrência é de 8%.", save=_rate == 8),
+        mo.md(r"""
         Na série caótica, à esquerda, aparecem muitos segmentos curtos paralelos à diagonal:
         o sistema volta a regiões já visitadas e as percorre de modo parecido por alguns
         passos. Na substituta, ao centro, que tem exatamente o mesmo espectro e portanto a
         mesma autocorrelação, a textura muda de natureza: as diagonais curtas e regulares dão
-        lugar a um quadriculado de blocos, em que os retornos acontecem, mas sem que o
-        sistema refaça o mesmo caminho. No AR(1), à direita, os retornos formam manchas e
-        blocos maiores, reflexo de uma série que demora a esquecer onde estava, mas também
-        sem a organização fina do caos.
+        lugar a um quadriculado de blocos, em que os retornos acontecem, mas sem que o sistema
+        refaça o mesmo caminho. No AR(1), à direita, os retornos formam manchas e blocos
+        maiores, reflexo de uma série que demora a esquecer onde estava, mas também sem a
+        organização fina do caos. Aumentar a taxa de recorrência escurece os três painéis,
+        mas não apaga essas diferenças de textura; por isso, nos dados, a taxa é fixada de
+        antemão e o que se compara é a estrutura.
 
-        Repare também nos títulos: a inclinação de Rosenstein da substituta e a do AR(1) são
-        positivas, como a da série caótica. O expoente sozinho não separa os três casos; a
-        comparação com substitutas e a estrutura das recorrências, sim. Essa é a razão pela
-        qual, nos dados reais, nenhum descritor é olhado isoladamente: todos são comparados,
-        célula por célula, com dezenas de substitutas.
+        Os títulos completam a lição: as inclinações de Rosenstein da substituta e do AR(1)
+        também são positivas. O expoente sozinho não separa os três casos; a comparação com
+        substitutas e a estrutura das recorrências, sim. Por isso, nos dados reais, nenhum
+        descritor é olhado isoladamente: todos são comparados, célula por célula, com dezenas
+        de substitutas.
         """),
     ])
     return
@@ -834,14 +979,14 @@ def _():
     Num sistema conhecido, vimos que os equilíbrios e sua estabilidade se leem nos
     autovalores da jacobiana, que um parâmetro pode atravessar um limiar e mudar o destino
     do sistema, e que essa mudança pode ser suave, sem ser um ponto de não retorno. Vimos
-    também que um mapa simples com memória vai da ordem ao caos, e que o caos tem uma
-    medida, o expoente de Lyapunov, que pode ser obtida tanto da equação quanto de uma série
-    observada. E vimos, sobretudo, que a estimativa a partir de dados se deixa enganar por
-    ruído, sazonalidade e autocorrelação, a ponto de um processo sem caos nenhum produzir um
-    número positivo.
+    também que um mapa simples com memória vai da ordem ao caos e, com realimentação ainda
+    mais forte, volta à ordem, e que o caos tem uma medida, o expoente de Lyapunov, que pode
+    ser obtida tanto da equação quanto de uma série observada. E vimos, sobretudo, que a
+    estimativa a partir de dados se deixa enganar por ruído, sazonalidade e autocorrelação, a
+    ponto de um processo sem caos nenhum produzir um número positivo.
 
-    Por isso os dados das bacias passam por um caminho mais longo do que "calcular o
-    expoente". Antes de olhar para qualquer série real, submetemos todos os descritores a um
+    Por isso os dados das bacias passam por um caminho mais longo do que calcular o
+    expoente. Antes de olhar para qualquer série real, todos os descritores passam por um
     teste com controles sintéticos de resposta conhecida, caóticos e não caóticos, com o
     comprimento e o ruído das nossas séries; esse é o assunto do capítulo de validação dos
     métodos. As regras de escolha de $\tau$, $m$ e da janela de Theiler, o número de
@@ -850,6 +995,65 @@ def _():
     contar a história que gostaríamos de ouvir. E a conclusão final nunca se apoia num único
     número, mas na concordância entre descritores diferentes, comparados com substitutas e
     entre regiões com histórias distintas de desmatamento e fogo.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## 📖 Glossário
+
+    *Atrator.* Conjunto de estados para o qual as trajetórias convergem com o tempo. Pode ser
+    um ponto (equilíbrio estável), uma curva fechada ou um conjunto finito de pontos (ciclo),
+    ou um conjunto de estrutura fractal (atrator caótico).
+
+    *Autovalor.* Número $\lambda$ tal que $J\mathbf u = \lambda\mathbf u$ para algum vetor
+    $\mathbf u \neq 0$. Mede quanto a direção $\mathbf u$ é esticada ou comprimida pela
+    dinâmica linearizada e define a estabilidade de um equilíbrio.
+
+    *Bifurcação.* Mudança qualitativa no comportamento de longo prazo de um sistema quando
+    um parâmetro cruza um valor crítico, como um equilíbrio que perde estabilidade ou um
+    ciclo que dobra de período.
+
+    *Caos determinístico.* Comportamento de longo prazo aperiódico de um sistema sem
+    aleatoriedade, com dependência sensível às condições iniciais, isto é, com maior expoente
+    de Lyapunov positivo.
+
+    *Dimensão de imersão.* Número $m$ de coordenadas atrasadas usadas para reconstruir o
+    estado a partir de uma série.
+
+    *Equilíbrio.* Estado em que todas as derivadas se anulam, de modo que o sistema não muda
+    se começar nele. Num mapa, o equivalente é o ponto fixo, $F(\mathbf z^*) = \mathbf z^*$.
+
+    *Expoente de Lyapunov.* Taxa média exponencial de afastamento entre trajetórias
+    inicialmente próximas. O maior deles, $\lambda_1$, é positivo no caos.
+
+    *Histerese.* Dependência do estado atual em relação ao caminho percorrido: ao reverter o
+    parâmetro, o sistema não volta pelo mesmo caminho. É típica de sistemas biestáveis.
+
+    *Jacobiana.* Matriz das derivadas parciais do campo de velocidades (ou do mapa) em
+    relação às variáveis de estado. Descreve como pequenas perturbações evoluem.
+
+    *Janela de Theiler.* Intervalo de tempo dentro do qual dois instantes não podem ser
+    tomados como vizinhos, para que a proximidade não seja só consequência de estarem
+    próximos no tempo.
+
+    *Ponto de não retorno.* Limiar a partir do qual um sistema passa a outro estado estável
+    e não retorna ao original mesmo que a causa seja revertida (em inglês, *tipping point*).
+
+    *Recorrência.* Retorno do estado do sistema a uma vizinhança de um estado já visitado.
+
+    *Retrato de fase.* Desenho de várias trajetórias no espaço de estados, que mostra de uma
+    vez o destino de diferentes condições iniciais.
+
+    *Série substituta.* Série artificial construída para preservar propriedades lineares de
+    uma série observada, como o espectro e a distribuição, e destruir o restante; serve de
+    referência para testar se a série original tem estrutura não linear.
+
+    *Sinais precoces.* Indicadores estatísticos, como o aumento da variância e da
+    autocorrelação, que podem anteceder uma perda de estabilidade porque o sistema se recupera
+    cada vez mais devagar de perturbações.
     """)
     return
 
