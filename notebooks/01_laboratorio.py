@@ -5,11 +5,11 @@ app = marimo.App(width="medium", app_title="01 · Laboratório de sistemas dinâ
 
 with app.setup(hide_code=True):
     import marimo as mo
+    import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
-    import plotly.graph_objects as go
 
-    from amazon_chaos import nb, plots
+    from amazon_chaos import nb
     from amazon_chaos.nonlinear.embedding import delay_embedding
     from amazon_chaos.nonlinear.lyapunov import rosenstein
     from amazon_chaos.nonlinear.models import MemoryMap, MoistureVegetation
@@ -54,11 +54,10 @@ def _():
 
     Os modelos daqui não pretendem reproduzir a Amazônia em números. São caricaturas
     propositais, simples o bastante para que cada efeito possa ser rastreado até a sua
-    causa. Todos os gráficos são interativos: passe o mouse para ler os valores, arraste para
-    ampliar uma região, clique duas vezes para voltar e clique na legenda para esconder ou
-    mostrar uma curva. Onde houver um controle deslizante, a figura e o texto logo abaixo
-    dela se recalculam a cada mudança. O código que gera cada figura está recolhido e pode
-    ser aberto por quem quiser vê-lo.
+    causa. Várias figuras têm um controle deslizante logo acima: ao movê-lo, a figura e o
+    texto da caixa abaixo dela se recalculam, e o leitor pode explorar o modelo por conta
+    própria. O código que gera cada figura está recolhido e pode ser aberto por quem quiser
+    vê-lo.
 
     Ao longo do capítulo, quatro tipos de caixa colorida destacam o que merece atenção:
     """)
@@ -187,27 +186,19 @@ def _():
 
 @app.function(hide_code=True)
 def plot_flow(p):
-    fig = plots.grid(1, 2, [nb.pt(f"Uma trajetória a partir de (0,45; 0,35) · P = {p:.2f}"),
-                            "Retrato de fase: cinco estados iniciais"], height=430)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.3), layout="constrained")
     t, y = FLOW.simulate(p)
-    fig.add_trace(go.Scatter(x=t, y=y[0], name="m(t), umidade",
-                             line=dict(color=COLORS["precip"], width=2.4)), 1, 1)
-    fig.add_trace(go.Scatter(x=t, y=y[1], name="v(t), vegetação",
-                             line=dict(color=COLORS["q"], width=2.4)), 1, 1)
-    for k, z0 in enumerate(INITIALS):
+    ax1.plot(t, y[0], color=COLORS["precip"], lw=2, label="m(t), umidade")
+    ax1.plot(t, y[1], color=COLORS["q"], lw=2, label="v(t), vegetação")
+    ax1.set(xlabel="tempo", ylabel="estado (adimensional)",
+            title=nb.pt(f"Uma trajetória a partir de (0,45; 0,35) · P = {p:.2f}"))
+    ax1.legend()
+    for z0, color in zip(INITIALS, PALETTE, strict=True):
         _, yy = FLOW.simulate(p, z0=z0, t_max=35)
-        color = PALETTE[k]
-        fig.add_trace(go.Scatter(x=yy[0], y=yy[1], mode="lines", showlegend=False,
-                                 line=dict(color=color, width=1.8),
-                                 hovertemplate="m=%{x:.3f}<br>v=%{y:.3f}"), 1, 2)
-        fig.add_trace(go.Scatter(x=[z0[0]], y=[z0[1]], mode="markers", showlegend=False,
-                                 marker=dict(color=color, size=9),
-                                 hovertemplate="início<br>m=%{x}<br>v=%{y}"), 1, 2)
-    fig.update_xaxes(title_text="tempo", row=1, col=1)
-    fig.update_yaxes(title_text="estado (adimensional)", row=1, col=1)
-    fig.update_xaxes(title_text="m, umidade", row=1, col=2)
-    fig.update_yaxes(title_text="v, vegetação", row=1, col=2)
-    fig.update_layout(legend=dict(x=0.01, y=0.99))
+        ax2.plot(yy[0], yy[1], lw=1.6, color=color)
+        ax2.scatter(*z0, s=26, color=color, zorder=3)
+    ax2.set(xlabel="m, umidade", ylabel="v, vegetação",
+            title="Retrato de fase: cinco estados iniciais")
     return fig
 
 
@@ -259,22 +250,18 @@ def _(p_slider):
 def plot_stability():
     ps = np.linspace(0.015, 0.40, 280)
     bare, vegetated, stable = FLOW.equilibria(ps)
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=ps[bare], y=np.zeros(bare.sum()), mode="markers",
-                             marker=dict(color=COLORS["ink"], size=5),
-                             name="sem vegetação, estável"))
-    fig.add_trace(go.Scatter(x=ps[~bare], y=np.zeros((~bare).sum()), mode="markers",
-                             marker=dict(color="#c9ced2", size=5),
-                             name="sem vegetação, instável"))
+    fig, ax = plt.subplots(figsize=(10, 4.6), layout="constrained")
+    ax.plot(ps[bare], np.zeros(bare.sum()), ".", ms=4, color=COLORS["ink"],
+            label="sem vegetação, estável")
+    ax.plot(ps[~bare], np.zeros((~bare).sum()), ".", ms=4, color="#c9ced2",
+            label="sem vegetação, instável")
     ok = np.isfinite(vegetated) & stable
-    fig.add_trace(go.Scatter(x=ps[ok], y=vegetated[ok], mode="markers",
-                             marker=dict(color=COLORS["q"], size=5),
-                             name="com vegetação, estável",
-                             hovertemplate="P=%{x:.3f}<br>v*=%{y:.3f}"))
-    plots.vline(fig, FLOW.critical_p, text=nb.pt(f"P_c = {FLOW.critical_p:.3f}"))
-    fig.update_layout(height=430, title="Equilíbrios do modelo umidade–vegetação em função de P",
-                      xaxis_title="P, entrada externa de umidade",
-                      yaxis_title="v*, vegetação no equilíbrio", legend=dict(x=0.01, y=0.98))
+    ax.plot(ps[ok], vegetated[ok], ".", ms=4, color=COLORS["q"], label="com vegetação, estável")
+    ax.axvline(FLOW.critical_p, ls="--", color=COLORS["t2m"],
+               label=nb.pt(f"limiar P_c = {FLOW.critical_p:.3f}"))
+    ax.set(xlabel="P, entrada externa de umidade", ylabel="v*, vegetação no equilíbrio",
+           title="Equilíbrios do modelo umidade–vegetação em função de P")
+    ax.legend()
     return fig
 
 
@@ -415,18 +402,11 @@ def _():
 @app.function(hide_code=True)
 def plot_map(mu):
     tr = MAP.simulate(mu, n=5000, discard=1000)
-    fig = plots.grid(1, 2, [nb.pt(f"Série · μ = {mu:.1f}"), "Espaço de estados (4.000 passos)"],
-                     height=420)
-    fig.add_trace(go.Scatter(y=tr[:200, 0], mode="lines+markers", showlegend=False,
-                             line=dict(color=COLORS["ink"], width=1),
-                             marker=dict(size=4), hovertemplate="n=%{x}<br>x=%{y:.4f}"), 1, 1)
-    fig.add_trace(go.Scattergl(x=tr[:, 0], y=tr[:, 1], mode="markers", showlegend=False,
-                               marker=dict(color=COLORS["t2m"], size=3, opacity=0.5),
-                               hovertemplate="x_n=%{x:.4f}<br>x_{n−1}=%{y:.4f}"), 1, 2)
-    fig.update_xaxes(title_text="passo n", row=1, col=1)
-    fig.update_yaxes(title_text="x_n", row=1, col=1)
-    fig.update_xaxes(title_text="x_n", row=1, col=2)
-    fig.update_yaxes(title_text="x_{n−1}", row=1, col=2)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.2), layout="constrained")
+    ax1.plot(tr[:200, 0], lw=1, color=COLORS["ink"], marker=".", ms=3)
+    ax1.set(xlabel="passo n", ylabel="$x_n$", title=nb.pt(f"Série · μ = {mu:.1f}"))
+    ax2.scatter(tr[:, 0], tr[:, 1], s=2, alpha=0.5, color=COLORS["t2m"])
+    ax2.set(xlabel="$x_n$", ylabel="$x_{n-1}$", title="Espaço de estados (4.000 passos)")
     return fig
 
 
@@ -461,7 +441,7 @@ def _(mu_slider):
 
 @app.cell(hide_code=True)
 def _():
-    mu_range = mo.ui.range_slider(6.0, 30.0, value=[6.0, 16.0], step=0.5,
+    mu_range = mo.ui.range_slider(6.0, 30.0, value=[6.0, 16.0], step=0.05,
                                   label="Intervalo de μ", show_value=True)
     return (mu_range,)
 
@@ -480,23 +460,15 @@ def bifurcation_data(lo, hi):
 @app.function(hide_code=True)
 def plot_bifurcation(lo, hi):
     points, grid, lyap = bifurcation_data(lo, hi)
-    fig = plots.grid(2, 1, ["Diagrama de bifurcação: valores de x no longo prazo",
-                            "Maior expoente de Lyapunov, calculado pela equação"],
-                     height=680, shared_xaxes=True, vertical_spacing=0.1)
-    fig.add_trace(go.Scattergl(x=points[:, 0], y=points[:, 1], mode="markers",
-                               showlegend=False,
-                               marker=dict(color=COLORS["ink"], size=1.6, opacity=0.45),
-                               hovertemplate="μ=%{x:.2f}<br>x=%{y:.3f}"), 1, 1)
-    fig.add_trace(go.Scatter(x=grid, y=np.where(lyap > 0, lyap, 0), fill="tozeroy",
-                             mode="none", fillcolor="rgba(192,80,77,0.25)", showlegend=False,
-                             hoverinfo="skip"), 2, 1)
-    fig.add_trace(go.Scatter(x=grid, y=lyap, mode="lines", showlegend=False,
-                             line=dict(color=COLORS["t2m"], width=1.6),
-                             hovertemplate="μ=%{x:.2f}<br>λ₁=%{y:+.3f}"), 2, 1)
-    fig.add_hline(y=0, line=dict(color=COLORS["ink"], dash="dash", width=1), row=2, col=1)
-    fig.update_yaxes(title_text="x", row=1, col=1)
-    fig.update_yaxes(title_text="λ₁ por passo", row=2, col=1)
-    fig.update_xaxes(title_text="μ, intensidade da realimentação", row=2, col=1)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7.8), sharex=True, layout="constrained")
+    ax1.plot(points[:, 0], points[:, 1], ",k", alpha=0.35)
+    ax1.set(ylabel="valores de x no longo prazo",
+            title="Diagrama de bifurcação do mapa com memória")
+    ax2.fill_between(grid, 0, lyap, where=lyap > 0, color=COLORS["t2m"], alpha=0.25)
+    ax2.plot(grid, lyap, lw=1.2, color=COLORS["t2m"])
+    ax2.axhline(0, ls="--", color=COLORS["ink"])
+    ax2.set(xlabel="μ, intensidade da realimentação", ylabel="λ₁ por passo",
+            title="Maior expoente de Lyapunov, calculado pela equação", xlim=(lo, hi))
     return fig
 
 
@@ -511,15 +483,16 @@ def _(mu_range):
         1.260 passos e marcamos os 140 valores seguintes de $x$. Se o atrator é um ponto
         fixo, todos caem no mesmo lugar e vemos um ponto; se é um ciclo de período 2, dois;
         se é caótico, um segmento inteiro se preenche. Embaixo, o expoente de Lyapunov para
-        os mesmos valores de $\mu$. O controle escolhe o intervalo de $\mu$ exibido, até 30;
-        cada novo intervalo leva alguns segundos para ser calculado.
+        os mesmos valores de $\mu$. O controle escolhe o intervalo de $\mu$ exibido, até 30,
+        e funciona também como uma lupa: um intervalo estreito revela detalhes que o
+        intervalo largo esconde. Cada novo intervalo leva alguns segundos para ser calculado.
         """),
         mu_range,
         book.figure(plot_bifurcation(_lo, _hi), "bifurcacao_lyapunov",
                     "Figura 4. Acima, valores de longo prazo de x em função de μ. Abaixo, o "
                     "maior expoente de Lyapunov pela dinâmica tangente; sombreados, os "
                     "intervalos com λ₁ > 0. Na versão impressa, 6 ≤ μ ≤ 16.",
-                    save=(_lo, _hi) == (6.0, 16.0)),
+                    save=bool(np.isclose([_lo, _hi], [6.0, 16.0]).all())),
         mo.md(r"""
         Percorrendo o diagrama da esquerda para a direita, o ponto fixo único se divide em
         dois ramos, um ciclo de período 2, que depois se dividem em quatro e em oito, até que
@@ -530,8 +503,8 @@ def _(mu_range):
         visíveis como faixas verticais quase vazias: perto de $\mu = 11{,}95$ surge um ciclo
         de período 5, que se duplica em período 10 antes de o caos voltar, e perto de
         $\mu = 13{,}2$ um ciclo de período 7. Nesses intervalos $\lambda_1$ mergulha abaixo
-        de zero, como se vê no painel de baixo; amplie a figura com o mouse sobre essas
-        regiões para ver os ciclos de perto.
+        de zero, como se vê no painel de baixo. Para ver esses ciclos de perto, estreite o
+        intervalo de $\mu$ no controle, por exemplo para 11,8 a 12,1.
 
         A partir de $\mu \approx 13{,}45$ acontece algo menos comum: a trajetória cai num
         ciclo de período 3, as três linhas que seguem até o fim do gráfico, e não volta a se
@@ -666,30 +639,22 @@ def plot_sensitivity(exponent):
         d.append(np.linalg.norm(z2 - z1))
         z1, z2 = MAP.step(z1, MU_CHAOS), MAP.step(z2, MU_CHAOS)
     result = rosenstein_curve()
-    fig = plots.grid(1, 3, ["Duas condições iniciais quase iguais", "A distância entre elas",
-                            "Rosenstein, só com a série"], height=440)
-    fig.add_trace(go.Scatter(y=x1, name="trajetória A",
-                             line=dict(color=COLORS["ink"], width=1.4)), 1, 1)
-    fig.add_trace(go.Scatter(y=x2, name="trajetória B",
-                             line=dict(color=COLORS["t2m"], width=1.4, dash="dash")), 1, 1)
-    fig.add_trace(go.Scatter(y=np.maximum(d, 1e-16), showlegend=False,
-                             line=dict(color=COLORS["ink"], width=1.8),
-                             hovertemplate="n=%{x}<br>distância=%{y:.2e}"), 1, 2)
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.4), layout="constrained")
+    axes[0].plot(x1, color=COLORS["ink"], lw=1.2, label="trajetória A")
+    axes[0].plot(x2, "--", color=COLORS["t2m"], lw=1.2, label="trajetória B")
+    axes[0].set(xlabel="passo n", ylabel="$x_n$", title="Duas condições iniciais quase iguais")
+    axes[0].legend(fontsize=8)
+    axes[1].semilogy(np.maximum(d, 1e-16), color=COLORS["ink"])
+    axes[1].set(xlabel="passo n", ylabel="distância (escala log)",
+                title="A distância entre elas")
     k = np.arange(len(result.divergence))
-    fig.add_trace(go.Scatter(x=k, y=result.divergence, mode="lines+markers", name="⟨ln d(k)⟩",
-                             line=dict(color=COLORS["ink"]), marker=dict(size=5)), 1, 3)
+    axes[2].plot(k, result.divergence, "o-", ms=3, color=COLORS["ink"], label="⟨ln d(k)⟩")
     fit = np.arange(result.fit[0], result.fit[1] + 1)
-    fig.add_trace(go.Scatter(x=fit, y=result.intercept + result.exponent * fit,
-                             name=nb.pt(f"inclinação {result.exponent:.3f}"),
-                             line=dict(color=COLORS["t2m"], width=4)), 1, 3)
-    fig.update_yaxes(type="log", exponentformat="power", row=1, col=2)
-    fig.update_xaxes(title_text="passo n", row=1, col=1)
-    fig.update_xaxes(title_text="passo n", row=1, col=2)
-    fig.update_xaxes(title_text="k, passos à frente", row=1, col=3)
-    fig.update_yaxes(title_text="x_n", row=1, col=1)
-    fig.update_yaxes(title_text="distância (escala log)", row=1, col=2)
-    fig.update_yaxes(title_text="⟨ln d(k)⟩", row=1, col=3)
-    fig.update_layout(legend=dict(orientation="h", y=-0.22))
+    axes[2].plot(fit, result.intercept + result.exponent * fit, lw=3, color=COLORS["t2m"],
+                 label=nb.pt(f"inclinação = {result.exponent:.3f}"))
+    axes[2].set(xlabel="k, passos à frente", ylabel="⟨ln d(k)⟩",
+                title="Rosenstein, só com a série")
+    axes[2].legend(fontsize=8)
     steps = next((n for n, v in enumerate(d) if v > 0.01), None)
     return fig, steps, result.exponent
 
@@ -791,26 +756,17 @@ def contaminated(noise, n=3500, seed=2026):
 
 @app.function(hide_code=True)
 def plot_contamination(series):
-    results = {name: rosenstein(s, 3, 1, theiler=25, fit=(1, 8), max_steps=30)
-               for name, s in series.items()}
-    titles = list(series) + [nb.pt(f"inclinação {r.exponent:.3f} · R² {r.r2:.2f}")
-                             for r in results.values()]
-    fig = plots.grid(2, 3, titles, height=640, vertical_spacing=0.16)
+    fig, axes = plt.subplots(2, 3, figsize=(15, 7.2), layout="constrained")
     colors = [COLORS["ink"], COLORS["t2m"], COLORS["precip"]]
-    for col, ((name, s), color) in enumerate(zip(series.items(), colors, strict=True), 1):
-        fig.add_trace(go.Scatter(y=s[:300], showlegend=False, line=dict(color=color, width=1),
-                                 hovertemplate="n=%{x}<br>%{y:.3f}"), 1, col)
-        r = results[name]
-        fig.add_trace(go.Scatter(y=r.divergence, mode="lines+markers", showlegend=False,
-                                 line=dict(color=color), marker=dict(size=5),
-                                 hovertemplate="k=%{x}<br>⟨ln d⟩=%{y:.2f}"), 2, col)
+    for col, ((name, s), color) in enumerate(zip(series.items(), colors, strict=True)):
+        axes[0, col].plot(s[:300], lw=0.9, color=color)
+        axes[0, col].set(title=name, xlabel="passo n")
+        r = rosenstein(s, 3, 1, theiler=25, fit=(1, 8), max_steps=30)
+        axes[1, col].plot(r.divergence, "o-", ms=3, color=color)
         fit = np.arange(1, 9)
-        fig.add_trace(go.Scatter(x=fit, y=r.intercept + r.exponent * fit, showlegend=False,
-                                 line=dict(color="rgba(34,34,34,0.55)", width=4),
-                                 hoverinfo="skip"), 2, col)
-        fig.update_xaxes(title_text="passo n", row=1, col=col)
-        fig.update_xaxes(title_text="k, passos à frente", row=2, col=col)
-    fig.update_yaxes(title_text="⟨ln d(k)⟩", row=2, col=1)
+        axes[1, col].plot(fit, r.intercept + r.exponent * fit, lw=3, color="#222", alpha=0.6)
+        axes[1, col].set(xlabel="k, passos à frente", ylabel="⟨ln d(k)⟩",
+                         title=nb.pt(f"inclinação {r.exponent:.3f} · R² {r.r2:.2f}"))
     return fig
 
 
@@ -914,20 +870,16 @@ def plot_recurrence(series, rate):
     sur = next(surrogates(clean, 1, method="FT", seed=7))
     examples = {"caótico": clean, "substituta do caótico": sur,
                 "AR(1)": series["AR(1), sem caos"]}
-    lams = {k: rosenstein(s, 3, 1, theiler=25, fit=(1, 8)).exponent
-            for k, s in examples.items()}
-    fig = plots.grid(1, 3, [nb.pt(f"{k} · inclinação de Rosenstein {v:.3f}")
-                            for k, v in lams.items()], height=470, horizontal_spacing=0.05)
-    for col, s in enumerate(examples.values(), 1):
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5), layout="constrained")
+    for ax, (name, s) in zip(axes, examples.items(), strict=True):
         vectors = delay_embedding(s, 3, 1)[:400]
         eps = recurrence_threshold(vectors, rate, theiler=0)
         d = np.linalg.norm(vectors[:, None] - vectors[None, :], axis=2)
-        fig.add_trace(go.Heatmap(z=(d <= eps).astype(int), showscale=False,
-                                 colorscale=[[0, "white"], [1, COLORS["ink"]]],
-                                 hovertemplate="i=%{y}<br>j=%{x}<extra></extra>"), 1, col)
-        fig.update_xaxes(title_text="tempo j", row=1, col=col)
-        fig.update_yaxes(title_text="tempo i" if col == 1 else None, scaleanchor=f"x{col}",
-                         row=1, col=col)
+        ax.imshow(d <= eps, origin="lower", cmap="binary", interpolation="nearest")
+        lam = rosenstein(s, 3, 1, theiler=25, fit=(1, 8)).exponent
+        ax.set(title=nb.pt(f"{name}\ninclinação de Rosenstein {lam:.3f}"), xlabel="tempo j",
+               ylabel="tempo i")
+        ax.grid(False)
     return fig
 
 
@@ -939,8 +891,8 @@ def _(rate_slider):
         A Figura 7 compara três gráficos de recorrência, cada um uma matriz de 400 por 400
         instantes em que um ponto escuro em $(j, i)$ significa que os estados nesses dois
         instantes estão próximos. A diagonal principal é sempre escura, porque todo estado é
-        próximo de si mesmo; a informação está fora dela. Amplie uma região arrastando o
-        mouse para ver a textura de perto, e use o controle para mudar a taxa de recorrência.
+        próximo de si mesmo; a informação está fora dela. O controle muda a taxa de
+        recorrência, isto é, a fração de pares de instantes considerados próximos.
         """),
         rate_slider,
         book.figure(plot_recurrence(contaminated(0.05), _rate / 100), "recorrencia",
