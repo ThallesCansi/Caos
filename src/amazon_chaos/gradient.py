@@ -3,17 +3,20 @@
 Células: terra observada ≥ 50% e área dentro da bacia ≥ 50% (v2). Exposição principal:
 perda antecedente de floresta, 1 − floresta em 2000 (MapBiomas). Resposta: z dos
 descritores primários contra as substitutas, janela 2001–2024. Associação: Spearman,
-bruta e parcial (controlando latitude e fração de água), com IC por bootstrap em blocos de
-1° e o I de Moran dos resíduos. Longitudinal: mudança do descritor entre 2001–2012 e
-2013–2024 contra a perda de floresta de 2001 a 2012.
+bruta e parcial, com IC por bootstrap em blocos de 1° e o I de Moran dos resíduos. Os
+controles são a latitude, a fração de água e a altitude do relevo do modelo ERA5, já
+prevista no pré-registro. Longitudinal: mudança do descritor entre 2001–2012 e 2013–2024
+contra a perda de floresta de 2001 a 2012.
 """
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import xarray as xr
 from scipy.stats import rankdata, spearmanr
 
+from amazon_chaos import regions
 from amazon_chaos.features.disturbance import out_dir
 from amazon_chaos.nonlinear import results as R
 
@@ -48,6 +51,11 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     out["fracao_terra"] = out.terra_km2_2000 / out.celula_km2
     out["elegivel"] = ((out.fracao_terra >= rule["min_land_fraction"])
                        & (out.basin_fraction >= rule["min_basin_fraction"]))
+    static = xr.open_dataset(regions.processed_dir(cfg) / "era5_estatico.nc")
+    static = static[["altitude_m", "cvh", "cvl"]].to_dataframe().reset_index()
+    static = static.rename(columns={"cvh": "era5_veg_alta", "cvl": "era5_veg_baixa"})
+    out = (out.reset_index().merge(static, on=["latitude", "longitude"], how="left")
+           .set_index("cell_id"))
     tests = table[table.kind == "teste"]
     full = tests[tests.window == "2001_2024"].pivot_table(
         index="cell_id", columns=["variable", "descriptor"], values="z")
@@ -104,7 +112,10 @@ def moran_i(values, latitude, longitude, radius=0.26) -> float:
     return float(len(v) / w.sum() * (v @ w @ v) / (v @ v))
 
 
-def associate(frame, exposure, response, controls=("latitude", "agua_frac_2000")) -> dict:
+CONTROLS = ("latitude", "agua_frac_2000", "altitude_m")
+
+
+def associate(frame, exposure, response, controls=CONTROLS) -> dict:
     """Spearman bruto e parcial, IC por blocos e Moran dos resíduos da regressão nos postos."""
     data = frame[[exposure, response, "latitude", "longitude", *controls]].dropna()
     data = data.loc[:, ~data.columns.duplicated()]

@@ -112,3 +112,15 @@ A caixa antiga (`configs/regions/tapajos_caixa.yaml`, `tapajos-era5-1990-2024`) 
 **Problema:** com 39 substitutas por célula, o menor p de Monte Carlo é 1/40 = 0,025 (unilateral) e 2/40 = 0,05 (bilateral). Na correção de Benjamini–Hochberg pré-registrada, um p no piso só sobrevive se ao menos metade das células também estiver no piso (unilateral) ou se todas estiverem (bilateral). O resultado pré-registrado passa a depender de quantas células atingem o piso, e não da força da evidência: a complexidade da temperatura no Tapajós dá 0% de rejeição com 10% das células com z > 9; a laminaridade do VPD dá 100% no Xingu e 0% no Tapajós por uma única célula.
 
 **Decisão:** o resultado pré-registrado (BH) é relatado como está, com essa limitação explicada. Ao lado dele, **marcados como análise complementar, não pré-registrada**: (1) a fração de células com p ≤ 0,05, comparada a α, com IC 95% por bootstrap em blocos espaciais de 1° × 1° (`nonlinear.results.global_rejection`); (2) a distribuição dos z-scores. A comparação q ≤ α usa tolerância numérica de 1e-9, porque 2/40 × n/n = 0,05000000001 por arredondamento. Repetir o lote com 199 substitutas resolveria a resolução, mas custaria cerca de 95 h de HPC.
+
+## D-014 — Controle do relevo e análises complementares do gradiente
+
+**Status:** aceito em 21/10/2026, durante a análise do caderno 08.
+
+**Relevo (previsto no pré-registro):** a altitude do relevo do modelo ERA5 (geopotencial `z` / g, Earth Data Hub, comando `amazon-chaos era5 static`) entra como controle ao lado da latitude e da fração de água, como o pré-registro previa ("elevação entra quando o MDE estiver agregado"). Usar o relevo do próprio ERA5 evita a mistura de escalas de um modelo digital de elevação de 30 m.
+
+**Análises complementares, não pré-registradas, motivadas pelos resultados:**
+1. A exposição principal, 1 − floresta em 2000, conta como "perda" também a vegetação naturalmente não florestal (savanas e campos do Cerrado, ρ ≈ 0,7–0,8 com a exposição). Como sensibilidade, usamos a fração agropecuária em 2000 (conversão de fato) e controlamos a vegetação natural não florestal.
+2. A fração de vegetação alta fixa do ERA5 (`cvh`) acompanha a floresta de 2000 (ρ = 0,51 e 0,65), mas não a perda posterior. Controlá-la mostra quanto da associação entre perturbação e descritores passa pelo mapa de vegetação do próprio modelo.
+
+Ambas são relatadas como complementares, ao lado do resultado pré-registrado, que permanece o principal.
