@@ -193,6 +193,7 @@ def _(window_pick):
                           "Descritor": R.NAMES[_r.descriptor],
                           "Família": FAMILY_PT[_r.family], "Variável": R.VARIABLES[_r.variable],
                           "Rejeitam (BH)": f"{100 * _r.rejeitam:.0f}%",
+                          "BH por descritor": f"{100 * _r.rejeitam_por_descritor:.0f}%",
                           "z mediano": round(_r.z_mediano, 1)})
     mo.vstack([
         mo.md(r"""
@@ -242,7 +243,10 @@ def _(window_pick):
         mo.md(r"""
         Há, porém, uma diferença entre a Figura 1 e o resultado formal pré-registrado, a
         Tabela 1, que aplica a correção de Benjamini–Hochberg [13] para os muitos testes
-        simultâneos. A correção ordena os $n$ valores de $p$ de cada descritor,
+        simultâneos. Como manda o pré-registro, ela é feita dentro de cada família de
+        descritores, isto é, juntando os testes de todas as células e de todos os descritores
+        da família, para cada bacia, variável e janela. A correção ordena esses $n$ valores
+        de $p$,
         $p_{(1)} \leq \cdots \leq p_{(n)}$, e declara significativos os $k$ primeiros, com $k$
         o maior índice tal que $p_{(k)} \leq k\alpha/n$. Com 39 substitutas, o menor $p$
         possível é $1/40 = 0{,}025$ num teste unilateral. Se $k$ células estão nesse piso, a
@@ -254,14 +258,20 @@ def _(window_pick):
         book.table(pd.DataFrame(_rows), "rejeicao_bh",
                    "Tabela 1. Resultado pré-registrado: fração das células que rejeitam a "
                    "hipótese linear depois da correção de Benjamini–Hochberg, por bacia, "
-                   "descritor e variável, e z mediano.", selection=None),
+                   "descritor e variável, com a correção feita dentro de cada família de "
+                   "descritores, como no pré-registro, e, como sensibilidade, dentro de cada "
+                   "descritor; e z mediano.", selection=None),
         mo.md(r"""
-        A tabela mostra o efeito. Onde quase todas as células estão no piso, como no
-        determinismo, a correção confirma 100%. Onde a evidência é forte, mas espalhada,
-        a correção vira tudo ou nada: a complexidade da temperatura no Tapajós aparece com 0%,
-        embora um décimo das células tenha z acima de 9, e a laminaridade do VPD aparece com
-        100% no Xingu e 0% no Tapajós porque, no Tapajós, uma única célula não atingiu o piso.
-        Isso não é uma propriedade da Amazônia, mas da resolução do teste. Por isso relatamos
+        A tabela mostra o efeito. Onde quase todas as células estão no piso, a correção
+        confirma 100%. Onde a evidência é forte, mas espalhada, a correção vira tudo ou nada:
+        a complexidade da temperatura no Tapajós aparece com 0%, embora um décimo das células
+        tenha z acima de 9. O exemplo mais claro está na última coluna, que repete a correção
+        dentro de cada descritor em vez de cada família. O determinismo da temperatura no
+        Tapajós passa de 0% para 100%, e a laminaridade do VPD no Xingu também: quando o
+        descritor é corrigido sozinho, todas as suas células estão no piso; quando divide a
+        família com descritores em que algumas células não estão, nenhuma sobrevive. Entre as
+        duas colunas, mudou só o conjunto de testes sobre o qual a correção é feita: o tudo ou
+        nada não é uma propriedade da Amazônia, mas da resolução do teste. Por isso relatamos
         o resultado pré-registrado tal como ele saiu e, ao lado dele, a Figura 1 e os
         z-scores, como análise complementar, registrada antes de qualquer comparação com o
         desmatamento. Mais substitutas resolveriam o problema, ao custo de cerca de cem horas

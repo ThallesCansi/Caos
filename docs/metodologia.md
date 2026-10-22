@@ -6,7 +6,13 @@ Documento único de método do projeto. Ele funde o plano de pesquisa, o desenho
 
 **Objetivo geral** (projeto aprovado): investigar a dinâmica não linear do sistema floresta–atmosfera amazônico, com métodos da Teoria do Caos e dos sistemas dinâmicos complexos, para analisar possíveis sinais de instabilidade associados a desmatamento, queimadas e degradação florestal. A interpretação inclui a dimensão socioespacial, que é responsabilidade da parte de humanidades do TCC.
 
-**Pergunta operacional:** depois de controlar sazonalidade, tendência, autocorrelação, ruído, tamanho da amostra e geografia, as células ERA5 com mais perturbação florestal antecedente apresentam descritores dinâmicos sistematicamente diferentes das células comparáveis mais preservadas?
+**Pergunta de pesquisa** (D-019): a perturbação da floresta amazônica, por desmatamento e fogo, deixa marca na dinâmica do clima local, isto é, na forma como ele evolui de um dia para o outro? E as ferramentas da teoria do caos conseguem revelá-la?
+
+1. **Natureza:** que tipo de dinâmica o clima diário local tem: caos de baixa dimensão, ruído ou não linearidade de alta dimensão? (cadernos 01, 05, 06 e 07)
+2. **Relação:** essa dinâmica difere entre lugares mais e menos perturbados, e muda onde a floresta é perdida? (caderno 08)
+3. **Detectabilidade:** que escala, grandeza e tipo de registro são necessários para que essa marca apareça? (checagem MODIS, D-018; condições meteorológicas antes do fogo)
+
+**Operacionalização:** depois de controlar sazonalidade, tendência, autocorrelação, ruído, tamanho da amostra e geografia, as células ERA5 com mais perturbação florestal antecedente apresentam descritores dinâmicos sistematicamente diferentes das células comparáveis mais preservadas? O ERA5 é o instrumento principal porque é a única série diária, sem falhas, de 35 anos nessa grade; o MODIS é a checagem observacional.
 
 **Pergunta secundária:** quais condições meteorológicas antecedem as detecções de fogo nessas células?
 
@@ -83,7 +89,7 @@ As métricas por célula são definidas antes de olhar os descritores: floresta 
 
 ### 8.1 Pré-registro e gate
 
-Tudo o que pode ser escolhido fica em `configs/analysis/descriptors.yaml`, **versão 1 congelada em 20/10/2026**, antes do cálculo nos dados reais (D-010). As variáveis primárias são as **anomalias padronizadas** (divididas pelo desvio-padrão sazonal) de temperatura e de VPD; a tendência não é removida. A chuva é exploratória, analisada por métodos ordinais. As conclusões vêm só da família primária (entropia de permutação, complexidade, erro de previsão, RQA·DET), com Benjamini–Hochberg sobre as células. D2, LAM e assimetria são secundários, e o Lyapunov é exploratório.
+Tudo o que pode ser escolhido fica em `configs/analysis/descriptors.yaml`, **versão 1 congelada em 20/10/2026**, antes do cálculo nos dados reais (D-010), e **versão 2** no mesmo dia, antes de qualquer análise de perturbação × dinâmica: na comparação, só células com pelo menos 50% da área dentro da bacia (668 no Xingu e 652 no Tapajós com a regra de terra). As variáveis primárias são as **anomalias padronizadas** (divididas pelo desvio-padrão sazonal) de temperatura e de VPD; a tendência não é removida. A chuva é exploratória, analisada por métodos ordinais. As conclusões vêm só da família primária (entropia de permutação, complexidade, erro de previsão, RQA·DET), com Benjamini–Hochberg sobre as células, dentro de cada família, por região × variável × janela (D-020). D2, LAM e assimetria são secundários, e o Lyapunov é exploratório.
 
 Antes dos dados reais, cada descritor passa pelo **gate F4**: controles positivos (Lorenz, logístico r=4) e negativos (AR(1), ruído branco, seno com ruído, seno com tendência e variância sazonal), variando o comprimento e o ruído. Se o descritor não separar os dois grupos contra substitutas, ele não entra na interpretação. Isso é relatado como resultado metodológico.
 

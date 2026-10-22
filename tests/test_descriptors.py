@@ -89,9 +89,14 @@ def _brute_force_rqa(x, m, tau, epsilon, theiler, lmin=2):
 def test_rqa_matches_full_recurrence_matrix():
     x = control("lorenz", 400, seed=1)
     result = rqa(x, 3, 2, rate=0.08, theiler=3)
-    det, lam = _brute_force_rqa(x, 3, 2, result.epsilon, theiler=3)
     assert result.rr == pytest.approx(0.08, abs=0.01)
-    assert result.det == pytest.approx(det) and result.lam == pytest.approx(lam)
+    # ε é o quantil das distâncias sorteadas e costuma coincidir com a distância de um par;
+    # cKDTree e np.linalg.norm arredondam esse par de modos diferentes conforme a máquina.
+    # A matriz completa vale com o par no limiar dentro ou fora.
+    brute = [_brute_force_rqa(x, 3, 2, result.epsilon * f, theiler=3)
+             for f in (1 - 1e-12, 1 + 1e-12)]
+    assert any(result.det == pytest.approx(det) and result.lam == pytest.approx(lam)
+               for det, lam in brute)
 
 
 def test_correlation_sum_excludes_diagonal_and_theiler_pairs():

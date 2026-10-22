@@ -1,7 +1,8 @@
 """Leitura e resumo do lote de descritores por célula (cadernos 07 e 08).
 
-A correção para múltiplos testes segue o pré-registro (D-010): Benjamini–Hochberg dentro
-de cada descritor, sobre as células, separadamente por região × variável × janela. A
+A correção para múltiplos testes segue o pré-registro (D-010, D-020): Benjamini–Hochberg
+dentro de cada família de descritores, sobre as células, separadamente por região ×
+variável × janela; a correção dentro de cada descritor fica como sensibilidade. A
 comparação com α usa uma tolerância numérica: com 39 substitutas, o menor p bilateral é
 exatamente 2/40 = 0,05, e o arredondamento da correção (0,05000000001) não pode decidir o
 resultado.
@@ -40,13 +41,15 @@ def load(cfg, spec=None) -> pd.DataFrame:
     spec = spec or load_spec()
     table = pd.read_parquet(output_dir(cfg, spec) / "descritores.parquet")
     alpha = spec["surrogates"]["alpha"]
-    keys = ["variable", "window", "kind", "descriptor"]
-    tested = table.kind.isin(["teste", "ews"])
-    table.loc[tested, "q"] = table[tested].groupby(keys).pvalue.transform(
-        lambda s: benjamini_hochberg(s.to_numpy()))
-    table["rejects"] = table.q <= alpha + TOLERANCE
     families = {d: f for f, ds in spec["families"].items() for d in ds}
     table["family"] = table.descriptor.map(families).fillna("ews")
+    tested = table.kind.isin(["teste", "ews"])
+    for column, unit in [("q", "family"), ("q_descriptor", "descriptor")]:
+        keys = ["variable", "window", "kind", unit]
+        table.loc[tested, column] = table[tested].groupby(keys).pvalue.transform(
+            lambda s: benjamini_hochberg(s.to_numpy()))
+    table["rejects"] = table.q <= alpha + TOLERANCE
+    table["rejects_descriptor"] = table.q_descriptor <= alpha + TOLERANCE
     table["region"] = cfg["slug"]
     return table
 
@@ -64,6 +67,7 @@ def summary(table: pd.DataFrame) -> pd.DataFrame:
     tests = table[table.kind == "teste"]
     out = (tests.groupby(["family", "descriptor", "variable", "window"])
            .agg(celulas=("cell_id", "nunique"), rejeitam=("rejects", "mean"),
+                rejeitam_por_descritor=("rejects_descriptor", "mean"),
                 z_mediano=("z", "median"), z_p10=("z", lambda z: z.quantile(0.1)),
                 z_p90=("z", lambda z: z.quantile(0.9)))
            .reset_index())

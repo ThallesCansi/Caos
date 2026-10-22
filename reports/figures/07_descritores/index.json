@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/distribuicao_z_t2m.png",
     "pdf": "reports/figures/07_descritores/distribuicao_z_t2m.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "distribuicao_z_vpd",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/distribuicao_z_vpd.png",
     "pdf": "reports/figures/07_descritores/distribuicao_z_vpd.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "janelas_rqa_det_t2m",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/janelas_rqa_det_t2m.png",
     "pdf": "reports/figures/07_descritores/janelas_rqa_det_t2m.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "rejeicao_global",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/rejeicao_global.png",
     "pdf": "reports/figures/07_descritores/rejeicao_global.pdf",
-    "commit": "01c4b6b"
+    "commit": "122382d+modificado"
   },
   {
     "name": "sensibilidade_t2m",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/sensibilidade_t2m.png",
     "pdf": "reports/figures/07_descritores/sensibilidade_t2m.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "sensibilidade_vpd",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/sensibilidade_vpd.png",
     "pdf": "reports/figures/07_descritores/sensibilidade_vpd.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "ews_t2m",
@@ -60,7 +60,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/tapajos/ews_t2m.png",
     "pdf": "reports/figures/07_descritores/tapajos/ews_t2m.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "mapa_z_pe_complexity_t2m",
@@ -69,7 +69,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/tapajos/mapa_z_pe_complexity_t2m.png",
     "pdf": "reports/figures/07_descritores/tapajos/mapa_z_pe_complexity_t2m.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "ews_t2m",
@@ -78,7 +78,7 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/xingu/ews_t2m.png",
     "pdf": "reports/figures/07_descritores/xingu/ews_t2m.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   },
   {
     "name": "mapa_z_pe_complexity_t2m",
@@ -87,6 +87,6 @@
     "overleaf": true,
     "png": "reports/figures/07_descritores/xingu/mapa_z_pe_complexity_t2m.png",
     "pdf": "reports/figures/07_descritores/xingu/mapa_z_pe_complexity_t2m.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "122382d+modificado"
   }
 ]
