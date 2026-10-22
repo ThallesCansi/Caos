@@ -24,7 +24,9 @@ DRY_MONTHS = (6, 7, 8, 9)
 
 
 def good_quality(qc: np.ndarray) -> np.ndarray:
-    qc = qc.astype("uint8")
+    # o AppEEARS declara 0 como "sem dado" do QC, e o xarray o decodifica como NaN; mas
+    # QC = 0 é justamente a melhor qualidade. O LST ausente é filtrado pelo próprio LST.
+    qc = np.nan_to_num(np.asarray(qc, dtype=float), nan=0.0).astype("uint8")
     return ((qc & 0b11) <= 1) & (((qc >> 6) & 0b11) <= 1)
 
 
@@ -65,7 +67,8 @@ def cell_lst(cfg, files: list[Path] | None = None) -> tuple[pd.DataFrame, pd.Dat
         yearly: dict[int, np.ndarray] = {}
         for t in range(ds.sizes["time"]):
             step = ds.isel(time=t).load()
-            month, year = pd.Timestamp(step.time.values).month, pd.Timestamp(step.time.values).year
+            when = step.time.values.item()  # datetime do cftime (calendário juliano)
+            month, year = when.month, when.year
             day = np.where(good_quality(step.QC_Day.values), step.LST_Day_1km.values, np.nan)
             night = np.where(good_quality(step.QC_Night.values), step.LST_Night_1km.values,
                              np.nan)
