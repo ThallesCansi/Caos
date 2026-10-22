@@ -263,7 +263,7 @@ def descriptors_precip(
         "precip_era5,precip_chirps"),
     workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
     limit: Annotated[int | None, typer.Option(help="só as primeiras N células (teste)")] = None,
-    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = False,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
 ) -> None:
     """Descritores ordinais da chuva no ERA5 e no CHIRPS, contra substitutas (D-021)."""
     from amazon_chaos.nonlinear.precip import run
@@ -315,7 +315,7 @@ def modis_build(region: Region) -> None:
 def chirps_fetch(
     first: Annotated[int, typer.Option(help="primeiro ano")] = 2001,
     last: Annotated[int, typer.Option(help="último ano")] = 2024,
-    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = False,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
 ) -> None:
     """Baixa um ano por vez e recorta a caixa que cobre todas as regiões (retomável)."""
     import numpy as np

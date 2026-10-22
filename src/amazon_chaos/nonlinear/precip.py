@@ -122,6 +122,7 @@ def run(cfg, spec, *, sources=SOURCES, workers=None, block=25, report=print,
                        for k in todo for c in blocks[k]}
             parts: dict[int, list] = {k: [] for k in todo}
             pending = {k: len(blocks[k]) for k in todo}
+            started, done = datetime.now(UTC), 0
             for future in as_completed(futures):
                 k = futures[future]
                 parts[k].append(future.result())
@@ -129,6 +130,13 @@ def run(cfg, spec, *, sources=SOURCES, workers=None, block=25, report=print,
                 if pending[k] == 0:
                     pd.concat(parts.pop(k), ignore_index=True).to_parquet(
                         out / f"bloco_{source}_{k:04d}.parquet")
+                    done += 1
+                    if done % max(1, len(todo) // 10) == 0 or done == len(todo):
+                        hours = (datetime.now(UTC) - started).total_seconds() / 3600
+                        eta = hours / done * (len(todo) - done)
+                        report(f"📊 Chuva · {cfg['name']} · {source}: {done}/{len(todo)} "
+                               f"blocos ({100 * done / len(todo):.0f}%) · {hours:.1f} h · "
+                               f"faltam ≈ {eta:.1f} h")
     files = sorted(out.glob("bloco_*.parquet"))
     if not files:
         raise RuntimeError("Nenhum bloco calculado")
