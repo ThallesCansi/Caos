@@ -3,8 +3,9 @@
     amazon-chaos region list | prepare <região>
     amazon-chaos era5 plan | download | edh | process | summarize <região> ...
     amazon-chaos disturbance fetch | build <região>
-    amazon-chaos descriptors run <região>
+    amazon-chaos descriptors run | basin | precip <região>
     amazon-chaos modis fetch | build <região>
+    amazon-chaos chirps fetch | build <região>
     amazon-chaos gate run [--quick]
     amazon-chaos manifest <pasta>
     amazon-chaos notify "mensagem"
@@ -33,11 +34,13 @@ disturbance_app = typer.Typer(no_args_is_help=True,
 descriptors_app = typer.Typer(no_args_is_help=True,
                               help="Descritores pré-registrados por célula, com substitutas")
 modis_app = typer.Typer(no_args_is_help=True, help="MODIS LST pelo AppEEARS (checagem D-011)")
+chirps_app = typer.Typer(no_args_is_help=True, help="Chuva diária CHIRPS v3 sat (D-021)")
 gate_app = typer.Typer(no_args_is_help=True, help="Gate F4: descritores em controles sintéticos")
 app.add_typer(era5_app, name="era5")
 app.add_typer(disturbance_app, name="disturbance")
 app.add_typer(descriptors_app, name="descriptors")
 app.add_typer(modis_app, name="modis")
+app.add_typer(chirps_app, name="chirps")
 app.add_typer(gate_app, name="gate")
 
 Region = Annotated[str, typer.Argument(help="slug em configs/regions/ (ex.: xingu)")]
@@ -253,6 +256,23 @@ def descriptors_basin(
     typer.echo(run(load_region(region), load_spec(), workers=workers, report=reporter(notify)))
 
 
+@descriptors_app.command("precip")
+def descriptors_precip(
+    region: Region,
+    sources: Annotated[str, typer.Option(help="precip_era5,precip_chirps")] = (
+        "precip_era5,precip_chirps"),
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    limit: Annotated[int | None, typer.Option(help="só as primeiras N células (teste)")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = False,
+) -> None:
+    """Descritores ordinais da chuva no ERA5 e no CHIRPS, contra substitutas (D-021)."""
+    from amazon_chaos.nonlinear.precip import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    typer.echo(run(load_region(region), load_spec(), sources=tuple(sources.split(",")),
+                   workers=workers, report=reporter(notify), limit=limit))
+
+
 # ── MODIS ───────────────────────────────────────────────────────────────────
 
 
@@ -286,6 +306,40 @@ def modis_build(region: Region) -> None:
     dry = dry.set_axis(dry.columns.map(str), axis=1)
     dry.to_parquet(out_dir(cfg) / "modis_lst_seca_anual.parquet")
     typer.echo(f"{len(clim)} células · {clim.lst_dia_c.notna().sum()} com LST")
+
+
+# ── CHIRPS ──────────────────────────────────────────────────────────────────
+
+
+@chirps_app.command("fetch")
+def chirps_fetch(
+    first: Annotated[int, typer.Option(help="primeiro ano")] = 2001,
+    last: Annotated[int, typer.Option(help="último ano")] = 2024,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = False,
+) -> None:
+    """Baixa um ano por vez e recorta a caixa que cobre todas as regiões (retomável)."""
+    import numpy as np
+
+    from amazon_chaos.features.chirps import full_cells
+    from amazon_chaos.io import chirps
+
+    boxes = np.array([full_cells(load_region(s)).total_bounds for s in list_regions()])
+    union = (*boxes[:, :2].min(axis=0), *boxes[:, 2:].max(axis=0))
+    files = chirps.fetch(union, first, last, report=reporter(notify))
+    typer.echo(f"{len(files)} anos em {chirps.ROOT}")
+
+
+@chirps_app.command("build")
+def chirps_build(region: Region) -> None:
+    """Chuva diária do CHIRPS por célula (quadrado inteiro da célula ERA5)."""
+    from amazon_chaos.features.chirps import cell_precip, out_path
+
+    cfg = load_region(region)
+    table = cell_precip(cfg)
+    target = out_path(cfg)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    table.to_parquet(target)
+    typer.echo(f"{table.shape[0]} dias × {table.shape[1]} células em {target}")
 
 
 # ── gate F4 ─────────────────────────────────────────────────────────────────

@@ -15,6 +15,7 @@ import pandas as pd
 import rasterio
 import shapely
 from rasterio.features import rasterize
+from rasterio.transform import from_origin
 from rasterio.windows import Window, from_bounds
 
 WGS84_A_KM = 6378.137
@@ -86,6 +87,34 @@ def class_areas(source: str, cells: gpd.GeoDataFrame, *, block: int = 4096,
     frame = pd.DataFrame({v: a[1:] for v, a in sorted(totals.items())},
                          index=pd.Index(cells.cell_id.to_numpy(), name="cell_id"))
     return frame
+
+
+def grid_cell_index(cells, lat, lon):
+    """Célula (1..n; 0 = fora) e área (km²) de cada ponto de uma grade lat/lon regular.
+
+    Cada pixel entra na célula cujo polígono recortado contém seu centro (MODIS, CHIRPS).
+    """
+    res_x, res_y = float(abs(lon[1] - lon[0])), float(abs(lat[1] - lat[0]))
+    transform = from_origin(float(lon.min()) - res_x / 2, float(lat.max()) + res_y / 2,
+                            res_x, res_y)
+    shapes = list(zip(cells.geometry, range(1, len(cells) + 1), strict=True))
+    ids = rasterize(shapes, out_shape=(len(lat), len(lon)), transform=transform, fill=0,
+                    dtype="int32")
+    if lat[0] < lat[-1]:  # grade crescente: alinhar linhas com a latitude
+        ids = ids[::-1]
+    area = pixel_area_km2(transform, np.arange(len(lat)))
+    if lat[0] < lat[-1]:
+        area = area[::-1]
+    return ids, np.broadcast_to(area[:, None], ids.shape)
+
+
+def grid_cell_mean(field, ids, area, n):
+    """Média de `field` em cada célula, ponderada pela área dos pixels válidos."""
+    ok = np.isfinite(field) & (ids > 0)
+    w = np.bincount(ids[ok], weights=area[ok], minlength=n + 1)
+    s = np.bincount(ids[ok], weights=(field * area)[ok], minlength=n + 1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return (s / w)[1:]
 
 
 def polygonal(frame: gpd.GeoDataFrame) -> gpd.GeoDataFrame:

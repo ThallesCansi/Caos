@@ -90,7 +90,7 @@ A caixa antiga (`configs/regions/tapajos_caixa.yaml`, `tapajos-era5-1990-2024`) 
 - exposição principal: 1 − floresta em 2000 (MapBiomas), com PRODES como sensibilidade (o PRODES não vê o Cerrado);
 - células com menos de 50% de terra observada ficam fora da comparação.
 
-**Versão 2, 20/10/2026**, antes de qualquer análise de perturbação × dinâmica. Na comparação entre células, só entram as que têm pelo menos 50% da área dentro da bacia. Motivo: o ERA5 dá uma única série para a célula inteira, mas a perturbação de uma célula de borda é medida só na parte dentro da bacia; e 80 células cortadas pelo divisor entre Xingu e Tapajós entrariam nas duas regiões. Ficam 668 células no Xingu e 654 no Tapajós, sem repetição. A mudança não altera nenhum cálculo por célula: o lote é identificado só pelas seções que o afetam (`batch_hash`).
+**Versão 2, 20/10/2026**, antes de qualquer análise de perturbação × dinâmica. Na comparação entre células, só entram as que têm pelo menos 50% da área dentro da bacia. Motivo: o ERA5 dá uma única série para a célula inteira, mas a perturbação de uma célula de borda é medida só na parte dentro da bacia; e 80 células cortadas pelo divisor entre Xingu e Tapajós entrariam nas duas regiões. Ficam 668 células no Xingu e 654 no Tapajós, sem repetição; somada a regra de terra observada (≥ 50%), o Tapajós perde mais 2 células dominadas pelo rio e a comparação usa 652. A mudança não altera nenhum cálculo por célula: o lote é identificado só pelas seções que o afetam (`batch_hash`).
 
 ## D-011 — Checagem do ERA5 com MODIS LST
 
@@ -162,3 +162,38 @@ Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-00
 **Resultado (células elegíveis, controles latitude, água e altitude, IC por blocos de 1°):** entre células, a perda antecedente se associa ao LST diurno da estação seca com ρ parcial de +0,81 (Xingu) e +0,74 (Tapajós), de 6 a 7 °C entre o décimo menos e o mais desmatado; com a máxima do ERA5, −0,14 e −0,06, compatíveis com zero. Ao longo do tempo, a perda de 2001–2012 se associa ao aquecimento do LST entre as décadas com ρ de +0,72 e +0,77; no ERA5, −0,18 e +0,04.
 
 **Leitura:** confirma, com observação independente do modelo, a limitação de D-011 e a interpretação de D-014 e D-015: o resultado longitudinal nulo do caderno 08 não indica ausência de efeito do desmatamento, e sim que o ERA5 não o registra. O LST não entra na análise não linear: as lacunas de nuvem impedem séries diárias. É análise complementar, prevista no plano mas não no pré-registro dos descritores.
+
+## D-019 — A pergunta no nível do sistema, não da base de dados
+
+**Status:** aceito em 22/10/2026, depois de duas avaliações do projeto.
+
+**Decisão:** a pergunta de pesquisa volta ao nível do objetivo geral do projeto aprovado e deixa de citar a fonte dos dados: a perturbação da floresta amazônica (desmatamento e fogo) deixa marca na dinâmica do clima local, isto é, na forma como ele evolui de um dia para o outro, e as ferramentas da teoria do caos conseguem revelá-la? Ela se desdobra em três subperguntas: natureza (que tipo de dinâmica o clima diário local tem), relação (se essa dinâmica difere entre lugares mais e menos perturbados e muda onde a floresta é perdida) e detectabilidade (que escala, grandeza e tipo de registro são necessários para que a marca apareça). A pergunta sobre as células ERA5 continua como operacionalização. O ERA5 e o MODIS passam a ser instrumentos, e a limitação de D-011 e D-018 responde à terceira subpergunta.
+
+**Natureza:** muda o enquadramento, não a análise. Descritores, transformações, famílias, exposição e regras de seleção do pré-registro (D-010) ficam como estão.
+
+## D-020 — Benjamini–Hochberg dentro de cada família, como no pré-registro
+
+**Status:** aceito em 22/10/2026.
+
+**Problema:** o pré-registro (`descriptors.yaml`, seção `families`) manda corrigir "dentro de cada família, sobre as células, separadamente por região × variável × janela", mas `nonlinear.results.load` corrigia dentro de cada descritor.
+
+**Decisão:** o resultado principal passa a ser a correção por família, a leitura literal do arquivo congelado; a correção por descritor fica ao lado como sensibilidade (Tabela 1 do caderno 07). As duas coincidem em todos os casos menos dois, ambos efeito do piso de p de D-013: o determinismo da temperatura no Tapajós e a laminaridade do VPD no Xingu passam de 100% para 0% das células. Nenhuma conclusão depende dessa diferença: a fração de células com p ≤ 0,05 e os z-scores (D-013) não mudam.
+
+**Também revisto:** o I de Moran de `gradient.moran_i` usa os 4 vizinhos ortogonais, e não os 8 adjacentes que a documentação dizia (a diagonal fica a 0,354°, fora do raio de 0,26°). Com os 8, o I cai cerca de 0,05 (por exemplo, de 0,65 para 0,60 na entropia do VPD no Xingu), sem mudar a leitura.
+
+## D-021 — Chuva: CHIRPS v3 "sat" e ERA5 pelos descritores ordinais
+
+**Status:** aceito em 22/10/2026, antes de qualquer cálculo dos descritores da chuva.
+
+**Motivo:** o pré-registro previa a chuva como variável exploratória, só com métodos ordinais, e o lote não a calculou (só t2m e VPD). A subpergunta de detectabilidade (D-019) pede uma série diária observada que não dependa da vegetação fixa da reanálise.
+
+**Fonte:** CHIRPS v3.0, produto diário final "sat" (CHC/UCSB; Funk et al., 2026). O CHIRPS é um produto de pêntadas, com infravermelho e estações; o valor diário é a pêntada repartida em dias. Na versão "sat" a repartição segue o IMERG Late V07, de 1998 em diante. Ficam de fora a "rnl", que reparte pelos dias do próprio ERA5, e a v2.0, que reparte pelo CFSv2: nas duas, a dinâmica dia a dia viria de um modelo. A média é tomada sobre o quadrado inteiro de cada célula de 0,25°, o mesmo que a série do ERA5 representa, com a fração exata de cada pixel de 0,05° (as bordas das células caem nos centros dos pixels). O dia é o dia UTC do produto. Aquisição: `amazon-chaos chirps fetch`, um NetCDF anual por vez, recortado na caixa das regiões e com o SHA-256 do arquivo global de origem.
+
+**Análise** (`nonlinear/precip.py`, fixada antes de calcular):
+- série: chuva diária bruta (mm), sem anomalia. Os padrões ordinais não mudam com transformações monotônicas, e a anomalia padronizada ordenaria os dias secos pela climatologia;
+- empates: ruído uniforme de até 10⁻⁶ mm, com semente fixa por célula, fonte e janela, antes das substitutas;
+- descritores: entropia de permutação e complexidade estatística com os parâmetros pré-registrados (ordem 5, atraso 1, alternativas `less` e `greater`), contra 39 substitutas IAAFT, nas janelas 2001–2024, 2001–2012 e 2013–2024;
+- as mesmas regras para a chuva do ERA5 (`precip_mm_sum`) e do CHIRPS, em todas as células;
+- correção de Benjamini–Hochberg dentro da família exploratória (os dois descritores), por região × fonte × janela; associação com a perturbação pelo mesmo modelo do caderno 08 (Spearman parcial, latitude, água e altitude, IC por blocos de 1°).
+
+**Natureza:** exploratória. Os descritores ordinais passaram no gate F4 em séries contínuas, mas não foram validados em séries intermitentes; o resultado é lido como comparação entre as duas fontes, não como evidência isolada.

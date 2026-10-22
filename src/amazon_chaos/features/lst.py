@@ -14,11 +14,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import xarray as xr
-from rasterio.features import rasterize
-from rasterio.transform import from_origin
 
 from amazon_chaos import regions
-from amazon_chaos.preprocess.zonal import pixel_area_km2
+from amazon_chaos.preprocess.zonal import grid_cell_index, grid_cell_mean
 
 DRY_MONTHS = (6, 7, 8, 9)
 
@@ -40,29 +38,6 @@ def month_year(value) -> tuple[int, int]:
     return when.month, when.year
 
 
-def _cell_index(cells, lat, lon):
-    res_x, res_y = float(abs(lon[1] - lon[0])), float(abs(lat[1] - lat[0]))
-    transform = from_origin(float(lon.min()) - res_x / 2, float(lat.max()) + res_y / 2,
-                            res_x, res_y)
-    shapes = list(zip(cells.geometry, range(1, len(cells) + 1), strict=True))
-    ids = rasterize(shapes, out_shape=(len(lat), len(lon)), transform=transform, fill=0,
-                    dtype="int32")
-    if lat[0] < lat[-1]:  # grade crescente: alinhar linhas com a latitude
-        ids = ids[::-1]
-    area = pixel_area_km2(transform, np.arange(len(lat)))
-    if lat[0] < lat[-1]:
-        area = area[::-1]
-    return ids, np.broadcast_to(area[:, None], ids.shape)
-
-
-def _cell_mean(field, ids, area, n):
-    ok = np.isfinite(field) & (ids > 0)
-    w = np.bincount(ids[ok], weights=area[ok], minlength=n + 1)
-    s = np.bincount(ids[ok], weights=(field * area)[ok], minlength=n + 1)
-    with np.errstate(invalid="ignore", divide="ignore"):
-        return (s / w)[1:]
-
-
 def cell_lst(cfg, files: list[Path] | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     """(climatologia por célula, LST diurno da estação seca por célula e ano), em °C."""
     files = files or sorted((Path("data/raw") / cfg["experiment_id"] / "modis").glob("*.nc"))
@@ -71,7 +46,7 @@ def cell_lst(cfg, files: list[Path] | None = None) -> tuple[pd.DataFrame, pd.Dat
     cells = regions.cells(cfg).reset_index(drop=True)
     with xr.open_mfdataset(files, combine="by_coords") as ds:
         lat, lon = ds["lat"].values, ds["lon"].values
-        ids, area = _cell_index(cells, lat, lon)
+        ids, area = grid_cell_index(cells, lat, lon)
         sums = {k: np.zeros((len(lat), len(lon))) for k in
                 ("day", "night", "dry", "n_day", "n_night", "n_dry")}
         yearly: dict[int, np.ndarray] = {}
@@ -95,12 +70,12 @@ def cell_lst(cfg, files: list[Path] | None = None) -> tuple[pd.DataFrame, pd.Dat
     n = len(cells)
     with np.errstate(invalid="ignore", divide="ignore"):
         clim = pd.DataFrame({
-            "lst_dia_c": _cell_mean(sums["day"] / sums["n_day"] - 273.15, ids, area, n),
-            "lst_noite_c": _cell_mean(sums["night"] / sums["n_night"] - 273.15, ids, area, n),
-            "lst_dia_seca_c": _cell_mean(sums["dry"] / sums["n_dry"] - 273.15, ids, area, n),
-            "lst_composicoes_validas": _cell_mean(sums["n_day"], ids, area, n),
+            "lst_dia_c": grid_cell_mean(sums["day"] / sums["n_day"] - 273.15, ids, area, n),
+            "lst_noite_c": grid_cell_mean(sums["night"] / sums["n_night"] - 273.15, ids, area, n),
+            "lst_dia_seca_c": grid_cell_mean(sums["dry"] / sums["n_dry"] - 273.15, ids, area, n),
+            "lst_composicoes_validas": grid_cell_mean(sums["n_day"], ids, area, n),
         }, index=pd.Index(cells.cell_id, name="cell_id"))
-        dry = pd.DataFrame({year: _cell_mean(acc[0] / acc[1] - 273.15, ids, area, n)
+        dry = pd.DataFrame({year: grid_cell_mean(acc[0] / acc[1] - 273.15, ids, area, n)
                             for year, acc in sorted(yearly.items())},
                            index=pd.Index(cells.cell_id, name="cell_id"))
     return clim, dry

@@ -29,12 +29,13 @@ EXPOSURES = {
     "prodes_acumulado_2024_frac": "Desmatamento PRODES acumulado até 2024",
     "prodes_ate_2007_frac": "Desmatamento PRODES até 2007",
     "mb_perda_floresta_2001_2012": "Perda de floresta 2001–2012",
+    "perda_1990_2000": "Perda de floresta 1990–2000",
 }
 ROLE = {"perda_antecedente": "principal", "perda_2000_2024": "secundária",
         "focos_100km2_ano_2003_2024": "secundária",
         "mb_frequencia_fogo_media_2024": "secundária",
         "prodes_acumulado_2024_frac": "sensibilidade", "prodes_ate_2007_frac": "sensibilidade",
-        "mb_perda_floresta_2001_2012": "longitudinal"}
+        "mb_perda_floresta_2001_2012": "longitudinal", "perda_1990_2000": "complementar"}
 
 
 def cell_table(cfg, spec) -> pd.DataFrame:
@@ -61,6 +62,9 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     full = tests[tests.window == "2001_2024"].pivot_table(
         index="cell_id", columns=["variable", "descriptor"], values="z")
     full.columns = [f"z_{v}_{d}" for v, d in full.columns]
+    observed = tests[tests.window == "2001_2024"].pivot_table(
+        index="cell_id", columns=["variable", "descriptor"], values="observed")
+    observed.columns = [f"obs_{v}_{d}" for v, d in observed.columns]
     halves = tests[tests.window.isin(["2001_2012", "2013_2024"])].pivot_table(
         index="cell_id", columns=["variable", "descriptor", "window"], values="observed")
     delta = pd.DataFrame({
@@ -72,7 +76,8 @@ def cell_table(cfg, spec) -> pd.DataFrame:
         index="cell_id", columns=["variable", "window"], values="m", aggfunc="first")
     dm = pd.DataFrame({f"dm_{v}": dims[(v, "2013_2024")] - dims[(v, "2001_2012")]
                        for v in dims.columns.get_level_values(0).unique()})
-    return out.join(full).join(delta).join(dm)
+    out["perda_1990_2000"] = out.floresta_frac_1990 - out.floresta_frac_2000
+    return out.join(full).join(observed).join(delta).join(dm)
 
 
 DRY = (6, 7, 8, 9)
@@ -149,7 +154,11 @@ def block_bootstrap(frame, func, *, size=1.0, n=999, seed=20261021):
 
 
 def moran_i(values, latitude, longitude, radius=0.26) -> float:
-    """I de Moran com vizinhança das 8 células adjacentes (distância ≤ 0,26°)."""
+    """I de Moran com vizinhança das 4 células ortogonais (distância ≤ 0,26°).
+
+    A diagonal fica a 0,354°; com as 8 adjacentes (radius=0.36) o I cai cerca de 0,05 nos
+    resultados do caderno 08, sem mudar a leitura.
+    """
     v = np.asarray(values, float) - np.nanmean(values)
     lat, lon = np.asarray(latitude), np.asarray(longitude)
     d = np.hypot(lat[:, None] - lat[None, :], lon[:, None] - lon[None, :])
@@ -160,7 +169,7 @@ def moran_i(values, latitude, longitude, radius=0.26) -> float:
 CONTROLS = ("latitude", "agua_frac_2000", "altitude_m")
 
 
-def associate(frame, exposure, response, controls=CONTROLS) -> dict:
+def associate(frame, exposure, response, controls=CONTROLS, *, block=1.0) -> dict:
     """Spearman bruto e parcial, IC por blocos e Moran dos resíduos da regressão nos postos."""
     data = frame[[exposure, response, "latitude", "longitude", *controls]].dropna()
     data = data.loc[:, ~data.columns.duplicated()]
@@ -172,7 +181,7 @@ def associate(frame, exposure, response, controls=CONTROLS) -> dict:
         return partial_spearman(sub[exposure].to_numpy(), sub[response].to_numpy(),
                                 sub[list(controls)].to_numpy())
 
-    lo, hi = block_bootstrap(data, stat)
+    lo, hi = block_bootstrap(data, stat, size=block)
     rx = _residual_ranks(data[exposure].to_numpy(), ctrl)
     ry = _residual_ranks(data[response].to_numpy(), ctrl)
     slope = (rx @ ry) / (rx @ rx)
