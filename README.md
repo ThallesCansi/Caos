@@ -29,6 +29,15 @@ uv run marimo edit notebooks/03_clima.py                                  # edit
 uv run marimo export html notebooks/03_clima.py -o reports/html/03_clima.html
 ```
 
+## Ver e rodar sem os dados brutos
+
+- **Ler:** a galeria em <https://thallescansi.github.io/Caos/> traz cada capítulo com todas as figuras.
+- **Rodar no molab:** cada cartão tem um botão "Abrir no molab"; escolha o modo **Server**. O cabeçalho de cada caderno instala a biblioteca direto deste repositório, e, fora dele, a biblioteca baixa sozinha o pacote de visualização (configurações e dados processados, 59 MB).
+- **Rodar localmente sem clonar os dados:** `uvx marimo edit --sandbox notebooks/03_clima.py`.
+- **Atualizar a galeria:** `make notebooks && make publicar` (refaz capas, pacote de dados e página no ramo `gh-pages`).
+
+O modo WebAssembly do molab não funciona com estes cadernos: várias dependências (rasterio, geopandas com GDAL) não existem no navegador.
+
 ## Começo rápido
 
 ```bash
