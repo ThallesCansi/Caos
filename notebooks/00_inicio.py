@@ -183,12 +183,20 @@ def _():
         parte, pelo mapa de vegetação que o próprio ERA5 usa, que é fixo e data do início da
         década de 1990; e as células que mais perderam floresta depois de 2000 não mudaram
         de dinâmica mais que as outras.
+
+        A temperatura da superfície medida por satélite explica por quê. Ela mostra as áreas
+        desmatadas de 6 a 7 °C mais quentes que as preservadas, de dia, na estação seca, e as
+        células que mais perderam floresta entre 2001 e 2012 esquentando quatro a cinco vezes
+        mais que as outras. O ERA5 não registra nenhuma das duas coisas. O desmatamento muda,
+        e muito, a superfície; a reanálise é que não acompanha essa mudança.
         """),
         mo.callout(mo.md(
             "Os dados mostram que a dinâmica climática diária da Amazônia é não linear e que "
             "essa não linearidade acompanha a geografia e a história de uso da terra "
-            "registrada no modelo. Eles não permitem dizer que o desmatamento recente "
-            "alterou essa dinâmica, nem falar em caos induzido pelo desmatamento."),
+            "registrada no modelo, e que o desmatamento aquece fortemente a superfície. Eles "
+            "não permitem dizer, com uma reanálise de vegetação fixa, se o desmatamento "
+            "recente alterou a dinâmica diária do clima, nem falar em caos induzido pelo "
+            "desmatamento."),
             kind="success"),
     ])
     return

@@ -152,3 +152,13 @@ Ambas são relatadas como complementares, ao lado do resultado pré-registrado, 
 Os cadernos 03 e 04 deixam de ter um seletor de região que trocava o capítulo inteiro: os mapas mostram as duas bacias juntas, os gráficos de linhas as sobrepõem e só as figuras de uma única série têm um seletor próprio, com as versões impressas das duas bacias gravadas. Com isso, o HTML estático mostra o trabalho inteiro, e o `--region` deixou de existir. As figuras passam a ser exibidas em resolução de tela (110 dpi), e os arquivos da monografia continuam em 300 dpi, o que mantém cada célula abaixo do limite de saída do Marimo.
 
 Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-009 (caixa como plano B) e D-012 (grupo `gee`).
+
+## D-018 — Checagem MODIS: o satélite vê o desmatamento, o ERA5 não
+
+**Status:** resultado registrado em 22/10/2026 (checagem prevista em D-011).
+
+**Dados:** MOD11A2 coleção 6.1 pelo AppEEARS, 2001–2024, composições de 8 dias a 1 km, só pixels de boa qualidade (QC bits 0–1 ≤ 1 e erro de LST ≤ 2 K), agregados às células (`features/lst.py`, `gradient.surface_table`). O QC = 0, melhor qualidade, vem do AppEEARS marcado como "sem dado" e era decodificado como NaN; o filtro agora o trata explicitamente como 0. As datas vêm em `cftime`. Comparação no ERA5: máxima diária do ar a 2 m na estação seca (junho a setembro), a grandeza mais próxima do LST diurno das 10h30.
+
+**Resultado (células elegíveis, controles latitude, água e altitude, IC por blocos de 1°):** entre células, a perda antecedente se associa ao LST diurno da estação seca com ρ parcial de +0,81 (Xingu) e +0,74 (Tapajós), de 6 a 7 °C entre o décimo menos e o mais desmatado; com a máxima do ERA5, −0,14 e −0,06, compatíveis com zero. Ao longo do tempo, a perda de 2001–2012 se associa ao aquecimento do LST entre as décadas com ρ de +0,72 e +0,77; no ERA5, −0,18 e +0,04.
+
+**Leitura:** confirma, com observação independente do modelo, a limitação de D-011 e a interpretação de D-014 e D-015: o resultado longitudinal nulo do caderno 08 não indica ausência de efeito do desmatamento, e sim que o ERA5 não o registra. O LST não entra na análise não linear: as lacunas de nuvem impedem séries diárias. É análise complementar, prevista no plano mas não no pré-registro dos descritores.

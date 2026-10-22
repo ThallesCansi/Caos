@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/cobertura.png",
     "pdf": "reports/figures/04_perturbacao/cobertura.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "concordancia",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/concordancia.png",
     "pdf": "reports/figures/04_perturbacao/concordancia.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "mapas",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/mapas.png",
     "pdf": "reports/figures/04_perturbacao/mapas.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "perda_antecedente",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/perda_antecedente.png",
     "pdf": "reports/figures/04_perturbacao/perda_antecedente.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "series_anuais",
@@ -42,6 +42,15 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/series_anuais.png",
     "pdf": "reports/figures/04_perturbacao/series_anuais.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
+  },
+  {
+    "name": "temperatura_superficie",
+    "region": null,
+    "caption": "Figura 6. Temperatura média da superfície de dia na estação seca (junho a setembro) e à noite no ano todo, medidas pelo MODIS (MOD11A2, coleção 6.1) de 2001 a 2024, e temperatura máxima do ar a 2 m no ERA5 na estação seca, nas duas bacias.",
+    "overleaf": true,
+    "png": "reports/figures/04_perturbacao/temperatura_superficie.png",
+    "pdf": "reports/figures/04_perturbacao/temperatura_superficie.pdf",
+    "commit": "73f8d7f+modificado"
   }
 ]

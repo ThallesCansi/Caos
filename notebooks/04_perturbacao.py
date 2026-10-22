@@ -10,6 +10,7 @@ with app.setup(hide_code=True):
     import pandas as pd
     from scipy.stats import spearmanr
 
+    from amazon_chaos import gradient as G
     from amazon_chaos import nb, regions
     from amazon_chaos.config import load_region
     from amazon_chaos.features.disturbance import out_dir
@@ -57,7 +58,8 @@ def basin(slug):
     table["natural_nao_florestal_2000"] = (
         1 - table.floresta_frac_2000 - table.agro_frac_2000).clip(lower=0)
     return {"cfg": cfg, "table": table, "cells": regions.cells(cfg),
-            "limit": regions.boundary(cfg), "weights": table.terra_km2_2000}
+            "limit": regions.boundary(cfg), "weights": table.terra_km2_2000,
+            "surface": G.surface_table(cfg)}
 
 
 @app.function(hide_code=True)
@@ -473,11 +475,58 @@ def _():
             "A substituição da perda antecedente pela agropecuária, com controle da "
             "vegetação natural não florestal, não estava no pré-registro: é uma análise "
             "complementar, motivada por esta figura e registrada como tal."), kind="warn"),
-        mo.callout(mo.md(
-            "Uma terceira fonte de informação sobre a superfície, a temperatura medida pelo "
-            "sensor MODIS dos satélites Terra e Aqua, está sendo processada. Ela permitirá "
-            "verificar se o contraste de temperatura entre áreas desmatadas e preservadas, "
-            "que o satélite observa diretamente, aparece também no ERA5."), kind="warn"),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+def plot_surface():
+    panels = [("lst_dia_seca_c", "Superfície de dia, estação seca\n(MODIS, ~10h30)", "inferno"),
+              ("lst_noite_c", "Superfície à noite, ano todo\n(MODIS, ~22h30)", "cividis"),
+              ("era5_tmax_seca", "Máxima do ar a 2 m, estação seca\n(ERA5)", "inferno")]
+    fig, axes = plt.subplots(1, 3, figsize=(16, 7.4), layout="constrained")
+    for ax, (name, title, cmap) in zip(axes, panels, strict=True):
+        map_basins(ax, both(lambda s, n=name: basin(s)["surface"][n]), cmap, "°C")
+        ax.set_title(title)
+    return fig
+
+
+@app.cell(hide_code=True)
+def _():
+    _n = {s: int(basin(s)["surface"].lst_dia_c.notna().sum()) for s in SLUGS}
+    mo.vstack([
+        mo.md(r"""
+        ## 🌡️ A temperatura vista do espaço
+
+        Uma última fonte não mede a perturbação, mas um dos seus efeitos: a temperatura da
+        superfície registrada pelo sensor MODIS, a bordo do satélite Terra, a cada oito
+        dias, de 2001 a 2024, num pixel de 1 km [7]. Ela é medida por volta das 10h30 e das
+        22h30, só nos dias sem nuvem, e usamos apenas as medidas marcadas como de boa
+        qualidade, agregadas às células como as demais fontes. A Figura 6 mostra a média
+        diurna da estação seca, a média noturna e, para comparação, a temperatura máxima do
+        ar a 2 m no ERA5, também na estação seca.
+        """),
+        book.figure(plot_surface(), "temperatura_superficie",
+                    "Figura 6. Temperatura média da superfície de dia na estação seca (junho a "
+                    "setembro) e à noite no ano todo, medidas pelo MODIS (MOD11A2, coleção 6.1) "
+                    "de 2001 a 2024, e temperatura máxima do ar a 2 m no ERA5 na estação seca, "
+                    "nas duas bacias."),
+        mo.callout(mo.md(nb.pt(
+            f"Células com temperatura da superfície válida: {_n['xingu']} de "
+            f"{len(basin('xingu')['table'])} no Xingu e {_n['tapajos']} de "
+            f"{len(basin('tapajos')['table'])} no Tapajós.")), kind="info"),
+        mo.md(r"""
+        O mapa diurno do satélite é quase um negativo do mapa da floresta da Figura 1: a
+        superfície é mais quente exatamente onde a floresta foi convertida, ao longo das
+        estradas e no sul, e a borda das áreas protegidas aparece como um degrau de vários
+        graus. À noite o desenho é outro: as diferenças entre floresta e áreas abertas quase
+        somem, e o que aparece é o planalto do sul, o mais frio, pela altitude e pelo ar
+        seco, que perde calor depressa. O ERA5, à direita, tem um desenho próprio, com as
+        máximas mais altas no centro-oeste do Tapajós, em plena floresta, e as mais baixas no
+        planalto do sudoeste, e nenhum traço do desenho do desmatamento. O último
+        capítulo transforma essa impressão em números e mostra o que ela significa para a
+        análise.
+        """),
     ])
     return
 
@@ -500,7 +549,8 @@ def _():
         as definições diferem, sobretudo no Cerrado. A medida principal do trabalho, a perda
         antecedente de floresta, é anterior ao clima que vamos analisar e contínua, mas
         mistura conversão e vegetação natural, uma ambiguidade que o último capítulo trata
-        explicitamente. As tabelas completas, com as quarenta medidas de cada célula, estão
+        explicitamente. O satélite mostra que a conversão aquece a superfície em vários
+        graus, e que o ERA5 não registra esse aquecimento. As tabelas completas, com as quarenta medidas de cada célula, estão
         abaixo.
         """),
         mo.accordion({f"📋 Todas as medidas por célula, {k}": v for k, v in _tables.items()}),
@@ -532,6 +582,9 @@ def _():
 
     [6] Assunção, J.; Gandour, C.; Rocha, R. Deforestation slowdown in the Brazilian Amazon:
     prices or policies? *Environment and Development Economics*, v. 20, p. 697–722, 2015.
+
+    [7] Wan, Z. New refinements and validation of the collection-6 MODIS land-surface
+    temperature/emissivity product. *Remote Sensing of Environment*, v. 140, p. 36–45, 2014.
     """)
     return
 

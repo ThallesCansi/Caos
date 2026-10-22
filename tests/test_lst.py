@@ -2,7 +2,7 @@ import cftime
 import numpy as np
 import xarray as xr
 
-from amazon_chaos.features.lst import good_quality
+from amazon_chaos.features.lst import good_quality, month_year
 
 
 def test_quality_filter_keeps_best_pixels_decoded_as_nan():
@@ -15,5 +15,6 @@ def test_quality_filter_keeps_best_pixels_decoded_as_nan():
 def test_cftime_step_gives_month_and_year():
     times = [cftime.DatetimeJulian(2007, 7, 20)]
     ds = xr.Dataset(coords={"time": times})
-    when = ds.isel(time=0).time.values.item()
-    assert (when.month, when.year) == (7, 2007)
+    assert month_year(ds.isel(time=0).time.values) == (7, 2007)
+    plain = xr.Dataset(coords={"time": np.array(["2007-07-20"], dtype="datetime64[ns]")})
+    assert month_year(plain.isel(time=0).time.values) == (7, 2007)

@@ -75,6 +75,44 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     return out.join(full).join(delta).join(dm)
 
 
+DRY = (6, 7, 8, 9)
+HALVES = {"2001_2012": ("2001", "2012"), "2013_2024": ("2013", "2024")}
+
+
+def surface_table(cfg) -> pd.DataFrame:
+    """Temperatura da superfície vista pelo MODIS e máxima do ar no ERA5, por célula.
+
+    O LST diurno do MODIS é medido perto das 10h30 local, então a comparação natural no
+    ERA5 é a máxima diária do ar a 2 m. As duas são médias da estação seca (junho a
+    setembro), na janela completa e em cada metade, para a comparação longitudinal.
+    """
+    from amazon_chaos.regional import summarize
+
+    folder = out_dir(cfg)
+    clim = pd.read_parquet(folder / "modis_lst.parquet")
+    yearly = pd.read_parquet(folder / "modis_lst_seca_anual.parquet")
+    yearly.columns = yearly.columns.astype(int)
+    out = clim.copy()
+    for half, (first, last) in HALVES.items():
+        cols = [y for y in yearly.columns if int(first) <= y <= int(last)]
+        out[f"lst_seca_{half}"] = yearly[cols].mean(axis=1)
+    summary = summarize(cfg)
+    tmax = summary.cell_tmax.where(summary.month.dt.month.isin(DRY), drop=True)
+    cells = regions.cells(cfg).set_index("cell_id")[["latitude", "longitude"]]
+
+    def per_cell(da):
+        frame = da.mean("month").to_dataframe(name="v").reset_index()
+        return cells.reset_index().merge(frame, on=["latitude", "longitude"]).set_index(
+            "cell_id").v
+
+    out["era5_tmax_seca"] = per_cell(tmax.sel(month=slice("2001", "2024")))
+    for half, (first, last) in HALVES.items():
+        out[f"era5_tmax_seca_{half}"] = per_cell(tmax.sel(month=slice(first, last)))
+    out["delta_lst_seca"] = out.lst_seca_2013_2024 - out.lst_seca_2001_2012
+    out["delta_era5_tmax_seca"] = out.era5_tmax_seca_2013_2024 - out.era5_tmax_seca_2001_2012
+    return out
+
+
 def _residual_ranks(y, controls):
     """Postos de y menos a parte explicada linearmente pelos postos dos controles."""
     ry = rankdata(y)

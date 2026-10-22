@@ -30,6 +30,16 @@ def good_quality(qc: np.ndarray) -> np.ndarray:
     return ((qc & 0b11) <= 1) & (((qc >> 6) & 0b11) <= 1)
 
 
+def month_year(value) -> tuple[int, int]:
+    """Mês e ano de um instante, venha ele como datetime64 ou como cftime (AppEEARS)."""
+    value = np.asarray(value)
+    if value.dtype.kind == "M":
+        stamp = pd.Timestamp(value.astype("datetime64[ns]").reshape(-1)[0])
+        return stamp.month, stamp.year
+    when = value.reshape(-1)[0]
+    return when.month, when.year
+
+
 def _cell_index(cells, lat, lon):
     res_x, res_y = float(abs(lon[1] - lon[0])), float(abs(lat[1] - lat[0]))
     transform = from_origin(float(lon.min()) - res_x / 2, float(lat.max()) + res_y / 2,
@@ -67,8 +77,7 @@ def cell_lst(cfg, files: list[Path] | None = None) -> tuple[pd.DataFrame, pd.Dat
         yearly: dict[int, np.ndarray] = {}
         for t in range(ds.sizes["time"]):
             step = ds.isel(time=t).load()
-            when = step.time.values.item()  # datetime do cftime (calendário juliano)
-            month, year = when.month, when.year
+            month, year = month_year(step.time.values)
             day = np.where(good_quality(step.QC_Day.values), step.LST_Day_1km.values, np.nan)
             night = np.where(good_quality(step.QC_Night.values), step.LST_Night_1km.values,
                              np.nan)

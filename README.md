@@ -16,11 +16,11 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `01_laboratorio` | sistemas dinâmicos conhecidos (teoria, interativo) | pronto |
 | `02_regioes` | as bacias, a grade ERA5 e as células da comparação | pronto |
 | `03_clima` | o clima de 1990–2024 e a anomalia padronizada | pronto |
-| `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes | pronto (MODIS pendente) |
+| `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes, MODIS | pronto |
 | `05_validacao_metodos` | o portão: descritores em controles sintéticos | pronto |
 | `06_surrogates` | substitutas FT/IAAFT nas séries das bacias (D-016) | pronto |
 | `07_descritores` | descritores por célula, robustez, EWS | pronto |
-| `08_gradiente` | perturbação × dinâmica (D-014, D-015) | pronto (MODIS pendente) |
+| `08_gradiente` | perturbação × dinâmica e checagem MODIS (D-014, D-015, D-018) | pronto |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 

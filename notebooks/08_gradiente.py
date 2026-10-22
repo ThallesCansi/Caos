@@ -33,7 +33,7 @@ with app.setup(hide_code=True):
 @app.function(hide_code=True)
 @mo.cache
 def cells(slug):
-    table = G.cell_table(load_region(slug), SPEC)
+    table = G.cell_table(load_region(slug), SPEC).join(G.surface_table(load_region(slug)))
     table["natural_nao_florestal_2000"] = (
         1 - table.floresta_frac_2000 - table.agro_frac_2000).clip(lower=0)
     return table
@@ -88,11 +88,12 @@ def _():
     água e o relevo, levamos em conta que células vizinhas não são independentes e, além da
     comparação entre lugares, olhamos para a mudança dentro de cada lugar ao longo do tempo.
 
-    O capítulo tem quatro partes. Primeiro vemos a perturbação e a vegetação que o próprio
+    O capítulo tem cinco partes. Primeiro vemos a perturbação e a vegetação que o próprio
     ERA5 enxerga, que não são a mesma coisa. Depois fazemos a comparação entre células, o
     resultado principal, e testamos se ele resiste a duas objeções. Em seguida vem a
-    comparação dentro de cada célula entre as duas décadas. Por fim, juntamos tudo numa
-    conclusão proporcional à evidência.
+    comparação dentro de cada célula entre as duas décadas. Depois confrontamos o ERA5 com
+    a temperatura da superfície medida por satélite, uma observação independente do
+    modelo. Por fim, juntamos tudo numa conclusão proporcional à evidência.
     """)
     return
 
@@ -569,6 +570,144 @@ def _(lon_descriptor, lon_region, lon_variable):
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def surface_results():
+    rows = []
+    pairs = [("perda_antecedente", "lst_dia_seca_c", "entre células", "MODIS"),
+             ("perda_antecedente", "era5_tmax_seca", "entre células", "ERA5"),
+             ("mb_perda_floresta_2001_2012", "delta_lst_seca", "ao longo do tempo", "MODIS"),
+             ("mb_perda_floresta_2001_2012", "delta_era5_tmax_seca", "ao longo do tempo", "ERA5")]
+    for slug in SLUGS:
+        e = cells(slug)[cells(slug).elegivel]
+        for exposure, response, kind, source in pairs:
+            rows.append({"bacia": slug, "comparacao": kind, "fonte": source,
+                         **G.associate(e, exposure, response)})
+    return pd.DataFrame(rows)
+
+
+@app.function(hide_code=True)
+def binned(frame, x, y, bins=10):
+    ok = frame[[x, y]].dropna()
+    q = pd.qcut(ok[x].rank(method="first"), bins, labels=False)
+    return ok.groupby(q).agg(x=(x, "mean"), y=(y, "mean"), s=(y, "sem"))
+
+
+@app.function(hide_code=True)
+def plot_surface():
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.4), layout="constrained")
+    panels = [("perda_antecedente", "lst_dia_seca_c", "era5_tmax_seca",
+               "perda antecedente (fração sem floresta em 2000)",
+               "anomalia em relação à média da bacia (°C)", "Entre células, estação seca"),
+              ("mb_perda_floresta_2001_2012", "delta_lst_seca", "delta_era5_tmax_seca",
+               "perda de floresta 2001–2012 (fração)",
+               "aquecimento de 2001–2012 a 2013–2024 (°C)", "Ao longo do tempo, estação seca")]
+    for ax, (x, modis, era5, xlabel, ylabel, title) in zip(axes, panels, strict=True):
+        for slug, color in zip(SLUGS, [COLORS["ink"], COLORS["t2m"]], strict=True):
+            e = cells(slug)[cells(slug).elegivel]
+            for column, style, source in [(modis, "-o", "MODIS, superfície"),
+                                          (era5, "--s", "ERA5, ar a 2 m")]:
+                b = binned(e, x, column)
+                y = b.y - (e[column].mean() if ax is axes[0] else 0)
+                ax.errorbar(b.x, y, yerr=1.96 * b.s, fmt=style, color=color, ms=5, capsize=2,
+                            lw=1.4, mfc=color if "MODIS" in source else "white",
+                            label=f"{load_region(slug)['name'].replace('Bacia do Rio ', '')}"
+                            f" · {source}")
+        ax.axhline(0, color=COLORS["muted"], lw=1)
+        ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+    handles, names = axes[0].get_legend_handles_labels()
+    fig.legend(handles, names, loc="outside lower center", ncol=4, frameon=False, fontsize=9)
+    return fig
+
+
+@app.cell(hide_code=True)
+def _():
+    _res = surface_results()
+    _tab = _res.assign(
+        Bacia=_res.bacia.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")),
+        **{"IC 95%": [f"[{a:+.2f}; {b:+.2f}]" for a, b in zip(_res.ic_inf, _res.ic_sup,
+                                                             strict=True)]})
+    _tab = _tab[["Bacia", "comparacao", "fonte", "celulas", "rho_bruto", "rho_parcial",
+                 "IC 95%"]].rename(columns={
+        "comparacao": "Comparação", "fonte": "Fonte", "celulas": "Células",
+        "rho_bruto": "ρ bruto", "rho_parcial": "ρ parcial"}).round(2)
+    _q = {s: binned(cells(s)[cells(s).elegivel], "perda_antecedente", "lst_dia_seca_c", 4).y
+          for s in SLUGS}
+    mo.vstack([
+        mo.md(r"""
+        ## 🛰️ O que o satélite vê e o ERA5 não
+
+        Os resultados anteriores apontam para uma mesma explicação: o ERA5 não enxerga o
+        desmatamento que veio depois do seu mapa de vegetação. Até aqui, essa explicação se
+        apoiava no próprio mapa do modelo. A temperatura da superfície medida pelo sensor
+        MODIS, a bordo do satélite Terra, permite testá-la com uma observação independente
+        [7]. O produto que usamos dá, a cada oito dias, a temperatura radiativa da superfície
+        perto das 10h30 e das 22h30, num pixel de 1 km, e só aproveitamos as medidas de boa
+        qualidade, sem nuvem. Ele mede outra grandeza que o ERA5, a temperatura da própria
+        superfície, e não a do ar a 2 m; a comparação mais próxima no ERA5 é a temperatura
+        máxima diária do ar. Usamos as duas na estação seca, de junho a setembro, quando a
+        diferença entre floresta e pasto é maior.
+
+        A Figura 6 faz as duas comparações deste capítulo com as duas fontes. À esquerda,
+        entre células: a temperatura média de 2001 a 2024 em cada décimo das células,
+        ordenadas pela perda antecedente, como anomalia em relação à média da bacia. À
+        direita, ao longo do tempo: o aquecimento de cada célula entre as duas décadas, em
+        cada décimo das células ordenadas pela perda de floresta de 2001 a 2012.
+        """),
+        book.figure(plot_surface(), "modis",
+                    "Figura 6. Temperatura da superfície na estação seca medida pelo MODIS "
+                    "(MOD11A2, diurna, círculos cheios) e temperatura máxima do ar a 2 m no ERA5 "
+                    "(quadrados vazios), por décimo das células elegíveis. Esquerda: média de "
+                    "2001 a 2024 contra a perda antecedente, como anomalia em relação à média de "
+                    "cada bacia. Direita: mudança de 2001–2012 para 2013–2024 contra a perda de "
+                    "floresta de 2001 a 2012. Hastes: IC 95% da média de cada décimo."),
+        mo.callout(mo.md(nb.pt(
+            "Temperatura diurna da superfície na estação seca, do quarto menos ao quarto mais "
+            "desmatado das células: " + "; ".join(
+                f"{load_region(s)['name'].replace('Bacia do Rio ', '')}, de "
+                f"{_q[s].iloc[0]:.1f} a {_q[s].iloc[-1]:.1f} °C" for s in SLUGS) + ".")),
+            kind="info"),
+        mo.md(r"""
+        As duas fontes contam histórias opostas. O satélite vê uma diferença enorme: de dia,
+        na estação seca, a superfície das células mais desmatadas é de 6 a 7 °C mais quente
+        que a das preservadas, e a diferença cresce de modo contínuo com a perda, sem
+        limiar. É o efeito conhecido da troca de floresta por pasto: menos transpiração,
+        menos energia gasta em evaporar água e mais energia aquecendo o chão [5, 8]. O ERA5
+        não vê nada disso; a sua temperatura máxima do ar fica praticamente igual em todos os
+        décimos e, no Tapajós, chega a ser mais fresca nas células mais desmatadas, as do
+        planalto do sul. À direita, a diferença é ainda mais instrutiva. Nas células que não
+        perderam floresta, o MODIS mostra um aquecimento de poucos décimos de grau entre as
+        décadas, e o ERA5, um pouco mais, de meio grau a um grau: é o aquecimento regional.
+        Nas que mais perderam, o MODIS mostra cerca de 1,5 °C, quatro a cinco vezes o das
+        preservadas; o ERA5 mostra o mesmo aquecimento regional de todas as outras. A Tabela
+        2 dá as correlações parciais, com os mesmos controles e a mesma inferência por
+        blocos das seções anteriores.
+        """),
+        book.table(_tab, "modis",
+                   "Tabela 2. Correlação de Spearman, bruta e parcial (controles: latitude, água "
+                   "e altitude), entre a perturbação e a temperatura da estação seca pelo MODIS "
+                   "(superfície, diurna) e pelo ERA5 (máxima do ar a 2 m), entre células (perda "
+                   "antecedente) e ao longo do tempo (perda 2001–2012 contra a mudança entre as "
+                   "décadas), com IC 95% por blocos de 1°.", selection=None),
+        mo.callout(mo.md(
+            "A observação por satélite confirma, de forma independente, a limitação central "
+            "do trabalho: o desmatamento aquece fortemente a superfície, entre lugares e ao "
+            "longo do tempo, e o ERA5 não registra esse aquecimento. O resultado nulo da "
+            "seção anterior não indica ausência de efeito do desmatamento; indica que a "
+            "ferramenta não o enxerga."), kind="success"),
+        mo.md(r"""
+        Duas cautelas acompanham essa leitura. A temperatura da superfície e a do ar não são
+        a mesma coisa, e a diferença entre floresta e pasto é sempre maior na primeira; ainda
+        assim, medidas em torres e estações mostram que o ar também esquenta sobre áreas
+        desmatadas, embora menos [8], de modo que um ERA5 que acompanhasse a vegetação
+        mostraria ao menos parte desse sinal. E o MODIS só vê a superfície em dias sem nuvem,
+        o que torna a sua série falhada demais para a análise não linear diária: ele serve
+        aqui para verificar o ERA5, e não para substituí-lo.
+        """),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     # Versão de referência da Figura 1 para as duas bacias (sem exibição).
@@ -603,18 +742,20 @@ def _():
     consequência observada do desmatamento que veio depois.
 
     Terceiro, o desmatamento ocorrido durante a janela de análise não deixou marca na
-    dinâmica das séries: as células que mais perderam floresta entre 2001 e 2012 não mudaram
-    mais do que as outras. Isso é coerente com um modelo que não atualiza a vegetação, e mostra
-    o limite da ferramenta: com uma reanálise de vegetação fixa, não é possível responder se
-    o desmatamento em curso altera a dinâmica do clima. A checagem com a temperatura de
-    superfície observada por satélite, prevista no trabalho, é o passo natural para atravessar
-    esse limite, e fica registrada como pendente.
+    dinâmica das séries do ERA5: as células que mais perderam floresta entre 2001 e 2012 não
+    mudaram mais do que as outras. A temperatura da superfície observada pelo satélite MODIS
+    mostra que isso não é ausência de efeito: as mesmas células ficaram muito mais quentes
+    que as preservadas, enquanto no ERA5 aqueceram igual a todas. Com uma reanálise de
+    vegetação fixa, portanto, não é possível responder se o desmatamento em curso altera a
+    dinâmica do clima; a resposta exigiria séries diárias que acompanhem a paisagem, como as
+    de estações meteorológicas ou de um modelo com vegetação dinâmica.
 
     Nenhuma dessas partes autoriza falar em caos induzido pelo desmatamento ou em aproximação
     de um ponto de não retorno. O que os dados mostram é mais modesto e mais firme: as séries
     climáticas da Amazônia são não lineares, essa não linearidade varia com a geografia e com
-    a história de uso da terra registrada no próprio modelo, e a reanálise, sozinha, não
-    consegue acompanhar as mudanças recentes da paisagem.
+    a história de uso da terra registrada no próprio modelo, o desmatamento aquece
+    fortemente a superfície, como o satélite mostra, e a reanálise, sozinha, não consegue
+    acompanhar essas mudanças da paisagem.
     """)
     return
 
@@ -643,6 +784,13 @@ def _():
     [6] Khanna, J.; Medvigy, D.; Fueglistaler, S.; Walko, R. Regional dry-season climate
     changes due to three decades of Amazonian deforestation. *Nature Climate Change*, v. 7,
     p. 200–204, 2017.
+
+    [7] Wan, Z. New refinements and validation of the collection-6 MODIS land-surface
+    temperature/emissivity product. *Remote Sensing of Environment*, v. 140, p. 36–45, 2014.
+
+    [8] Baker, J. C. A.; Spracklen, D. V. Climate benefits of intact Amazon forests and the
+    biophysical consequences of disturbance. *Frontiers in Forests and Global Change*, v. 2,
+    47, 2019.
     """)
     return
 

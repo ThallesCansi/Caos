@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/dispersao.png",
     "pdf": "reports/figures/08_gradiente/dispersao.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "longitudinal",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/longitudinal.png",
     "pdf": "reports/figures/08_gradiente/longitudinal.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "modelos",
@@ -24,7 +24,16 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modelos.png",
     "pdf": "reports/figures/08_gradiente/modelos.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
+  },
+  {
+    "name": "modis",
+    "region": null,
+    "caption": "Figura 6. Temperatura da superfície na estação seca medida pelo MODIS (MOD11A2, diurna, círculos cheios) e temperatura máxima do ar a 2 m no ERA5 (quadrados vazios), por décimo das células elegíveis. Esquerda: média de 2001 a 2024 contra a perda antecedente, como anomalia em relação à média de cada bacia. Direita: mudança de 2001–2012 para 2013–2024 contra a perda de floresta de 2001 a 2012. Hastes: IC 95% da média de cada décimo.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/modis.png",
+    "pdf": "reports/figures/08_gradiente/modis.pdf",
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "outras_exposicoes",
@@ -33,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/outras_exposicoes.png",
     "pdf": "reports/figures/08_gradiente/outras_exposicoes.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "paisagem",
@@ -42,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/tapajos/paisagem.png",
     "pdf": "reports/figures/08_gradiente/tapajos/paisagem.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   },
   {
     "name": "paisagem",
@@ -51,6 +60,6 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/xingu/paisagem.png",
     "pdf": "reports/figures/08_gradiente/xingu/paisagem.pdf",
-    "commit": "57fe776+modificado"
+    "commit": "73f8d7f+modificado"
   }
 ]
