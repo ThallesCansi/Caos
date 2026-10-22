@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/cobertura.png",
     "pdf": "reports/figures/04_perturbacao/cobertura.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "concordancia",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/concordancia.png",
     "pdf": "reports/figures/04_perturbacao/concordancia.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "mapas",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/mapas.png",
     "pdf": "reports/figures/04_perturbacao/mapas.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "perda_antecedente",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/perda_antecedente.png",
     "pdf": "reports/figures/04_perturbacao/perda_antecedente.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "series_anuais",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/series_anuais.png",
     "pdf": "reports/figures/04_perturbacao/series_anuais.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "temperatura_superficie",
@@ -51,6 +51,6 @@
     "overleaf": true,
     "png": "reports/figures/04_perturbacao/temperatura_superficie.png",
     "pdf": "reports/figures/04_perturbacao/temperatura_superficie.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   }
 ]

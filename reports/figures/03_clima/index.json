@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/ciclo_anual.png",
     "pdf": "reports/figures/03_clima/ciclo_anual.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "estacoes",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/estacoes.png",
     "pdf": "reports/figures/03_clima/estacoes.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "extremos",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/extremos.png",
     "pdf": "reports/figures/03_clima/extremos.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "listras",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/listras.png",
     "pdf": "reports/figures/03_clima/listras.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "mapas_normal",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/mapas_normal.png",
     "pdf": "reports/figures/03_clima/mapas_normal.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "mapas_tendencia",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/mapas_tendencia.png",
     "pdf": "reports/figures/03_clima/mapas_tendencia.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "perfil_norte_sul",
@@ -60,7 +60,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/perfil_norte_sul.png",
     "pdf": "reports/figures/03_clima/perfil_norte_sul.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "series_anuais",
@@ -69,7 +69,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/series_anuais.png",
     "pdf": "reports/figures/03_clima/series_anuais.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "ano",
@@ -78,7 +78,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/ano.png",
     "pdf": "reports/figures/03_clima/tapajos/ano.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "anomalias_mensais",
@@ -87,7 +87,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/anomalias_mensais.png",
     "pdf": "reports/figures/03_clima/tapajos/anomalias_mensais.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "climograma",
@@ -96,7 +96,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/climograma.png",
     "pdf": "reports/figures/03_clima/tapajos/climograma.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "padronizacao",
@@ -105,7 +105,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/padronizacao.png",
     "pdf": "reports/figures/03_clima/tapajos/padronizacao.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "serie_35_anos",
@@ -114,7 +114,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/tapajos/serie_35_anos.png",
     "pdf": "reports/figures/03_clima/tapajos/serie_35_anos.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "ano",
@@ -123,7 +123,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/ano.png",
     "pdf": "reports/figures/03_clima/xingu/ano.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "anomalias_mensais",
@@ -132,7 +132,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/anomalias_mensais.png",
     "pdf": "reports/figures/03_clima/xingu/anomalias_mensais.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "climograma",
@@ -141,7 +141,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/climograma.png",
     "pdf": "reports/figures/03_clima/xingu/climograma.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "padronizacao",
@@ -150,7 +150,7 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/padronizacao.png",
     "pdf": "reports/figures/03_clima/xingu/padronizacao.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "serie_35_anos",
@@ -159,6 +159,6 @@
     "overleaf": true,
     "png": "reports/figures/03_clima/xingu/serie_35_anos.png",
     "pdf": "reports/figures/03_clima/xingu/serie_35_anos.pdf",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   }
 ]

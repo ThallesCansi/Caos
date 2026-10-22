@@ -2,7 +2,7 @@
 REGION ?= xingu
 HTML := reports/html
 
-.PHONY: help sync test check notebooks capas overleaf pull pull-gate hpc-status hpc-code
+.PHONY: help sync test check notebooks capas bundle site publicar overleaf pull pull-gate hpc-status hpc-code
 
 help:  ## lista os alvos
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
@@ -29,6 +29,17 @@ notebooks:  ## executa todos os cadernos e exporta HTML (reports/html/)
 
 capas:  ## capas dos cadernos na galeria do Marimo (depois de make notebooks)
 	uv run --frozen python -m amazon_chaos.covers
+
+bundle:  ## pacote de visualização (configs + dados processados) para rodar fora do repositório
+	uv run --frozen python -m amazon_chaos.bundle
+
+site: capas bundle  ## galeria pública em site/ (leitura dos capítulos + molab + pacote de dados)
+	uv run --frozen python -m amazon_chaos.site
+
+publicar: site  ## envia site/ para o ramo gh-pages (um só commit, substitui o anterior)
+	cd site && rm -rf .git && git init -q -b gh-pages && git add -A \
+	  && git -c user.name="$$(git -C .. config user.name)" -c user.email="$$(git -C .. config user.email)" commit -q -m "Galeria dos cadernos" \
+	  && git push -q -f "$$(git -C .. remote get-url --push origin)" gh-pages && rm -rf .git
 
 overleaf:  ## copia figuras e tabelas finais para reports/overleaf (nomes estáveis)
 	uv run --frozen python -m amazon_chaos.nb overleaf

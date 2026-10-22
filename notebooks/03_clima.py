@@ -1,4 +1,9 @@
 # /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "amazon-chaos @ git+https://github.com/ThallesCansi/Caos.git",
+#     "marimo>=0.23",
+# ]
 # [tool.marimo.opengraph]
 # title = "03 · O clima de 1990 a 2024"
 # description = "Ritmo do ano, geografia e tendências"
@@ -233,7 +238,7 @@ def plot_year(slug, year):
             ax.bar(sel.index, sel.precip, color=COLORS["precip"], width=1)
         else:
             ax.plot(sel.index, sel[var], color=COLORS[var], lw=1.4)
-        ax.plot(sel.index, normal.reindex(sel.index.dayofyear).to_numpy(), color=COLORS["ink"],
+        ax.plot(sel.index, normal.reindex(sel.index.day_of_year).to_numpy(), color=COLORS["ink"],
                 ls="--", lw=1.1, label="normal 1991–2020")
         ax.set(ylabel=unit, title=LABELS[var])
     axes[0].fill_between(sel.index, sel.tmin, sel.tmax, color=COLORS["t2m"], alpha=0.15, lw=0)
@@ -867,7 +872,7 @@ def plot_standardization(slug, variable):
     grid = fig.add_gridspec(3, 2, width_ratios=[3, 1])
     ax1, ax2, ax3 = (fig.add_subplot(grid[i, 0]) for i in range(3))
     ax1.plot(raw.loc[years], color=COLORS[variable], lw=0.7)
-    ax1.plot(raw.loc[years].index, normal.reindex(raw.loc[years].index.dayofyear).to_numpy(),
+    ax1.plot(raw.loc[years].index, normal.reindex(raw.loc[years].index.day_of_year).to_numpy(),
              color=COLORS["ink"], ls="--", lw=1.2, label="normal do dia")
     ax1.set(ylabel=unit, title="1. Série diária e o seu ciclo anual normal")
     ax1.legend(fontsize=8.5, loc="upper left")

@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/04_perturbacao/concordancia.csv",
     "tex": "reports/tables/04_perturbacao/concordancia.tex",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "fontes",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/04_perturbacao/fontes.csv",
     "tex": "reports/tables/04_perturbacao/fontes.tex",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "celulas",
@@ -24,7 +24,7 @@
     "overleaf": false,
     "csv": "reports/tables/04_perturbacao/tapajos/celulas.csv",
     "tex": "reports/tables/04_perturbacao/tapajos/celulas.tex",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "celulas",
@@ -33,6 +33,6 @@
     "overleaf": false,
     "csv": "reports/tables/04_perturbacao/xingu/celulas.csv",
     "tex": "reports/tables/04_perturbacao/xingu/celulas.tex",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   }
 ]

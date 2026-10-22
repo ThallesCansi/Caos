@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/completude.csv",
     "tex": "reports/tables/03_clima/completude.tex",
-    "commit": "f9ac7b5"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "normais_mensais",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/normais_mensais.csv",
     "tex": "reports/tables/03_clima/normais_mensais.tex",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "tendencias",
@@ -24,6 +24,6 @@
     "overleaf": true,
     "csv": "reports/tables/03_clima/tendencias.csv",
     "tex": "reports/tables/03_clima/tendencias.tex",
-    "commit": "f9ac7b5+modificado"
+    "commit": "01c4b6b+modificado"
   }
 ]

@@ -126,8 +126,13 @@ class Notebook:
 
 
 def notebook(name: str) -> Notebook:
-    """Ponto de partida de todo caderno: raiz do projeto como diretório e estilo comum."""
-    os.chdir(project_root())
+    """Ponto de partida de todo caderno: raiz do projeto como diretório e estilo comum.
+
+    Fora do repositório (no molab, por exemplo), baixa antes o pacote de visualização.
+    """
+    from amazon_chaos.bundle import ensure
+
+    os.chdir(ensure())
     style()
     plt.rcParams.update({"figure.dpi": 100, "savefig.dpi": 300})
     return Notebook(name)

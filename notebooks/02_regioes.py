@@ -1,4 +1,9 @@
 # /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "amazon-chaos @ git+https://github.com/ThallesCansi/Caos.git",
+#     "marimo>=0.23",
+# ]
 # [tool.marimo.opengraph]
 # title = "02 · As bacias do Xingu e do Tapajós"
 # description = "O recorte, a grade e as células"

@@ -61,3 +61,4 @@ reports/overleaf/
 # Slurm / execução no HPC
 logs/
 slurm-*.out
+site/

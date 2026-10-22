@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/modis.csv",
     "tex": "reports/tables/08_gradiente/modis.tex",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "resultado_preregistrado",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/resultado_preregistrado.csv",
     "tex": "reports/tables/08_gradiente/resultado_preregistrado.tex",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   }
 ]

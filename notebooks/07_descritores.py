@@ -1,4 +1,9 @@
 # /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "amazon-chaos @ git+https://github.com/ThallesCansi/Caos.git",
+#     "marimo>=0.23",
+# ]
 # [tool.marimo.opengraph]
 # title = "07 · Descritores não lineares"
 # description = "1.541 células, oito descritores"

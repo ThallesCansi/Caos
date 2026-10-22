@@ -5,6 +5,11 @@ from pathlib import Path
 
 
 def project_root() -> Path:
+    """Raiz do projeto: `AMAZON_CHAOS_ROOT`, se definida (pacote de dados baixado por
+    `amazon_chaos.bundle`), senão o repositório onde o código está."""
+    configured = os.getenv("AMAZON_CHAOS_ROOT")
+    if configured:
+        return Path(configured)
     here = Path(__file__).resolve()
     for parent in [here, *here.parents]:
         if (parent / "pyproject.toml").exists():

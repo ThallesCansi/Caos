@@ -70,8 +70,15 @@ def daily_files(config, first, last, root="data/processed"):
 
 
 def summarize(config, first=1990, last=2024, root="data/processed", progress=None):
-    files = daily_files(config, first, last, root)
     target = Path(root) / config["experiment_id"] / f"summary_{first}_{last}.nc"
+    try:
+        files = daily_files(config, first, last, root)
+    except FileNotFoundError:
+        # pacote de visualização: só o resumo, sem os diários que o geraram
+        if target.exists():
+            with xr.open_dataset(target) as cached:
+                return cached.load()
+        raise
     fingerprint = _fingerprint(files)
     if target.exists():
         with xr.open_dataset(target) as cached:
@@ -131,12 +138,12 @@ def regional_frame(summary):
 def anomalies(series, base=("1991-01-01", "2020-12-31"), window=31):
     """Anomalia diária em relação ao ciclo anual médio (suavizado) do período de referência."""
     reference = series.loc[base[0]:base[1]]
-    doy = reference.groupby(reference.index.dayofyear).mean().reindex(range(1, 367))
+    doy = reference.groupby(reference.index.day_of_year).mean().reindex(range(1, 367))
     doy = doy.interpolate(limit_direction="both")
     padded = pd.concat([doy.iloc[-window:], doy, doy.iloc[:window]])
     smooth = padded.rolling(window, center=True).mean().iloc[window:-window]
     smooth.index = doy.index
-    return series - smooth.reindex(series.index.dayofyear).to_numpy(), smooth
+    return series - smooth.reindex(series.index.day_of_year).to_numpy(), smooth
 
 
 def _circular_smooth(doy, window):
@@ -156,9 +163,9 @@ def standardized_anomalies(series, base=("1991-01-01", "2020-12-31"), window=31)
     """
     anomaly, _ = anomalies(series, base, window)
     reference = anomaly.loc[base[0]:base[1]] ** 2
-    doy = reference.groupby(reference.index.dayofyear).mean().reindex(range(1, 367))
+    doy = reference.groupby(reference.index.day_of_year).mean().reindex(range(1, 367))
     sd = np.sqrt(_circular_smooth(doy.interpolate(limit_direction="both"), window))
-    return anomaly / sd.reindex(series.index.dayofyear).to_numpy(), sd
+    return anomaly / sd.reindex(series.index.day_of_year).to_numpy(), sd
 
 
 def mann_kendall(values, years, alpha=0.05):

@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/dispersao.png",
     "pdf": "reports/figures/08_gradiente/dispersao.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "longitudinal",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/longitudinal.png",
     "pdf": "reports/figures/08_gradiente/longitudinal.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "modelos",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modelos.png",
     "pdf": "reports/figures/08_gradiente/modelos.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "modis",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modis.png",
     "pdf": "reports/figures/08_gradiente/modis.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "outras_exposicoes",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/outras_exposicoes.png",
     "pdf": "reports/figures/08_gradiente/outras_exposicoes.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "paisagem",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/tapajos/paisagem.png",
     "pdf": "reports/figures/08_gradiente/tapajos/paisagem.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   },
   {
     "name": "paisagem",
@@ -60,6 +60,6 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/xingu/paisagem.png",
     "pdf": "reports/figures/08_gradiente/xingu/paisagem.pdf",
-    "commit": "73f8d7f+modificado"
+    "commit": "01c4b6b+modificado"
   }
 ]
