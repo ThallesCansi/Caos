@@ -2,11 +2,11 @@
   {
     "name": "modis",
     "region": null,
-    "caption": "Tabela 2. Correlação de Spearman, bruta e parcial (controles: latitude, água e altitude), entre a perturbação e a temperatura da estação seca pelo MODIS (superfície, diurna) e pelo ERA5 (máxima do ar a 2 m), entre células (perda antecedente) e ao longo do tempo (perda 2001–2012 contra a mudança entre as décadas), com IC 95% por blocos de 1°.",
+    "caption": "Tabela 3. Correlação de Spearman, bruta e parcial (controles: latitude, água e altitude), entre a perturbação e a temperatura da estação seca pelo MODIS (superfície, diurna) e pelo ERA5 (máxima do ar a 2 m), entre células (perda antecedente) e ao longo do tempo (perda 2001–2012 contra a mudança entre as décadas), com IC 95% por blocos de 1°.",
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/modis.csv",
     "tex": "reports/tables/08_gradiente/modis.tex",
-    "commit": "01c4b6b+modificado"
+    "commit": "ca917bd+modificado"
   },
   {
     "name": "resultado_preregistrado",
@@ -15,6 +15,15 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/resultado_preregistrado.csv",
     "tex": "reports/tables/08_gradiente/resultado_preregistrado.tex",
-    "commit": "01c4b6b+modificado"
+    "commit": "ca917bd+modificado"
+  },
+  {
+    "name": "robustez",
+    "region": null,
+    "caption": "Tabela 2. Robustez do resultado pré-registrado: correlação parcial (controles: latitude, água e altitude) entre a perda antecedente e o z de cada descritor primário, com IC 95% por blocos de 1° e de 3°; a mesma correlação com o valor observado do descritor, com a média das substitutas e com o excesso (observado menos essa média); e o z contra a perda de floresta de 1990 a 2000, com IC por blocos de 1°.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/robustez.csv",
+    "tex": "reports/tables/08_gradiente/robustez.tex",
+    "commit": "ca917bd+modificado"
   }
 ]

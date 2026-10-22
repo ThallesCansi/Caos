@@ -65,6 +65,9 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     observed = tests[tests.window == "2001_2024"].pivot_table(
         index="cell_id", columns=["variable", "descriptor"], values="observed")
     observed.columns = [f"obs_{v}_{d}" for v, d in observed.columns]
+    null = tests[tests.window == "2001_2024"].pivot_table(
+        index="cell_id", columns=["variable", "descriptor"], values="null_mean")
+    null.columns = [f"nulo_{v}_{d}" for v, d in null.columns]
     halves = tests[tests.window.isin(["2001_2012", "2013_2024"])].pivot_table(
         index="cell_id", columns=["variable", "descriptor", "window"], values="observed")
     delta = pd.DataFrame({
@@ -77,7 +80,7 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     dm = pd.DataFrame({f"dm_{v}": dims[(v, "2013_2024")] - dims[(v, "2001_2012")]
                        for v in dims.columns.get_level_values(0).unique()})
     out["perda_1990_2000"] = out.floresta_frac_1990 - out.floresta_frac_2000
-    return out.join(full).join(observed).join(delta).join(dm)
+    return out.join(full).join(observed).join(null).join(delta).join(dm)
 
 
 DRY = (6, 7, 8, 9)

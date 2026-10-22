@@ -467,6 +467,113 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def robustness():
+    rows = []
+    for slug in SLUGS:
+        e = cells(slug)[cells(slug).elegivel].copy()
+        for var in R.VARIABLES:
+            for d in PRIMARY:
+                e[f"excesso_{var}_{d}"] = e[f"obs_{var}_{d}"] - e[f"nulo_{var}_{d}"]
+                row = {"bacia": slug, "variavel": var, "descritor": d}
+                for block in (1.0, 3.0):
+                    a = G.associate(e, "perda_antecedente", f"z_{var}_{d}", block=block)
+                    row["rho"], row[f"ic{block:.0f}"] = a["rho_parcial"], (a["ic_inf"],
+                                                                           a["ic_sup"])
+                for name, column in [("observado", f"obs_{var}_{d}"),
+                                     ("nulo", f"nulo_{var}_{d}"),
+                                     ("excesso", f"excesso_{var}_{d}")]:
+                    row[name] = G.associate(e, "perda_antecedente", column)["rho_parcial"]
+                a = G.associate(e, "perda_1990_2000", f"z_{var}_{d}")
+                row["perda_9000"], row["ic_9000"] = a["rho_parcial"], (a["ic_inf"], a["ic_sup"])
+                rows.append(row)
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _r = robustness()
+
+    def _ci(rho, ci):
+        return f"{rho:+.2f} [{ci[0]:+.2f}; {ci[1]:+.2f}]"
+
+    _tab = pd.DataFrame({
+        "Bacia": _r.bacia.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")),
+        "Descritor": _r.descritor.map(R.NAMES), "Variável": _r.variavel.map(R.VARIABLES),
+        "z, blocos de 1°": [_ci(a, b) for a, b in zip(_r.rho, _r.ic1, strict=True)],
+        "z, blocos de 3°": [_ci(a, b) for a, b in zip(_r.rho, _r.ic3, strict=True)],
+        "observado": _r.observado.round(2), "média das substitutas": _r.nulo.round(2),
+        "excesso": _r.excesso.round(2),
+        "z, perda 1990–2000": [_ci(a, b) for a, b in zip(_r.perda_9000, _r.ic_9000,
+                                                         strict=True)]})
+    mo.vstack([
+        mo.md(r"""
+        ## 🧪 Até onde o resultado principal resiste
+
+        Três perguntas ainda podem ser feitas à Tabela 1. A primeira é sobre a inferência: os
+        resíduos continuam parecidos entre vizinhos, e blocos de 1° podem ser pequenos demais
+        para tornar as reamostragens independentes. A segunda é sobre o que exatamente se
+        associa à perturbação, já que a resposta é o $z$, uma medida relativa às substitutas,
+        e não o descritor em si. A terceira é sobre a exposição: a perda antecedente mistura
+        o que foi desmatado com o que nunca foi floresta. A Tabela 2 responde às três, com os
+        mesmos controles da Tabela 1.
+        """),
+        book.table(_tab, "robustez",
+                   "Tabela 2. Robustez do resultado pré-registrado: correlação parcial "
+                   "(controles: latitude, água e altitude) entre a perda antecedente e o z de "
+                   "cada descritor primário, com IC 95% por blocos de 1° e de 3°; a mesma "
+                   "correlação com o valor observado do descritor, com a média das "
+                   "substitutas e com o excesso (observado menos essa média); e o z contra a "
+                   "perda de floresta de 1990 a 2000, com IC por blocos de 1°.",
+                   selection=None),
+        mo.md(r"""
+        Blocos de 3°, com nove vezes a área dos de 1°, alargam os intervalos só um pouco, e
+        as associações que excluíam o zero continuam a excluí-lo, com uma ressalva no Xingu:
+        a entropia e o erro de previsão da temperatura passam a tocar o zero, e a
+        complexidade da temperatura já o tocava. As associações do VPD nas duas bacias e a do
+        determinismo da temperatura não dependem do tamanho do bloco.
+
+        A segunda pergunta traz a novidade da tabela. Quando a resposta é o valor observado
+        do descritor, as associações dos padrões ordinais desaparecem e, no Tapajós, chegam a
+        trocar de sinal, e a do determinismo encolhe. Para entender por quê, separamos o
+        $z$ nas suas duas partes: a média das substitutas, que é o valor que o descritor teria
+        se a série fosse só a sua parte linear, com o mesmo espectro e a mesma distribuição,
+        e o excesso do observado sobre essa média, que é a parte que só a não linearidade
+        explica. As duas andam em sentidos opostos. Nas células mais perturbadas, a parte
+        linear sozinha daria uma entropia menor, porque a série é mais persistente e mais
+        sazonal, mas a entropia observada é praticamente a mesma das outras células; o
+        excesso não linear, negativo em quase todas as células, fica mais perto de zero. A
+        associação do $z$ é praticamente a do excesso, e não vem da largura da nuvem de
+        substitutas. O erro de previsão é a exceção: no Xingu ele é menor nas células
+        perturbadas tanto no valor observado quanto no excesso, e no Tapajós só no valor
+        observado do VPD, isto é, essas séries são um pouco mais previsíveis um dia à frente,
+        coerente com séries mais persistentes.
+        """),
+        mo.callout(mo.md(
+            "Nas células mais perturbadas, a dinâmica diária não é mais aleatória no valor "
+            "bruto dos padrões ordinais e da recorrência: o que muda é a proporção entre as "
+            "duas partes. Mais da organização dessas séries é explicada pela sua parte "
+            "linear, a persistência e o ciclo anual, e menos pela estrutura não linear além "
+            "dela."), kind="success"),
+        mo.md(r"""
+        A terceira pergunta tem resposta mais curta. A perda de floresta de 1990 a 2000 é
+        desmatamento de fato, sem a vegetação aberta natural, mas é uma medida pequena: na
+        maioria das células ela é quase nula, e a correlação com a perda antecedente fica em
+        0,56 no Xingu e 0,36 no Tapajós. Com ela, as associações do VPD no Xingu se repetem
+        no mesmo sentido, com metade do tamanho, e as demais ficam compatíveis com zero; no
+        Tapajós, o determinismo do VPD aparece com o sinal oposto ao da Tabela 1, sem
+        paralelo na outra bacia.
+        """),
+        mo.callout(mo.md(
+            "Os três testes desta seção são complementares, motivados por perguntas feitas "
+            "ao resultado depois de vê-lo, e estão registrados como tal (D-022). Não "
+            "substituem a Tabela 1, que continua sendo o resultado pré-registrado."),
+            kind="warn"),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     lon_region = mo.ui.dropdown(options={load_region(s)["name"]: s for s in SLUGS},
@@ -690,11 +797,11 @@ def _():
         décadas, e o ERA5, um pouco mais, de meio grau a um grau: é o aquecimento regional.
         Nas que mais perderam, o MODIS mostra cerca de 1,5 °C, quatro a cinco vezes o das
         preservadas; o ERA5 mostra o mesmo aquecimento regional de todas as outras. A Tabela
-        2 dá as correlações parciais, com os mesmos controles e a mesma inferência por
+        3 dá as correlações parciais, com os mesmos controles e a mesma inferência por
         blocos das seções anteriores.
         """),
         book.table(_tab, "modis",
-                   "Tabela 2. Correlação de Spearman, bruta e parcial (controles: latitude, água "
+                   "Tabela 3. Correlação de Spearman, bruta e parcial (controles: latitude, água "
                    "e altitude), entre a perturbação e a temperatura da estação seca pelo MODIS "
                    "(superfície, diurna) e pelo ERA5 (máxima do ar a 2 m), entre células (perda "
                    "antecedente) e ao longo do tempo (perda 2001–2012 contra a mudança entre as "

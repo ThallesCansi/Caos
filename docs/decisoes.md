@@ -197,3 +197,14 @@ Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-00
 - correção de Benjamini–Hochberg dentro da família exploratória (os dois descritores), por região × fonte × janela; associação com a perturbação pelo mesmo modelo do caderno 08 (Spearman parcial, latitude, água e altitude, IC por blocos de 1°).
 
 **Natureza:** exploratória. Os descritores ordinais passaram no gate F4 em séries contínuas, mas não foram validados em séries intermitentes; o resultado é lido como comparação entre as duas fontes, não como evidência isolada.
+
+## D-022 — Robustez do resultado entre células: blocos maiores, valor observado e perda de 1990 a 2000
+
+**Status:** aceito em 22/10/2026, depois da revisão externa do projeto (caderno 08, Tabela 2).
+
+**Análises complementares, não pré-registradas:**
+1. IC por bootstrap em blocos de 3° além dos de 1° (`gradient.associate(..., block=)`). As associações do VPD nas duas bacias e a do determinismo da temperatura se mantêm; no Xingu, a entropia e o erro de previsão da temperatura passam a tocar o zero.
+2. O valor observado do descritor como resposta, no lugar do z, e a decomposição do z em média das substitutas (a parte linear) e excesso (observado − média). As associações dos padrões ordinais somem no valor observado, porque a parte linear e o excesso variam em sentidos opostos com a perturbação. A associação do z é praticamente a do excesso, e não vem do desvio das substitutas. Leitura: nas células mais perturbadas, a organização das séries vem mais da parte linear (persistência, ciclo anual) e menos da estrutura não linear além dela. O erro de previsão é menor nessas células também no valor observado (no Xingu nas duas variáveis; no Tapajós só no VPD).
+3. A perda de floresta de 1990 a 2000 (MapBiomas), que é desmatamento de fato, sem a vegetação aberta natural, como exposição. As associações do VPD no Xingu se repetem com metade do tamanho; as demais ficam compatíveis com zero, salvo o determinismo do VPD no Tapajós, com sinal oposto.
+
+O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
