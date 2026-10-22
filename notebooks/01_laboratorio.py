@@ -28,7 +28,7 @@ with app.setup(hide_code=True):
     from amazon_chaos.nonlinear.synthetic import ar1
     from amazon_chaos.viz import COLORS
 
-    book = nb.notebook("01_laboratorio")
+    book = nb.notebook("01_laboratorio", data=False)
     FLOW = MoistureVegetation()
     MAP = MemoryMap()
     MU_CHAOS = 11.5
