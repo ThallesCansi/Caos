@@ -114,6 +114,8 @@ Todos usam o cabeçalho comum (`scripts/hpc/_common.sh`: avisos no Telegram, tem
 | `gate.sbatch` (sem `REGION`) | gate F4 em controles sintéticos | 30 min (16 CPUs) |
 | `descriptors.sbatch` | descritores pré-registrados por célula, com substitutas | ~6 h por bacia (16 CPUs) |
 | `modis.sbatch` | pedido ao AppEEARS, espera, download e LST por célula | horas, quase sem CPU |
+| `chirps.sbatch` (sem `REGION`) | CHIRPS v3 sat 2001–2024, um ano por vez, e chuva por célula das regiões (D-021) | horas, 1 CPU |
+| `precip.sbatch` (com `SOURCES`) | descritores ordinais da chuva, no ERA5 e no CHIRPS (D-021) | ~40 min por bacia e fonte (15 CPUs) |
 
 Como a cota é de 16 CPUs, encadeie os jobs grandes:
 
