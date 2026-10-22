@@ -16,8 +16,12 @@
 # O processamento é no servidor da NASA (horas); o job quase não usa CPU enquanto espera.
 source scripts/hpc/_common.sh
 
-STEP="pedido e download no AppEEARS"
-run $PY -m amazon_chaos.cli modis fetch "$REGION"
+if [ -f "data/raw/$EXP/modis/manifest.json" ]; then
+  echo "MODIS já baixado (data/raw/$EXP/modis/manifest.json); pulando o pedido"
+else
+  STEP="pedido e download no AppEEARS"
+  run $PY -m amazon_chaos.cli modis fetch "$REGION"
+fi
 STEP="LST por célula"
 run $PY -m amazon_chaos.cli modis build "$REGION"
 notify "✅ $EXP: MODIS LST por célula pronto. Na máquina local: make pull REGION=$REGION"
