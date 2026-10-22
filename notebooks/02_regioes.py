@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "02 · As bacias do Xingu e do Tapajós"
+# description = "O recorte, a grade e as células"
+# ///
 import marimo
 
 __generated_with = "0.23.16"

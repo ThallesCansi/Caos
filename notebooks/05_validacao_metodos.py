@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "05 · Os métodos diante de casos conhecidos"
+# description = "O portão dos descritores"
+# ///
 import marimo
 
 __generated_with = "0.23.16"

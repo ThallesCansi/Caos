@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "06 · Séries substitutas"
+# description = "O clima sem não linearidade"
+# ///
 import marimo
 
 __generated_with = "0.23.16"

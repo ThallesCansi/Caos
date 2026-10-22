@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "08 · Perturbação e dinâmica"
+# description = "O que o ERA5 vê e o que o satélite vê"
+# ///
 import marimo
 
 __generated_with = "0.23.16"

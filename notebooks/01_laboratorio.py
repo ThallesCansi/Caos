@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "01 · Laboratório de sistemas dinâmicos"
+# description = "Equilíbrios, bifurcações e caos em modelos conhecidos"
+# ///
 import marimo
 
 __generated_with = "0.23.16"

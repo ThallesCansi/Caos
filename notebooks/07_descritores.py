@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "07 · Descritores não lineares"
+# description = "1.541 células, oito descritores"
+# ///
 import marimo
 
 __generated_with = "0.23.16"

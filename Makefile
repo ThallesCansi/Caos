@@ -2,7 +2,7 @@
 REGION ?= xingu
 HTML := reports/html
 
-.PHONY: help sync test check notebooks overleaf pull pull-gate hpc-status hpc-code
+.PHONY: help sync test check notebooks capas overleaf pull pull-gate hpc-status hpc-code
 
 help:  ## lista os alvos
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
@@ -26,6 +26,9 @@ notebooks:  ## executa todos os cadernos e exporta HTML (reports/html/)
 	  echo "→ $$name"; \
 	  uv run --frozen marimo export html $$nb -o $(HTML)/$$name.html -f || exit 1; \
 	done
+
+capas:  ## capas dos cadernos na galeria do Marimo (depois de make notebooks)
+	uv run --frozen python -m amazon_chaos.covers
 
 overleaf:  ## copia figuras e tabelas finais para reports/overleaf (nomes estáveis)
 	uv run --frozen python -m amazon_chaos.nb overleaf

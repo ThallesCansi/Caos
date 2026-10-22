@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "03 · O clima de 1990 a 2024"
+# description = "Ritmo do ano, geografia e tendências"
+# ///
 import marimo
 
 __generated_with = "0.23.16"

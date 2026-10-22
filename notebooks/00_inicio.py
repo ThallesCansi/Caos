@@ -1,3 +1,8 @@
+# /// script
+# [tool.marimo.opengraph]
+# title = "00 · Apresentação"
+# description = "A pergunta, o percurso e o que encontramos"
+# ///
 import marimo
 
 __generated_with = "0.23.16"
