@@ -197,8 +197,9 @@ def _():
         década de 1990; e as células que mais perderam floresta depois de 2000 não mudaram
         de dinâmica mais que as outras.
 
-        A temperatura da superfície medida por satélite explica por quê. Ela mostra as áreas
-        desmatadas de 6 a 7 °C mais quentes que as preservadas, de dia, na estação seca, e as
+        A temperatura da superfície medida por satélite explica por quê. Ela mostra as células
+        com mais floresta convertida de 6 a 7 °C mais quentes que as preservadas, de dia, na
+        estação seca, e as
         células que mais perderam floresta entre 2001 e 2012 esquentando quatro a cinco vezes
         mais que as outras. O ERA5 não registra nenhuma das duas coisas. O desmatamento muda,
         e muito, a superfície; a reanálise é que não acompanha essa mudança.

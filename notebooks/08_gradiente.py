@@ -168,7 +168,7 @@ def _(map_region):
             f"2000 (ρ = {_rho_hist:+.2f}), mas não o desmatamento posterior "
             f"(ρ = {_rho_new:+.2f}).")), kind="info"),
         mo.md(r"""
-        A comparação dos três mapas é reveladora. O desmatamento até 2000 tem um desenho
+        A comparação dos três mapas é reveladora. A perda antecedente tem um desenho
         nítido, concentrado no sul e ao longo das estradas, e o mapa de vegetação do ERA5
         reproduz parte desse desenho, porque foi feito com imagens de uma época em que boa
         parte daquela conversão já existia. O desmatamento de 2000 a 2024, ao contrário, não
@@ -272,8 +272,8 @@ def _(sc_descriptor, sc_region, sc_variable):
         (amarelas), perto da foz do Xingu, com valores bem abaixo do esperado pelos
         controles; a correlação de postos não se deixa dominar por um grupo assim, e a
         reamostragem por blocos espaciais leva em conta que essas células são vizinhas. O que resta é a pergunta que interessa: entre células na
-        mesma latitude, com a mesma proporção de água e no mesmo relevo, as mais desmatadas
-        diferem das preservadas?
+        mesma latitude, com a mesma proporção de água e no mesmo relevo, as que tinham mais
+        floresta convertida até 2000 diferem das preservadas?
         """),
     ])
     return
@@ -382,7 +382,7 @@ def _():
         previsão da temperatura vai para perto de zero, o determinismo das duas variáveis
         encolhe, e só as associações dos padrões ordinais resistem, com as do VPD
         menores. Em outras palavras, uma parte
-        importante da diferença entre células desmatadas e preservadas, tal como o ERA5 a
+        importante da diferença entre células convertidas e preservadas, tal como o ERA5 a
         registra, passa pelo mapa de vegetação que o próprio modelo usa. O modelo calcula uma
         evaporação, um aquecimento da superfície e uma rugosidade diferentes para um ponto de
         pasto e para um ponto de floresta, e essas diferenças deixam marca na dinâmica diária;
@@ -487,6 +487,10 @@ def robustness():
                     row[name] = G.associate(e, "perda_antecedente", column)["rho_parcial"]
                 a = G.associate(e, "perda_1990_2000", f"z_{var}_{d}")
                 row["perda_9000"], row["ic_9000"] = a["rho_parcial"], (a["ic_inf"], a["ic_sup"])
+                forest = e[e.natural_nao_florestal_2000 < 0.05]
+                a = G.associate(forest, "perda_antecedente", f"z_{var}_{d}")
+                row["floresta"], row["ic_floresta"] = a["rho_parcial"], (a["ic_inf"],
+                                                                         a["ic_sup"])
                 rows.append(row)
     return pd.DataFrame(rows)
 
@@ -506,17 +510,21 @@ def _():
         "observado": _r.observado.round(2), "média das substitutas": _r.nulo.round(2),
         "excesso": _r.excesso.round(2),
         "z, perda 1990–2000": [_ci(a, b) for a, b in zip(_r.perda_9000, _r.ic_9000,
-                                                         strict=True)]})
+                                                         strict=True)],
+        "z, só células de floresta": [_ci(a, b) for a, b in zip(_r.floresta, _r.ic_floresta,
+                                                                strict=True)]})
     mo.vstack([
         mo.md(r"""
         ## 🧪 Até onde o resultado principal resiste
 
-        Três perguntas ainda podem ser feitas à Tabela 1. A primeira é sobre a inferência: os
+        Quatro perguntas ainda podem ser feitas à Tabela 1. A primeira é sobre a inferência: os
         resíduos continuam parecidos entre vizinhos, e blocos de 1° podem ser pequenos demais
         para tornar as reamostragens independentes. A segunda é sobre o que exatamente se
         associa à perturbação, já que a resposta é o $z$, uma medida relativa às substitutas,
         e não o descritor em si. A terceira é sobre a exposição: a perda antecedente mistura
-        o que foi desmatado com o que nunca foi floresta. A Tabela 2 responde às três, com os
+        o que foi desmatado com o que nunca foi floresta. A quarta é sobre o Cerrado: a
+        vegetação natural aberta do sul das bacias tem um clima próprio, e pode ser ela, e
+        não a conversão, que distingue as células. A Tabela 2 responde às quatro, com os
         mesmos controles da Tabela 1.
         """),
         book.table(_tab, "robustez",
@@ -524,8 +532,9 @@ def _():
                    "(controles: latitude, água e altitude) entre a perda antecedente e o z de "
                    "cada descritor primário, com IC 95% por blocos de 1° e de 3°; a mesma "
                    "correlação com o valor observado do descritor, com a média das "
-                   "substitutas e com o excesso (observado menos essa média); e o z contra a "
-                   "perda de floresta de 1990 a 2000, com IC por blocos de 1°.",
+                   "substitutas e com o excesso (observado menos essa média); o z contra a "
+                   "perda de floresta de 1990 a 2000; e o z só nas células com menos de 5% de "
+                   "vegetação natural não florestal em 2000, com IC por blocos de 1°.",
                    selection=None),
         mo.md(r"""
         Blocos de 3°, com nove vezes a área dos de 1°, alargam os intervalos só um pouco, e
@@ -564,9 +573,16 @@ def _():
         no mesmo sentido, com metade do tamanho, e as demais ficam compatíveis com zero; no
         Tapajós, o determinismo do VPD aparece com o sinal oposto ao da Tabela 1, sem
         paralelo na outra bacia.
+
+        A quarta pergunta tem a resposta mais limpa. Ficando só com as células em que quase
+        não havia vegetação natural aberta em 2000, 521 no Xingu e 437 no Tapajós, todas as
+        associações da Tabela 1 se repetem com o mesmo tamanho e o mesmo sinal, e a da
+        complexidade da temperatura no Xingu passa a excluir o zero. O contraste não vem do
+        Cerrado: ele está dentro da própria floresta, entre a que foi convertida e a que não
+        foi.
         """),
         mo.callout(mo.md(
-            "Os três testes desta seção são complementares, motivados por perguntas feitas "
+            "Os quatro testes desta seção são complementares, motivados por perguntas feitas "
             "ao resultado depois de vê-lo, e estão registrados como tal (D-022). Não "
             "substituem a Tabela 1, que continua sendo o resultado pré-registrado."),
             kind="warn"),
@@ -779,19 +795,24 @@ def _():
                     "cada bacia. Direita: mudança de 2001–2012 para 2013–2024 contra a perda de "
                     "floresta de 2001 a 2012. Hastes: IC 95% da média de cada décimo."),
         mo.callout(mo.md(nb.pt(
-            "Temperatura diurna da superfície na estação seca, do quarto menos ao quarto mais "
-            "desmatado das células: " + "; ".join(
+            "Temperatura diurna da superfície na estação seca, do quarto com menos ao quarto com "
+            "mais perda antecedente das células: " + "; ".join(
                 f"{load_region(s)['name'].replace('Bacia do Rio ', '')}, de "
                 f"{_q[s].iloc[0]:.1f} a {_q[s].iloc[-1]:.1f} °C" for s in SLUGS) + ".")),
             kind="info"),
         mo.md(r"""
         As duas fontes contam histórias opostas. O satélite vê uma diferença enorme: de dia,
-        na estação seca, a superfície das células mais desmatadas é de 6 a 7 °C mais quente
-        que a das preservadas, e a diferença cresce de modo contínuo com a perda, sem
-        limiar. É o efeito conhecido da troca de floresta por pasto: menos transpiração,
-        menos energia gasta em evaporar água e mais energia aquecendo o chão [5, 8]. O ERA5
+        na estação seca, a superfície das células com mais perda antecedente é de 6 a 7 °C
+        mais quente que a das preservadas, e a diferença cresce de modo contínuo com a perda,
+        sem limiar. Ela não vem da vegetação aberta natural do Cerrado, que também é quente:
+        só nas células em que quase não havia vegetação natural aberta em 2000, a correlação
+        parcial continua em 0,77 a 0,81, e o décimo mais convertido fica 5,6 °C mais quente
+        que o menos convertido, nas duas bacias. É o efeito conhecido da troca de floresta
+        por pasto: menos transpiração, menos energia gasta em evaporar água e mais energia
+        aquecendo o chão [5, 8]. O ERA5
         não vê nada disso; a sua temperatura máxima do ar fica praticamente igual em todos os
-        décimos e, no Tapajós, chega a ser mais fresca nas células mais desmatadas, as do
+        décimos e, no Tapajós, chega a ser mais fresca nas células com mais perda
+        antecedente, as do
         planalto do sul. À direita, a diferença é ainda mais instrutiva. Nas células que não
         perderam floresta, o MODIS mostra um aquecimento de poucos décimos de grau entre as
         décadas, e o ERA5, um pouco mais, de meio grau a um grau: é o aquecimento regional.
@@ -807,7 +828,7 @@ def _():
                    "antecedente) e ao longo do tempo (perda 2001–2012 contra a mudança entre as "
                    "décadas), com IC 95% por blocos de 1°.", selection=None),
         mo.callout(mo.md(
-            "A observação por satélite confirma, de forma independente, a limitação central "
+            "A observação por satélite evidencia, de forma independente, a limitação central "
             "do trabalho: o desmatamento aquece fortemente a superfície, entre lugares e ao "
             "longo do tempo, e o ERA5 não registra esse aquecimento. O resultado nulo da "
             "seção anterior não indica ausência de efeito do desmatamento; indica que a "

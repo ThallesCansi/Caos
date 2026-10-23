@@ -161,7 +161,9 @@ Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-00
 
 **Resultado (células elegíveis, controles latitude, água e altitude, IC por blocos de 1°):** entre células, a perda antecedente se associa ao LST diurno da estação seca com ρ parcial de +0,81 (Xingu) e +0,74 (Tapajós), de 6 a 7 °C entre o décimo menos e o mais desmatado; com a máxima do ERA5, −0,14 e −0,06, compatíveis com zero. Ao longo do tempo, a perda de 2001–2012 se associa ao aquecimento do LST entre as décadas com ρ de +0,72 e +0,77; no ERA5, −0,18 e +0,04.
 
-**Leitura:** confirma, com observação independente do modelo, a limitação de D-011 e a interpretação de D-014 e D-015: o resultado longitudinal nulo do caderno 08 não indica ausência de efeito do desmatamento, e sim que o ERA5 não o registra. O LST não entra na análise não linear: as lacunas de nuvem impedem séries diárias. É análise complementar, prevista no plano mas não no pré-registro dos descritores.
+**Checagem (23/10/2026):** só nas células com menos de 5% de vegetação natural não florestal em 2000, a associação entre perda antecedente e LST continua em +0,81 (Xingu) e +0,77 (Tapajós), com 5,6 °C entre o décimo mais e o menos convertido; com a conversão agropecuária, controlando a vegetação natural, +0,77 nas duas. A diferença não vem do Cerrado natural.
+
+**Leitura:** evidencia, com observação independente do modelo, a limitação de D-011 e a interpretação de D-014 e D-015: o resultado longitudinal nulo do caderno 08 não indica ausência de efeito do desmatamento, e sim que o ERA5 não o registra. O LST não entra na análise não linear: as lacunas de nuvem impedem séries diárias. É análise complementar, prevista no plano mas não no pré-registro dos descritores.
 
 ## D-019 — A pergunta no nível do sistema, não da base de dados
 
@@ -206,6 +208,8 @@ Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-00
 1. IC por bootstrap em blocos de 3° além dos de 1° (`gradient.associate(..., block=)`). As associações do VPD nas duas bacias e a do determinismo da temperatura se mantêm; no Xingu, a entropia e o erro de previsão da temperatura passam a tocar o zero.
 2. O valor observado do descritor como resposta, no lugar do z, e a decomposição do z em média das substitutas (a parte linear) e excesso (observado − média). As associações dos padrões ordinais somem no valor observado, porque a parte linear e o excesso variam em sentidos opostos com a perturbação. A associação do z é praticamente a do excesso, e não vem do desvio das substitutas. Leitura: nas células mais perturbadas, a organização das séries vem mais da parte linear (persistência, ciclo anual) e menos da estrutura não linear além dela. O erro de previsão é menor nessas células também no valor observado (no Xingu nas duas variáveis; no Tapajós só no VPD).
 3. A perda de floresta de 1990 a 2000 (MapBiomas), que é desmatamento de fato, sem a vegetação aberta natural, como exposição. As associações do VPD no Xingu se repetem com metade do tamanho; as demais ficam compatíveis com zero, salvo o determinismo do VPD no Tapajós, com sinal oposto.
+
+4. Só as células com menos de 5% de vegetação natural não florestal em 2000 (521 no Xingu, 437 no Tapajós): todas as associações se repetem com o mesmo tamanho; o contraste não vem do Cerrado natural.
 
 O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
 
