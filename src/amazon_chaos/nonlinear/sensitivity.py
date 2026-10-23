@@ -1,7 +1,7 @@
 """Sensibilidade do lote por célula numa subamostra estratificada (D-024).
 
 Três variantes da regra do lote, só nos descritores primários e na janela 2001–2024, em
-cerca de 100 células elegíveis sorteadas por estrato (latitude × perda antecedente):
+cerca de 60 células elegíveis por bacia, sorteadas por estrato (latitude × perda antecedente):
 
 - `199 substitutas`: a regra, com 199 substitutas IAAFT em vez de 39 (p mínimo de 0,005,
   sem o piso de D-013);
@@ -40,7 +40,7 @@ def output_dir(cfg) -> Path:
     return regions.processed_dir(cfg) / "sensibilidade"
 
 
-def subsample(cells: pd.DataFrame, n: int = 100, seed: int = 20261023) -> list[str]:
+def subsample(cells: pd.DataFrame, n: int = 60, seed: int = 20261023) -> list[str]:
     """Células elegíveis sorteadas em partes iguais por estrato de latitude × perturbação."""
     e = cells[cells.elegivel].copy()
     e["lat_q"] = pd.qcut(e.latitude.rank(method="first"), STRATA, labels=False)
@@ -79,12 +79,14 @@ def cell_task(spec: dict, cell_id: str, series: dict[str, pd.Series]) -> pd.Data
     return pd.concat(rows, ignore_index=True)
 
 
-def run(cfg, spec, cells: pd.DataFrame, *, n: int = 100, workers=None, report=print) -> Path:
+def run(cfg, spec, cells: pd.DataFrame, *, n: int = 60, workers=None, report=print) -> Path:
     """Executa (ou retoma, por célula) a sensibilidade da região."""
     out = output_dir(cfg)
     (out / "celulas").mkdir(parents=True, exist_ok=True)
     chosen = subsample(cells, n)
     todo = [c for c in chosen if not (out / "celulas" / f"{c}.parquet").exists()]
+    # ordem embaralhada: se o job parar no meio, as células prontas seguem estratificadas
+    todo = list(np.random.default_rng(len(chosen)).permutation(todo))
     report(f"🔬 Sensibilidade · {cfg['name']}: {len(todo)} de {len(chosen)} células")
     if todo:
         cubes = load_cubes(cfg, VARIABLES)

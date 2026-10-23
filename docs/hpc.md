@@ -116,7 +116,7 @@ Todos usam o cabeçalho comum (`scripts/hpc/_common.sh`: avisos no Telegram, tem
 | `modis.sbatch` | pedido ao AppEEARS, espera, download e LST por célula | horas, quase sem CPU |
 | `chirps.sbatch` (sem `REGION`) | CHIRPS v3 sat 2001–2024, um ano por vez, e chuva por célula das regiões (D-021) | horas, 1 CPU |
 | `precip.sbatch` (com `SOURCES`) | descritores ordinais da chuva, no ERA5 e no CHIRPS (D-021) | ~45 min por bacia e fonte (14 CPUs) |
-| `sensitivity.sbatch` | 199 substitutas, τ = 2 e ruído do EDH numa subamostra de ~100 células (D-024) | ~1,6 h por bacia (14 CPUs) |
+| `sensitivity.sbatch` | 199 substitutas, τ = 2 e ruído do EDH numa subamostra de ~60 células (D-024) | ~2 h por bacia (14 CPUs) |
 
 Como a cota é de 16 CPUs, encadeie os jobs grandes:
 

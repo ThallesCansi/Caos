@@ -276,7 +276,7 @@ def descriptors_precip(
 @descriptors_app.command("sensitivity")
 def descriptors_sensitivity(
     region: Region,
-    cells: Annotated[int, typer.Option(help="tamanho da subamostra estratificada")] = 100,
+    cells: Annotated[int, typer.Option(help="tamanho da subamostra estratificada")] = 60,
     workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
     notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
 ) -> None:
