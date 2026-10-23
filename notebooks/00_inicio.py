@@ -33,6 +33,7 @@ with app.setup(hide_code=True):
         ("07_descritores", "🧩 Descritores não lineares, célula por célula"),
         ("08_gradiente", "🌳 Perturbação da floresta e dinâmica do clima"),
         ("09_chuva", "🌧️ A chuva vista de duas formas"),
+        ("10_fogo", "🔥 O tempo antes do fogo"),
     ]
 
 

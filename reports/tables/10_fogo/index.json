@@ -1,0 +1,11 @@
+[
+  {
+    "name": "resumo",
+    "region": null,
+    "caption": "Tabela 1. Percentil médio dos inícios de episódio de fogo entre os seus controles, por bacia, estação e medida, em todas as células elegíveis, com IC 95% por bootstrap de anos.",
+    "overleaf": true,
+    "csv": "reports/tables/10_fogo/resumo.csv",
+    "tex": "reports/tables/10_fogo/resumo.tex",
+    "commit": "a620a3a+modificado"
+  }
+]

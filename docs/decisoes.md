@@ -228,3 +228,16 @@ O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
 **Desenho:** cerca de 100 células elegíveis por bacia, sorteadas em partes iguais nos 9 estratos de terços de latitude × terços de perda antecedente (semente 20261023); só os descritores primários e a janela 2001–2024; três variantes da regra, cada uma com a mesma semente das substitutas do lote original: (1) 199 substitutas; (2) τ = 2, com m pelos falsos vizinhos nesse atraso e Theiler recalculado; (3) ruído gaussiano somado à série diária antes da anomalia, com o dobro da diferença RMS diária medida entre o EDH e o CDS (0,030 °C na temperatura; 0,010 kPa no VPD, propagado da umidade relativa), com 39 substitutas.
 
 **Leitura:** comparação, nas mesmas células, com o lote original: a fração que rejeita a hipótese linear, a correlação célula a célula dos z e a correlação parcial com a perturbação. Análise complementar.
+
+## D-025 — Pergunta secundária: o tempo antes do início dos episódios de fogo
+
+**Status:** aceito em 23/10/2026 (`features/fire_weather.py`, caderno 10).
+
+**Desenho:**
+- evento: o início de um episódio de fogo, isto é, um dia com foco do BDQueimadas (satélite de referência, 2003–2024, dia local UTC−03:00) numa célula sem foco nos 30 dias anteriores. A primeira versão, que usava o primeiro foco do ano civil, foi descartada antes de qualquer análise, porque punha muitos eventos em janeiro, em queimas da temporada anterior;
+- medidas até a véspera: anomalia do VPD e da temperatura do ERA5 nos 7 e nos 30 dias anteriores, chuva dos 30 dias anteriores no CHIRPS e no ERA5 e dias seguidos com menos de 1 mm no CHIRPS;
+- controle: os dias a até ±15 dias do calendário, na mesma célula, nos anos sem foco nessa janela. Cada evento é resumido pelo percentil entre os seus controles (0,5 é um dia típico). A diferença para a média dos controles foi descartada porque seria negativa sem efeito nenhum em medidas assimétricas, como a chuva acumulada;
+- incerteza: bootstrap reamostrando anos inteiros, porque um mesmo episódio de tempo seco atinge muitas células;
+- estratificação por estação (seca: junho a outubro) e por terço de perda antecedente, só nas células elegíveis.
+
+**Natureza:** descritiva, sobre a associação entre o tempo e o início do fogo; não separa ignição humana de propagação.
