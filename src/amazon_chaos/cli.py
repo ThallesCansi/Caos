@@ -3,7 +3,7 @@
     amazon-chaos region list | prepare <região>
     amazon-chaos era5 plan | download | edh | process | summarize <região> ...
     amazon-chaos disturbance fetch | build <região>
-    amazon-chaos descriptors run | basin | precip <região>
+    amazon-chaos descriptors run | basin | precip | sensitivity <região>
     amazon-chaos modis fetch | build <região>
     amazon-chaos chirps fetch | build <região>
     amazon-chaos gate run [--quick]
@@ -271,6 +271,23 @@ def descriptors_precip(
 
     typer.echo(run(load_region(region), load_spec(), sources=tuple(sources.split(",")),
                    workers=workers, report=reporter(notify), limit=limit))
+
+
+@descriptors_app.command("sensitivity")
+def descriptors_sensitivity(
+    region: Region,
+    cells: Annotated[int, typer.Option(help="tamanho da subamostra estratificada")] = 100,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """199 substitutas, τ = 2 e ruído do EDH numa subamostra de células (D-024)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.sensitivity import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), n=cells, workers=workers,
+                   report=reporter(notify)))
 
 
 # ── MODIS ───────────────────────────────────────────────────────────────────

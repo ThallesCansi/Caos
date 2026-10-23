@@ -74,6 +74,7 @@ def cell_lst(cfg, files: list[Path] | None = None) -> tuple[pd.DataFrame, pd.Dat
             "lst_noite_c": grid_cell_mean(sums["night"] / sums["n_night"] - 273.15, ids, area, n),
             "lst_dia_seca_c": grid_cell_mean(sums["dry"] / sums["n_dry"] - 273.15, ids, area, n),
             "lst_composicoes_validas": grid_cell_mean(sums["n_day"], ids, area, n),
+            "lst_composicoes_validas_seca": grid_cell_mean(sums["n_dry"], ids, area, n),
         }, index=pd.Index(cells.cell_id, name="cell_id"))
         dry = pd.DataFrame({year: grid_cell_mean(acc[0] / acc[1] - 273.15, ids, area, n)
                             for year, acc in sorted(yearly.items())},

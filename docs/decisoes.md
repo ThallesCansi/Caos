@@ -218,3 +218,13 @@ O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
 **Análises complementares, não pré-registradas:** a mesma associação com controles da climatologia do próprio CHIRPS em 2001–2024 (chuva anual, fração de dias com menos de 0,1 mm e número de meses com menos de 100 mm na média), separadamente e juntos; com a conversão agropecuária em 2000 como exposição, controlando a vegetação natural não florestal; e só nas células com menos de 5% de vegetação natural não florestal. A secura da fronteira agrícola é o confundidor mais plausível, porque a perda antecedente se correlaciona com a chuva anual (−0,39 e −0,72) e com os meses secos (+0,20 e +0,68).
 
 **Leitura fixada antes de escrever o caderno:** a associação só é tratada como robusta numa bacia se sobreviver aos três controles juntos e ao recorte das células de floresta.
+
+## D-024 — Sensibilidade do lote: 199 substitutas, τ = 2 e ruído do Earth Data Hub
+
+**Status:** aceito em 23/10/2026, antes do cálculo (`nonlinear/sensitivity.py`).
+
+**Motivo:** três perguntas que o lote por célula deixou abertas: a resolução das 39 substitutas (D-013), a dependência do atraso de imersão (a regra deu τ = 1 em quase todas as células, e o determinismo muda muito com τ) e o arredondamento do Earth Data Hub, que D-007 mandava testar antes de concluir.
+
+**Desenho:** cerca de 100 células elegíveis por bacia, sorteadas em partes iguais nos 9 estratos de terços de latitude × terços de perda antecedente (semente 20261023); só os descritores primários e a janela 2001–2024; três variantes da regra, cada uma com a mesma semente das substitutas do lote original: (1) 199 substitutas; (2) τ = 2, com m pelos falsos vizinhos nesse atraso e Theiler recalculado; (3) ruído gaussiano somado à série diária antes da anomalia, com o dobro da diferença RMS diária medida entre o EDH e o CDS (0,030 °C na temperatura; 0,010 kPa no VPD, propagado da umidade relativa), com 39 substitutas.
+
+**Leitura:** comparação, nas mesmas células, com o lote original: a fração que rejeita a hipótese linear, a correlação célula a célula dos z e a correlação parcial com a perturbação. Análise complementar.

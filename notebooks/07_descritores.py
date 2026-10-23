@@ -666,6 +666,90 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+def lyapunov_table():
+    rows = []
+    for slug in SLUGS:
+        _, t, _, _ = region_data(slug)
+        part = t[(t.kind == "teste") & (t.window == "2001_2024") & (t.descriptor == "lyapunov")]
+        rows.append(part.assign(region=slug))
+    return pd.concat(rows, ignore_index=True)
+
+
+@app.function(hide_code=True)
+def plot_lyapunov():
+    lya = lyapunov_table()
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5.6), sharex=True, sharey=True,
+                             layout="constrained")
+    markers = {"xingu": "o", "tapajos": "s"}
+    colors = {5: COLORS["precip"], 6: COLORS["t2m"], 7: COLORS["ink"]}
+    for ax, var in zip(axes, R.VARIABLES, strict=True):
+        part = lya[lya.variable == var]
+        for (slug, m), g in part.groupby(["region", "m"]):
+            ax.scatter(g.null_mean, g.observed, s=10, alpha=0.5, marker=markers[slug],
+                       color=colors.get(int(m), COLORS["muted"]),
+                       label=f"{load_region(slug)['name'].replace('Bacia do Rio ', '')}, "
+                             f"m = {int(m)}")
+        lo, hi = part[["null_mean", "observed"]].min().min(), part[
+            ["null_mean", "observed"]].max().max()
+        ax.plot([lo, hi], [lo, hi], color=COLORS["muted"], lw=1, ls="--")
+        ax.set(xlabel="λ médio das 39 substitutas IAAFT (por dia)",
+               ylabel="λ observado (por dia)", title=R.VARIABLES[var].capitalize())
+    handles, names = axes[0].get_legend_handles_labels()
+    keep = [k for k, n in enumerate(names) if not n.endswith("m = 7")]
+    fig.legend([handles[k] for k in keep], [names[k] for k in keep], loc="outside lower center",
+               ncol=4, frameon=False, markerscale=2)
+    return fig
+
+
+@app.cell(hide_code=True)
+def _():
+    _lya = lyapunov_table()
+    _lines = []
+    for (_slug, _var), _g in _lya.groupby(["region", "variable"], sort=False):
+        _lines.append(
+            f"{load_region(_slug)['name'].replace('Bacia do Rio ', '')}, "
+            f"{R.VARIABLES[_var]}: λ positivo em {100 * (_g.observed > 0).mean():.0f}% das "
+            f"células, mediana de {_g.observed.median():.3f} por dia contra "
+            f"{_g.null_mean.median():.3f} nas substitutas; p ≤ 0,05 em "
+            f"{100 * (_g.pvalue <= 0.05 + R.TOLERANCE).mean():.0f}% das células")
+    mo.vstack([
+        mo.md(r"""
+        ## 🦋 O expoente de Lyapunov nos dados reais
+
+        O maior expoente de Lyapunov é a medida que dá nome à teoria do caos e era um dos
+        objetivos do projeto: estimá-lo nas séries reais. Ele foi calculado em todas as
+        células pelo método de Rosenstein, com os mesmos $\tau$, $m$ e janela de Theiler dos
+        outros descritores, e nas 39 substitutas de cada uma. A validação dos métodos o
+        rebaixou a exploratório, porque ele rejeitava a hipótese linear em boa parte das
+        séries sem caos nenhum. A Figura 7 mostra por que essa cautela era necessária.
+        """),
+        book.figure(plot_lyapunov(), "lyapunov",
+                    "Figura 7. Maior expoente de Lyapunov (Rosenstein) observado em cada célula "
+                    "contra a média do mesmo expoente nas suas 39 substitutas IAAFT, para a "
+                    "temperatura e o VPD de 2001 a 2024, nas duas bacias (círculos: Xingu; "
+                    "quadrados: Tapajós), com a cor pela dimensão de imersão m (pontos escuros: as "
+                    "células com m = 7). Tracejado: observado igual às substitutas."),
+        mo.callout(mo.md(nb.pt("; ".join(_lines) + ".")), kind="info"),
+        mo.md(r"""
+        O expoente é positivo em todas as células, perto de 0,3 por dia, o que, lido
+        sozinho, sugeriria que duas situações do tempo quase iguais se afastam pela metade a
+        cada dois ou três dias. Mas os pontos caem sobre a diagonal: as substitutas, que são
+        processos lineares sem nenhuma dinâmica caótica, dão o mesmo expoente. O valor é
+        fixado pelo ruído e pela forma da reconstrução, e não pela dinâmica. Os dois grupos
+        de pontos, em torno de 0,30 e 0,37, não são dois regimes de clima, e sim as duas
+        dimensões de imersão que a regra escolheu, m = 6 e m = 5. Onde o expoente se afasta
+        das substitutas, ele fica um pouco abaixo delas, e nenhuma dessas diferenças
+        sobrevive à correção para múltiplos testes.
+        """),
+        mo.callout(mo.md(
+            "O expoente de Lyapunov das séries diárias é positivo em toda parte, e é igual ao "
+            "de processos lineares com o mesmo espectro. Um λ positivo, aqui, não é sinal de "
+            "caos: é o que o ruído produz."), kind="danger"),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
