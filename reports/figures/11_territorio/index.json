@@ -1,0 +1,20 @@
+[
+  {
+    "name": "latitude",
+    "region": null,
+    "caption": "Figura 2. Mediana, por faixa de 1° de latitude, da temperatura diurna da superfície (MODIS, círculos cheios) e da máxima do ar a 2 m (ERA5, quadrados vazios) na estação seca, nas células em Terra Indígena ou Unidade de Conservação (verde) e nas de fora (vermelho).",
+    "overleaf": true,
+    "png": "reports/figures/11_territorio/latitude.png",
+    "pdf": "reports/figures/11_territorio/latitude.pdf",
+    "commit": "ae30088+modificado"
+  },
+  {
+    "name": "mapas",
+    "region": null,
+    "caption": "Figura 1. Perda de floresta de 2000 a 2024 (MapBiomas) e temperatura diurna da superfície na estação seca (MODIS, 2001–2024, anomalia em relação à média das células elegíveis de cada bacia), com os limites atuais das Terras Indígenas (FUNAI, linhas contínuas) e das Unidades de Conservação federais (ICMBio, tracejadas).",
+    "overleaf": true,
+    "png": "reports/figures/11_territorio/mapas.png",
+    "pdf": "reports/figures/11_territorio/mapas.pdf",
+    "commit": "ae30088+modificado"
+  }
+]

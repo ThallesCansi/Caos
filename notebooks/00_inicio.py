@@ -34,6 +34,7 @@ with app.setup(hide_code=True):
         ("08_gradiente", "🌳 Perturbação da floresta e dinâmica do clima"),
         ("09_chuva", "🌧️ A chuva vista de duas formas"),
         ("10_fogo", "🔥 O tempo antes do fogo"),
+        ("11_territorio", "🗺️ O território"),
     ]
 
 

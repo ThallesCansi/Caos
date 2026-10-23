@@ -25,6 +25,7 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `08_gradiente` | perturbação × dinâmica, robustez e checagem MODIS (D-014, D-015, D-018, D-022) | pronto |
 | `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação (D-021, D-023) | pronto |
 | `10_fogo` | o tempo antes do início dos episódios de fogo (pergunta secundária, D-025) | pronto |
+| `11_territorio` | Terras Indígenas e Unidades de Conservação diante do clima e do fogo (D-026) | pronto |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 

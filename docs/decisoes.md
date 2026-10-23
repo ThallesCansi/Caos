@@ -241,3 +241,11 @@ O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
 - estratificação por estação (seca: junho a outubro) e por terço de perda antecedente, só nas células elegíveis.
 
 **Natureza:** descritiva, sobre a associação entre o tempo e o início do fogo; não separa ignição humana de propagação.
+
+## D-026 — O território: Terras Indígenas e Unidades de Conservação como chave de leitura
+
+**Status:** aceito em 23/10/2026 (`features/territory.py`, caderno 11), como ponte com a parte socioespacial.
+
+**Desenho:** a fração de cada célula, dentro da bacia, em Terras Indígenas (FUNAI), em Unidades de Conservação federais (ICMBio) e na união das duas, com os limites atuais das camadas de contexto. A classe da célula é: TI ou UC se a categoria cobre pelo menos metade dela; fora se menos de 10% é protegido; mista nos demais casos. Comparação por classe (medianas) e correlação parcial com a fração protegida (controles: latitude, água e altitude; IC por blocos de 1°) para a perturbação, os focos de fogo, o LST do MODIS e a máxima do ERA5 na estação seca, a entropia da chuva do CHIRPS e, a partir do caderno 10, o percentil do tempo antes do início dos episódios de fogo na estação seca.
+
+**Limites:** os limites são os atuais, e muitas áreas foram criadas ou homologadas durante o período; a localização das áreas protegidas não é aleatória (tendem a estar em áreas mais remotas), então a comparação é uma associação e não mede o efeito da proteção. Rodovias, como a BR-163, não entram por falta de uma camada no projeto.
