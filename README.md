@@ -4,7 +4,7 @@ Código do TCC **"Uma Análise do Sistema Floresta-Atmosfera Amazônica sob a ó
 
 > A perturbação da floresta amazônica, por desmatamento e fogo, deixa marca na dinâmica do clima local, isto é, na forma como ele evolui de um dia para o outro? E as ferramentas da teoria do caos conseguem revelá-la?
 
-A pergunta se desdobra em três: que tipo de dinâmica o clima diário local tem (natureza), se ela difere entre lugares mais e menos perturbados e muda onde a floresta é perdida (relação), e que tipo de registro é preciso para que essa marca apareça (detectabilidade). A reanálise ERA5 é o instrumento principal e a temperatura da superfície medida pelo MODIS, a checagem observacional (D-019).
+A pergunta se desdobra em três: que tipo de dinâmica o clima diário local tem (natureza), se ela difere entre lugares mais e menos perturbados e muda onde a floresta é perdida (relação), e que tipo de registro é preciso para que essa marca apareça (detectabilidade). A reanálise ERA5 é o instrumento principal; a temperatura da superfície medida pelo MODIS e a chuva diária do CHIRPS são as checagens observacionais (D-019, D-021).
 
 Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Período: 2001–2024, com o arquivo 1990–2000 para sensibilidade. Método: reconstrução do espaço de fases, Lyapunov, RQA, D2, entropia de permutação e sinais precoces, sempre contra controles sintéticos e séries substitutas. Os detalhes estão em [docs/metodologia.md](docs/metodologia.md).
 
@@ -22,7 +22,8 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `05_validacao_metodos` | o portão: descritores em controles sintéticos | pronto |
 | `06_surrogates` | substitutas FT/IAAFT nas séries das bacias (D-016) | pronto |
 | `07_descritores` | descritores por célula, robustez, EWS | pronto |
-| `08_gradiente` | perturbação × dinâmica e checagem MODIS (D-014, D-015, D-018) | pronto |
+| `08_gradiente` | perturbação × dinâmica, robustez e checagem MODIS (D-014, D-015, D-018, D-022) | pronto |
+| `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação (D-021, D-023) | pronto |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 

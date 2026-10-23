@@ -1,0 +1,29 @@
+[
+  {
+    "name": "associacao",
+    "region": null,
+    "caption": "Tabela 2. Correlação parcial entre perturbação e descritores ordinais da chuva: com a perda antecedente, o valor observado, o excesso sobre a média das substitutas e o z; e, na última coluna, a perda de 2001 a 2012 contra a mudança do valor observado entre 2001–2012 e 2013–2024. IC 95% por blocos de 1°.",
+    "overleaf": true,
+    "csv": "reports/tables/09_chuva/associacao.csv",
+    "tex": "reports/tables/09_chuva/associacao.tex",
+    "commit": "3885372+modificado"
+  },
+  {
+    "name": "rejeicao",
+    "region": null,
+    "caption": "Tabela 1. Fração das células elegíveis que rejeitam a hipótese linear depois da correção de Benjamini–Hochberg dentro da família exploratória, z mediano e fração mediana de dias com chuva exatamente nula, por bacia, fonte e descritor, 2001–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/09_chuva/rejeicao.csv",
+    "tex": "reports/tables/09_chuva/rejeicao.tex",
+    "commit": "3885372+modificado"
+  },
+  {
+    "name": "secura",
+    "region": null,
+    "caption": "Tabela 3. Entropia de permutação da chuva do CHIRPS (valor observado) contra a perda antecedente, com controles crescentes da climatologia do CHIRPS (chuva anual, fração de dias com menos de 0,1 mm, meses com menos de 100 mm), com a conversão agropecuária em 2000 como exposição e só nas células com menos de 5% de vegetação natural não florestal. Correlação parcial com IC 95% por blocos de 1°.",
+    "overleaf": true,
+    "csv": "reports/tables/09_chuva/secura.csv",
+    "tex": "reports/tables/09_chuva/secura.tex",
+    "commit": "3885372+modificado"
+  }
+]

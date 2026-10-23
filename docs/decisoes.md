@@ -208,3 +208,13 @@ Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-00
 3. A perda de floresta de 1990 a 2000 (MapBiomas), que é desmatamento de fato, sem a vegetação aberta natural, como exposição. As associações do VPD no Xingu se repetem com metade do tamanho; as demais ficam compatíveis com zero, salvo o determinismo do VPD no Tapajós, com sinal oposto.
 
 O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
+
+## D-023 — A secura como explicação alternativa da associação na chuva do CHIRPS
+
+**Status:** aceito em 23/10/2026, depois de ver o primeiro resultado do lote da chuva (caderno 09).
+
+**Resultado que motivou:** com os controles do pré-registro (latitude, água e altitude), a entropia de permutação da chuva do CHIRPS é menor nas células com mais perda antecedente (ρ parcial de −0,38 no Xingu e −0,21 no Tapajós, no valor observado), e a do ERA5 não acompanha a perturbação.
+
+**Análises complementares, não pré-registradas:** a mesma associação com controles da climatologia do próprio CHIRPS em 2001–2024 (chuva anual, fração de dias com menos de 0,1 mm e número de meses com menos de 100 mm na média), separadamente e juntos; com a conversão agropecuária em 2000 como exposição, controlando a vegetação natural não florestal; e só nas células com menos de 5% de vegetação natural não florestal. A secura da fronteira agrícola é o confundidor mais plausível, porque a perda antecedente se correlaciona com a chuva anual (−0,39 e −0,72) e com os meses secos (+0,20 e +0,68).
+
+**Leitura fixada antes de escrever o caderno:** a associação só é tratada como robusta numa bacia se sobreviver aos três controles juntos e ao recorte das células de floresta.

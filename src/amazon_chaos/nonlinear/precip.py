@@ -151,3 +151,56 @@ def run(cfg, spec, *, sources=SOURCES, workers=None, block=25, report=print,
         "finished_utc": datetime.now(UTC).isoformat(timespec="seconds"),
     }, indent=2, ensure_ascii=False))
     return target
+
+
+# ── leitura (caderno 09) ────────────────────────────────────────────────────
+
+
+def load(cfg, spec) -> pd.DataFrame:
+    """Linhas do lote da chuva com q de BH dentro da família exploratória (D-021)."""
+    from amazon_chaos.nonlinear.results import TOLERANCE, benjamini_hochberg
+
+    table = pd.read_parquet(output_dir(cfg, spec) / "descritores.parquet")
+    tests = table.kind == "teste"
+    table.loc[tests, "q"] = table[tests].groupby(["variable", "window"]).pvalue.transform(
+        lambda s: benjamini_hochberg(s.to_numpy()))
+    table["rejects"] = table.q <= spec["surrogates"]["alpha"] + TOLERANCE
+    return table
+
+
+def climatology(cfg, first: str = "2001", last: str = "2024") -> pd.DataFrame:
+    """Por célula e fonte: chuva anual (mm), fração de dias com < 0,1 mm e meses < 100 mm."""
+    out = {}
+    for source in SOURCES:
+        rain = load_series(cfg, source).loc[first:last]
+        years = int(last) - int(first) + 1
+        monthly = rain.resample("MS").sum()
+        normal = monthly.groupby(monthly.index.month).mean()
+        short = source.removeprefix("precip_")
+        out[f"chuva_anual_{short}"] = rain.sum() / years
+        out[f"dias_secos_{short}"] = (rain < 0.1).mean()
+        out[f"meses_secos_{short}"] = (normal < 100).sum()
+    return pd.DataFrame(out)
+
+
+def cell_table(cfg, spec) -> pd.DataFrame:
+    """Tabela do caderno 08 com a climatologia e os descritores da chuva das duas fontes."""
+    from amazon_chaos import gradient as G
+
+    table = G.cell_table(cfg, spec).join(climatology(cfg))
+    table["natural_nao_florestal_2000"] = (
+        1 - table.floresta_frac_2000 - table.agro_frac_2000).clip(lower=0)
+    tests = load(cfg, spec)
+    tests = tests[tests.kind == "teste"]
+    for column, prefix in [("z", "z"), ("observed", "obs"), ("null_mean", "nulo")]:
+        wide = tests[tests.window == "2001_2024"].pivot_table(
+            index="cell_id", columns=["variable", "descriptor"], values=column)
+        wide.columns = [f"{prefix}_{v}_{d}" for v, d in wide.columns]
+        table = table.join(wide)
+    halves = tests[tests.window != "2001_2024"].pivot_table(
+        index="cell_id", columns=["variable", "descriptor", "window"], values="observed")
+    for source in SOURCES:
+        for d in DESCRIPTORS:
+            table[f"delta_{source}_{d}"] = (halves[(source, d, "2013_2024")]
+                                            - halves[(source, d, "2001_2012")])
+    return table

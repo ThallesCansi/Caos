@@ -1,0 +1,38 @@
+[
+  {
+    "name": "associacao",
+    "region": null,
+    "caption": "Figura 4. Correlação parcial (controles: latitude, água e altitude) entre a perda antecedente de floresta e os descritores ordinais da chuva diária de 2001 a 2024, no ERA5 (cinza) e no CHIRPS (azul): valor observado (círculos cheios) e z contra as substitutas (vazios), com IC 95% por blocos de 1°.",
+    "overleaf": true,
+    "png": "reports/figures/09_chuva/associacao.png",
+    "pdf": "reports/figures/09_chuva/associacao.pdf",
+    "commit": "3885372+modificado"
+  },
+  {
+    "name": "mapas",
+    "region": null,
+    "caption": "Figura 1. Chuva média anual de 2001 a 2024 por célula no ERA5 e no CHIRPS (v3, repartição diária pelo IMERG) e a diferença do ERA5 em relação ao CHIRPS, nas duas bacias.",
+    "overleaf": true,
+    "png": "reports/figures/09_chuva/mapas.png",
+    "pdf": "reports/figures/09_chuva/mapas.pdf",
+    "commit": "3885372+modificado"
+  },
+  {
+    "name": "z",
+    "region": null,
+    "caption": "Figura 3. Distribuição do z contra as substitutas nas células elegíveis de cada bacia, para a entropia de permutação e a complexidade estatística da chuva diária de 2001 a 2024, no ERA5 (cinza) e no CHIRPS (azul). Faixa cinza: |z| < 1,96.",
+    "overleaf": true,
+    "png": "reports/figures/09_chuva/z.png",
+    "pdf": "reports/figures/09_chuva/z.pdf",
+    "commit": "3885372+modificado"
+  },
+  {
+    "name": "dias",
+    "region": "xingu",
+    "caption": "Figura 2. Chuva diária de 2018 numa célula do centro da bacia, no ERA5 (acima) e no CHIRPS (abaixo). Na versão impressa, Xingu.",
+    "overleaf": true,
+    "png": "reports/figures/09_chuva/xingu/dias.png",
+    "pdf": "reports/figures/09_chuva/xingu/dias.pdf",
+    "commit": "3885372+modificado"
+  }
+]
