@@ -163,6 +163,8 @@ Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-00
 
 **Checagem (23/10/2026):** só nas células com menos de 5% de vegetação natural não florestal em 2000, a associação entre perda antecedente e LST continua em +0,81 (Xingu) e +0,77 (Tapajós), com 5,6 °C entre o décimo mais e o menos convertido; com a conversão agropecuária, controlando a vegetação natural, +0,77 nas duas. A diferença não vem do Cerrado natural.
 
+**Viés de céu limpo (23/10/2026):** na estação seca, a mediana das células tem cerca de 378 das 384 composições possíveis (16 por ano × 24 anos) com qualidade boa; o 10º percentil é 335 no Xingu e 371 no Tapajós. Com o número de composições válidas nos controles, a associação entre a perda antecedente e o LST fica em +0,80 e +0,71, e a longitudinal em +0,71 e +0,76; só na metade das células com mais composições válidas, +0,85 e +0,68.
+
 **Leitura:** evidencia, com observação independente do modelo, a limitação de D-011 e a interpretação de D-014 e D-015: o resultado longitudinal nulo do caderno 08 não indica ausência de efeito do desmatamento, e sim que o ERA5 não o registra. O LST não entra na análise não linear: as lacunas de nuvem impedem séries diárias. É análise complementar, prevista no plano mas não no pré-registro dos descritores.
 
 ## D-019 — A pergunta no nível do sistema, não da base de dados
@@ -232,6 +234,8 @@ O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
 **Desenho:** cerca de 60 células elegíveis por bacia (eram 100; reduzidas antes de qualquer resultado, para caber antes de uma manutenção do HPC), sorteadas em partes iguais nos 9 estratos de terços de latitude × terços de perda antecedente (semente 20261023); só os descritores primários e a janela 2001–2024; três variantes da regra, cada uma com a mesma semente das substitutas do lote original: (1) 199 substitutas; (2) τ = 2, com m pelos falsos vizinhos nesse atraso e Theiler recalculado; (3) ruído gaussiano somado à série diária antes da anomalia, com o dobro da diferença RMS diária medida entre o EDH e o CDS (0,030 °C na temperatura; 0,010 kPa no VPD, propagado da umidade relativa), com 39 substitutas.
 
 **Leitura:** comparação, nas mesmas células, com o lote original: a fração que rejeita a hipótese linear, a correlação célula a célula dos z e a correlação parcial com a perturbação. Análise complementar.
+
+**Resultado (23/10/2026; 60 células no Xingu e 62 no Tapajós; caderno 07, Tabela 2):** as três variantes reproduzem o lote. A correlação de postos entre o z da variante e o do lote fica acima de 0,9 na maior parte dos casos (mínimos: 0,66 no DET da temperatura com τ = 2 no Tapajós e 0,69 no erro de previsão do VPD com 199 substitutas); a fração de células que rejeitam muda no máximo alguns pontos percentuais; a correlação parcial com a perturbação muda da ordem de 0,1, dentro dos intervalos. Os resultados não dependem da resolução das substitutas, do atraso nem do arredondamento do EDH.
 
 ## D-025 — Pergunta secundária: o tempo antes do início dos episódios de fogo
 

@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/modis.csv",
     "tex": "reports/tables/08_gradiente/modis.tex",
-    "commit": "2f7e711+modificado"
+    "commit": "98ce4f6+modificado"
   },
   {
     "name": "resultado_preregistrado",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/resultado_preregistrado.csv",
     "tex": "reports/tables/08_gradiente/resultado_preregistrado.tex",
-    "commit": "2f7e711+modificado"
+    "commit": "98ce4f6+modificado"
   },
   {
     "name": "robustez",
@@ -24,6 +24,6 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/robustez.csv",
     "tex": "reports/tables/08_gradiente/robustez.tex",
-    "commit": "2f7e711+modificado"
+    "commit": "98ce4f6+modificado"
   }
 ]

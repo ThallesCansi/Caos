@@ -667,6 +667,87 @@ def _():
 
 
 @app.function(hide_code=True)
+@mo.cache
+def sensitivity_table():
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear import sensitivity as S
+
+    rows = []
+    for slug in SLUGS:
+        cfg = load_region(slug)
+        rows.append(S.compare(cfg, SPEC, G.cell_table(cfg, SPEC)).assign(region=slug))
+    return pd.concat(rows, ignore_index=True)
+
+
+@app.cell(hide_code=True)
+def _():
+    _r = sensitivity_table()
+    _rows = []
+    for (_slug, _var, _desc), _g in _r.groupby(["region", "variable", "descriptor"], sort=False):
+        _g = _g.set_index("variant")
+        _row = {"Bacia": load_region(_slug)["name"].replace("Bacia do Rio ", ""),
+                "Variável": R.VARIABLES[_var], "Descritor": R.NAMES[_desc],
+                "Células": int(_g.cells.iloc[0]),
+                "Lote original": f"{_g.loc['lote original', 'rho_parcial']:+.2f}"}
+        for _v in ["199 substitutas", "τ = 2", "ruído EDH"]:
+            _row[_v] = (f"{_g.loc[_v, 'rho_parcial']:+.2f} "
+                        f"({_g.loc[_v, 'rho_z_lote']:.2f})")
+        _rows.append(_row)
+    _corr = _r[_r.variant != "lote original"].rho_z_lote
+    _drho = (_r[_r.variant != "lote original"].set_index(
+        ["region", "variable", "descriptor", "variant"]).rho_parcial
+        - _r[_r.variant == "lote original"].set_index(
+        ["region", "variable", "descriptor"]).rho_parcial).abs()
+    mo.vstack([
+        mo.md(r"""
+        ## 🔩 Três testes do próprio lote
+
+        Três escolhas do lote podiam, em princípio, mudar os resultados. A primeira é o
+        número de substitutas: com 39, o menor $p$ possível é 0,025, e isso cria o tudo ou
+        nada da Tabela 1. A segunda é o atraso de imersão: a regra deu $\tau = 1$ dia em
+        quase todas as células, e o determinismo muda bastante com $\tau$. A terceira é a
+        precisão dos dados: o espelho do ERA5 que usamos guarda os números com a mantissa
+        arredondada, e os descritores não lineares podem ser sensíveis a esse ruído.
+
+        Para testá-las sem refazer todo o lote, sorteamos cerca de 60 células elegíveis por
+        bacia, em partes iguais entre os nove estratos de latitude e perturbação, e
+        recalculamos os descritores primários de 2001 a 2024 de três modos: com 199
+        substitutas; com $\tau = 2$; e com um ruído somado à série diária do dobro da
+        diferença medida entre o espelho e o arquivo original do ERA5. A Tabela 2 compara
+        cada variante com o lote original nas mesmas células: a correlação parcial com a
+        perda antecedente, como no capítulo 08, e, entre parênteses, a correlação de postos
+        entre o $z$ da variante e o do lote (D-024).
+        """),
+        book.table(pd.DataFrame(_rows), "sensibilidade_lote",
+                   "Tabela 2. Sensibilidade do lote numa subamostra estratificada: correlação "
+                   "parcial (controles: latitude, água e altitude) entre a perda antecedente e o "
+                   "z de cada descritor primário no lote original e em três variantes (199 "
+                   "substitutas; τ = 2; ruído do dobro da diferença entre o Earth Data Hub e o "
+                   "CDS) e, entre parênteses, a correlação de postos entre o z da variante e o "
+                   "do lote, nas mesmas células, 2001–2024.", selection=None),
+        mo.callout(mo.md(nb.pt(
+            f"Correlação entre o z das variantes e o do lote: mediana de "
+            f"{_corr.median():.2f}, mínimo de {_corr.min():.2f}. Mudança da correlação "
+            f"parcial com a perturbação: mediana de {_drho.median():.2f}, máximo de "
+            f"{_drho.max():.2f}.")), kind="info"),
+        mo.md(r"""
+        As três variantes reproduzem o lote. O $z$ de cada célula muda pouco, e a ordem das
+        células quase não muda: a correlação com o lote fica acima de 0,9 na maior parte dos
+        casos. As exceções são o determinismo com $\tau = 2$, que mede outra escala de
+        tempo, e o erro de previsão com 199 substitutas, cuja distribuição nula fica mais
+        bem definida. A entropia e a complexidade não mudam com $\tau$ porque os padrões
+        ordinais têm atraso próprio, fixado no pré-registro. A fração de células que
+        rejeitam a hipótese linear e a associação com
+        a perturbação também ficam onde estavam, com mudanças da ordem de 0,1 na correlação
+        parcial, menores que os intervalos de confiança de uma amostra de 60 células. Os
+        resultados dos capítulos 07 e 08 não dependem da resolução das substitutas, do
+        atraso escolhido pela regra, nem do arredondamento do espelho do ERA5.
+        """),
+    ])
+    return
+
+
+@app.function(hide_code=True)
 def lyapunov_table():
     rows = []
     for slug in SLUGS:

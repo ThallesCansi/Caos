@@ -840,7 +840,12 @@ def _():
         desmatadas, embora menos [8], de modo que um ERA5 que acompanhasse a vegetação
         mostraria ao menos parte desse sinal. E o MODIS só vê a superfície em dias sem nuvem,
         o que torna a sua série falhada demais para a análise não linear diária: ele serve
-        aqui para verificar o ERA5, e não para substituí-lo.
+        aqui para verificar o ERA5, e não para substituí-lo. Ver só os dias limpos poderia
+        enviesar a comparação, se as células desmatadas tivessem mais dias limpos que as
+        preservadas; na estação seca, porém, quase todas as composições de oito dias são
+        aproveitáveis, cerca de 378 das 384 possíveis em 24 anos na mediana das células, e
+        acrescentar o número de composições válidas aos controles deixa a associação entre
+        a perda antecedente e o LST em 0,80 no Xingu e 0,71 no Tapajós.
         """),
     ])
     return

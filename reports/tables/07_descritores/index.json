@@ -6,6 +6,15 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/rejeicao_bh.csv",
     "tex": "reports/tables/07_descritores/rejeicao_bh.tex",
-    "commit": "c90f61c+modificado"
+    "commit": "98ce4f6+modificado"
+  },
+  {
+    "name": "sensibilidade_lote",
+    "region": null,
+    "caption": "Tabela 2. Sensibilidade do lote numa subamostra estratificada: correlação parcial (controles: latitude, água e altitude) entre a perda antecedente e o z de cada descritor primário no lote original e em três variantes (199 substitutas; τ = 2; ruído do dobro da diferença entre o Earth Data Hub e o CDS) e, entre parênteses, a correlação de postos entre o z da variante e o do lote, nas mesmas células, 2001–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/07_descritores/sensibilidade_lote.csv",
+    "tex": "reports/tables/07_descritores/sensibilidade_lote.tex",
+    "commit": "98ce4f6+modificado"
   }
 ]
