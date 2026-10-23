@@ -2,6 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
+#SBATCH --mem=8G  # o LST por célula passa de 2 GB (o padrão é 1 GB por CPU)
 #SBATCH -p cpu
 #SBATCH -J modis
 #SBATCH --time=48:00:00
