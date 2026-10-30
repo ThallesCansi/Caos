@@ -1,12 +1,57 @@
 [
   {
+    "name": "atrasos_ordinais",
+    "region": null,
+    "caption": "Tabela 4. Comparativo (D-027). Entropia de permutação e complexidade estatística com o atraso ordinal L de 1 a 7 dias: correlação parcial com a perda antecedente e, entre parênteses, a fração de células com p ≤ 0,05, na subamostra de D-024, 2001–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/07_descritores/atrasos_ordinais.csv",
+    "tex": "reports/tables/07_descritores/atrasos_ordinais.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "atrasos_tau",
+    "region": null,
+    "caption": "Tabela 3. Comparativo (D-027). Determinismo (RQA) e erro de previsão com o atraso de imersão τ de 1 a 7 dias e no primeiro mínimo da informação mútua (AMI): correlação parcial com a perda antecedente e, entre parênteses, a fração de células com p ≤ 0,05, na subamostra de D-024, 2001–2024.",
+    "overleaf": true,
+    "csv": "reports/tables/07_descritores/atrasos_tau.csv",
+    "tex": "reports/tables/07_descritores/atrasos_tau.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "ews_resumo",
+    "region": null,
+    "caption": "Tabela A2. Sinais precoces: τ de Kendall mediano da tendência da variância e da autocorrelação de um passo em janelas móveis de 12 anos, fração das células com τ positivo e com p ≤ 0,05 contra 39 substitutas.",
+    "overleaf": true,
+    "csv": "reports/tables/07_descritores/ews_resumo.csv",
+    "tex": "reports/tables/07_descritores/ews_resumo.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "natureza_nulas_realistas",
+    "region": null,
+    "caption": "Tabela 5. Comparativo (D-027). Fração das células com p ≤ 0,05 contra as substitutas em 2001–2024 e limite superior do IC 95% da taxa de rejeição na nula realista mais permissiva (capítulo 5). ▲: acima do limite. *: na subamostra de D-024. S-map: teste de Diebold–Mariano do ganho sobre a previsão linear, horizonte de 1 dia.",
+    "overleaf": true,
+    "csv": "reports/tables/07_descritores/natureza_nulas_realistas.csv",
+    "tex": "reports/tables/07_descritores/natureza_nulas_realistas.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
     "name": "rejeicao_bh",
     "region": null,
     "caption": "Tabela 1. Resultado pré-registrado: fração das células que rejeitam a hipótese linear depois da correção de Benjamini–Hochberg, por bacia, descritor e variável, com a correção feita dentro de cada família de descritores, como no pré-registro, e, como sensibilidade, dentro de cada descritor; e z mediano.",
     "overleaf": true,
     "csv": "reports/tables/07_descritores/rejeicao_bh.csv",
     "tex": "reports/tables/07_descritores/rejeicao_bh.tex",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "rejeicao_bh_janelas",
+    "region": null,
+    "caption": "Tabela A1. Fração das células que rejeitam a hipótese linear depois da correção de Benjamini–Hochberg (por família, como no pré-registro, e por descritor) e z mediano, por bacia, janela, descritor e variável.",
+    "overleaf": true,
+    "csv": "reports/tables/07_descritores/rejeicao_bh_janelas.csv",
+    "tex": "reports/tables/07_descritores/rejeicao_bh_janelas.tex",
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "sensibilidade_lote",
@@ -15,6 +60,6 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/sensibilidade_lote.csv",
     "tex": "reports/tables/07_descritores/sensibilidade_lote.tex",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

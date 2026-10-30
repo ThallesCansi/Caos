@@ -65,16 +65,29 @@ def average_mutual_information(series, max_lag: int, bins: int | None = None) ->
     return out
 
 
+def _first_local_minimum(ami: np.ndarray) -> int | None:
+    lags = [lag for lag in range(1, len(ami) - 1)
+            if ami[lag] < ami[lag - 1] and ami[lag] <= ami[lag + 1]]
+    return lags[0] if lags else None
+
+
+def ami_first_minimum(series, max_lag: int = 60, bins: int | None = None) -> int | None:
+    """Primeiro mínimo local da AMI até `max_lag`, sem o critério 1/e (F2a, D-027)."""
+    return _first_local_minimum(average_mutual_information(series, max_lag, bins))
+
+
 def ami_delay(series, max_lag: int = 60, bins: int | None = None) -> int:
     """τ = menor valor entre o primeiro mínimo local da AMI e o primeiro τ com AMI < AMI(0)/e.
 
     Só o mínimo local falha em mapas: a AMI decai devagar e o "mínimo" cai no ruído de
-    estimativa (τ = 8 no logístico). O critério 1/e limita esse caso; em fluxos (Lorenz,
-    clima diário) o mínimo local costuma vir antes e prevalece.
+    estimativa (τ = 8 no logístico). O critério 1/e limita esse caso. Em fluxos amostrados
+    finamente (Lorenz) o mínimo local costuma vir antes; nas anomalias diárias do clima, ao
+    contrário, a AMI cai abaixo de 1/e já no primeiro dia e o critério 1/e prevalece (τ = 1),
+    com o primeiro mínimo em 10 a 12 dias (F2a, D-027).
     """
     ami = average_mutual_information(series, max_lag, bins)
-    candidates = [lag for lag in range(1, max_lag)
-                  if ami[lag] < ami[lag - 1] and ami[lag] <= ami[lag + 1]][:1]
+    first = _first_local_minimum(ami)
+    candidates = [first] if first is not None else []
     below = np.flatnonzero(ami < ami[0] / np.e)
     candidates += [int(below[0])] if len(below) else []
     if not candidates:
@@ -118,3 +131,55 @@ def fnn_dimension(series, delay: int, max_dimension: int = 10, threshold: float 
     fractions = false_nearest_neighbors(series, delay, max_dimension, theiler=theiler)
     below = np.flatnonzero(fractions < threshold)
     return int(below[0] + 1) if len(below) else int(np.argmin(fractions) + 1)
+
+
+def _neighbors_max_norm(vectors: np.ndarray, theiler: int):
+    """Vizinho mais próximo (norma do máximo) fora da janela de Theiler, como em Cao (1997)."""
+    n = len(vectors)
+    k = min(n, 2 * theiler + 2)
+    dist, idx = cKDTree(vectors).query(vectors, k=k, p=np.inf)
+    allowed = (np.abs(idx - np.arange(n)[:, None]) > theiler) & (dist > 0)
+    if not allowed.any(axis=1).all():
+        # pontos repetidos podem esgotar os k candidatos: busca mais longe só para eles
+        dist, idx = cKDTree(vectors).query(vectors, k=min(n, 4 * k), p=np.inf)
+        allowed = (np.abs(idx - np.arange(n)[:, None]) > theiler) & (dist > 0)
+    ok = allowed.any(axis=1)
+    col = allowed.argmax(axis=1)
+    rows = np.arange(n)
+    return idx[rows, col], dist[rows, col], ok
+
+
+def cao(series, delay: int, max_dimension: int = 10, theiler: int = 0):
+    """E1(m) e E2(m) de Cao (1997), m = 1…max_dimension (F2h, D-027).
+
+    E(m) é a média de a(i, m) = ‖y_i(m+1) − y_n(m+1)‖ / ‖y_i(m) − y_n(m)‖, com o vizinho n
+    de i escolhido em dimensão m (norma do máximo); E1(m) = E(m+1)/E(m) satura perto de 1
+    quando m basta. E*(m) é a média de |x_{i+mτ} − x_{n+mτ}| e E2(m) = E*(m+1)/E*(m): num
+    processo estocástico os valores futuros não dependem do passado reconstruído, e E2 fica
+    perto de 1 em todo m.
+    """
+    x = _finite(series)
+    e, e_star = [], []
+    for m in range(1, max_dimension + 2):
+        n = len(x) - m * delay
+        if n < 2 * theiler + 10:
+            raise ValueError("Série curta demais para max_dimension e delay pedidos")
+        vectors = delay_embedding(x, m, delay)[:n]
+        following = x[m * delay : m * delay + n]
+        j, d, ok = _neighbors_max_norm(vectors, theiler)
+        i = np.flatnonzero(ok)
+        j = j[ok]
+        gap = np.abs(following[i] - following[j])
+        e.append(np.mean(np.maximum(d[ok], gap) / d[ok]))
+        e_star.append(np.mean(gap))
+    e, e_star = np.array(e), np.array(e_star)
+    return e[1:] / e[:-1], e_star[1:] / e_star[:-1]
+
+
+def cao_indices(e1, e2, level: float = 0.9, change: float = 0.05) -> dict:
+    """Dimensão de saturação (E1 ≥ `level` e variação < `change`) e D_E2 = max |1 − E2|."""
+    e1, e2 = np.asarray(e1), np.asarray(e2)
+    saturated = [m + 1 for m in range(len(e1) - 1)
+                 if e1[m] >= level and abs(e1[m + 1] - e1[m]) < change]
+    return {"cao_m": saturated[0] if saturated else np.nan,
+            "cao_de2": float(np.max(np.abs(1 - e2)))}

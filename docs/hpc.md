@@ -117,6 +117,14 @@ Todos usam o cabeçalho comum (`scripts/hpc/_common.sh`: avisos no Telegram, tem
 | `chirps.sbatch` (sem `REGION`) | CHIRPS v3 sat 2001–2024, um ano por vez, e chuva por célula das regiões (D-021) | horas, 1 CPU |
 | `precip.sbatch` (com `SOURCES`) | descritores ordinais da chuva, no ERA5 e no CHIRPS (D-021) | ~45 min por bacia e fonte (14 CPUs) |
 | `sensitivity.sbatch` | 199 substitutas, τ = 2 e ruído do EDH numa subamostra de ~60 células (D-024) | ~2 h por bacia (14 CPUs) |
+| `era5_passagem.sbatch` | `skt`, `t2m` e `tcc` do ERA5 na passagem do MODIS Terra (F2e, D-027) | minutos |
+| `atrasos.sbatch` | grade de τ e de atrasos ordinais na subamostra de D-024 (F2a, D-027) | ~1 h por bacia (14 CPUs) |
+| `extremos.sbatch` | mínima, máxima e amplitude térmica: ordinais em todas as células (F2b, D-027) | ~1 a 1,5 h por bacia (14 CPUs) |
+| `gate_realista.sbatch` | nulas realistas (AR sazonal, AR com tendência, SETAR, AR-GARCH) e Wolf, Kantz, Cao e S-map nos controles do gate (F2f, F2d, F2g, F2h; D-027) | ~2–3 h (16 CPUs) |
+| `estimadores.sbatch` | Wolf, Kantz e Cao na série da bacia (199 IAAFT) e na subamostra (F2d, F2h; D-027) | ~1 h por bacia (14 CPUs) |
+| `smap.sbatch` | S-map em todas as células, horizontes 1, 3 e 7 dias (F2g, D-027) | ~1,5 h por bacia (14 CPUs) |
+| `multivariado.sbatch` | temperatura + umidade contra substitutas FT e IAAFT multivariadas, bacia e subamostra (F2c, D-027) | 10 a 20 h por bacia (14 CPUs) |
+| `chuva_dither.sbatch` | chuva com dither em cada substituta (todas as células, ERA5 e CHIRPS) e erro espectral do IAAFT na subamostra (F2i, D-027) | ~1 h por bacia (14 CPUs) |
 
 Como a cota é de 16 CPUs, encadeie os jobs grandes:
 

@@ -39,15 +39,23 @@ COVERS = {
                        "07_descritores/xingu/mapa_z_pe_complexity_t2m.png"),
     "08_gradiente": ("Perturbação e dinâmica", "O que o ERA5 vê e o que o satélite vê",
                      "08_gradiente/modis.png"),
+    "09_chuva": ("A chuva vista de duas formas",
+                 "O ERA5 e o CHIRPS diante da perturbação da floresta", "09_chuva/mapas.png"),
+    "10_fogo": ("O tempo antes do fogo",
+                "Quando o fogo segue o tempo seco e quando segue o calendário",
+                "10_fogo/meses.png", 0.22),
+    "11_territorio": ("O território",
+                      "Terras Indígenas e Unidades de Conservação diante do clima e do fogo",
+                      "11_territorio/mapas.png", 0.3),
 }
 
 
-def _crop(image: np.ndarray, aspect: float) -> np.ndarray:
-    """Recorte central com a proporção largura/altura pedida."""
+def _crop(image: np.ndarray, aspect: float, center: float = 0.5) -> np.ndarray:
+    """Recorte com a proporção largura/altura pedida, centrado em `center` (fração da largura)."""
     h, w = image.shape[:2]
     if w / h > aspect:
         new_w = int(h * aspect)
-        x0 = (w - new_w) // 2
+        x0 = min(max(int(center * w) - new_w // 2, 0), w - new_w)
         return image[:, x0:x0 + new_w]
     new_h = int(w / aspect)
     y0 = (h - new_h) // 2
@@ -56,14 +64,14 @@ def _crop(image: np.ndarray, aspect: float) -> np.ndarray:
 
 def draw(name: str, root: Path | None = None) -> Path:
     root = Path(root or project_root())
-    title, subtitle, figure = COVERS[name]
+    title, subtitle, figure, *center = COVERS[name]
     number = name[:2]
     fig = plt.figure(figsize=(12, 6.3), dpi=200)
     fig.patch.set_facecolor(GREEN)
     split = 0.46
     art = fig.add_axes([split, 0, 1 - split, 1])
     image = mpimg.imread(root / "reports/figures" / figure)
-    art.imshow(_crop(image, (1 - split) * 12 / 6.3), aspect="auto")
+    art.imshow(_crop(image, (1 - split) * 12 / 6.3, *center), aspect="auto")
     art.set_axis_off()
     # esmaece a borda esquerda da figura no verde do painel
     fade = np.zeros((2, 256, 4))

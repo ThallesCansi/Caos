@@ -1,21 +1,75 @@
 [
   {
+    "name": "comparativos",
+    "region": null,
+    "caption": "Tabela 6. Comparativo, exploratório (D-027). Correlação parcial (controles: latitude, água e altitude) entre a perda antecedente e as medidas dos comparativos, com IC 95% por blocos de 1°; \"sim\": o intervalo exclui zero com o mesmo sinal nas duas bacias.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/comparativos.csv",
+    "tex": "reports/tables/08_gradiente/comparativos.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "exposicoes",
+    "region": null,
+    "caption": "Tabela A2. Valores da Figura 4: correlação parcial (controles: latitude, água e altitude) entre cada medida de perturbação e o z de cada descritor primário, com IC 95% e p por bootstrap em blocos de 1°.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/exposicoes.csv",
+    "tex": "reports/tables/08_gradiente/exposicoes.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "longitudinal",
+    "region": null,
+    "caption": "Tabela A3. Valores da Figura 5: correlação parcial entre a perda de floresta de 2001 a 2012 e a mudança de cada descritor primário entre 2001–2012 e 2013–2024, em todas as células elegíveis e só nas que mantêm a dimensão de imersão, com IC 95% e p por bootstrap em blocos de 1°.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/longitudinal.csv",
+    "tex": "reports/tables/08_gradiente/longitudinal.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "modelos",
+    "region": null,
+    "caption": "Tabela A1. Valores da Figura 3: correlação parcial entre a perturbação e o z de cada descritor primário nos três modelos, com IC 95% e p por bootstrap em blocos de 1°.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/modelos.csv",
+    "tex": "reports/tables/08_gradiente/modelos.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
     "name": "modis",
     "region": null,
     "caption": "Tabela 3. Correlação de Spearman, bruta e parcial (controles: latitude, água e altitude), entre a perturbação e a temperatura da estação seca pelo MODIS (superfície, diurna) e pelo ERA5 (máxima do ar a 2 m), entre células (perda antecedente) e ao longo do tempo (perda 2001–2012 contra a mudança entre as décadas), com IC 95% por blocos de 1°.",
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/modis.csv",
     "tex": "reports/tables/08_gradiente/modis.tex",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "passagem",
+    "region": null,
+    "caption": "Tabela 4. Comparativo complementar (D-027). Correlação parcial de Spearman (controles: latitude, água e altitude; na linha indicada, também a vegetação alta e baixa do ERA5) entre a perturbação e a temperatura da estação seca às 10h30 solares no ERA5, ao lado do MODIS, com IC 95% por blocos de 1° e a diferença bruta entre as médias do décimo mais e do menos perturbado.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/passagem.csv",
+    "tex": "reports/tables/08_gradiente/passagem.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "placebo",
+    "region": null,
+    "caption": "Tabela 5. Exposição-placebo (D-028, exploratória). Correlação parcial de Spearman, com IC 95% por blocos de 1°, entre o z dos descritores primários em 2001–2012 e a perda antecedente ou a perda de floresta de 2013 a 2024 (MapBiomas), nas células elegíveis com ao menos 50% de floresta em 2000 (593 no Xingu, 500 no Tapajós).",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/placebo.csv",
+    "tex": "reports/tables/08_gradiente/placebo.tex",
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "resultado_preregistrado",
     "region": null,
-    "caption": "Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda antecedente de floresta e z dos descritores primários, bruta e parcial (controles: latitude, água e altitude), com IC 95% por bootstrap em blocos de 1° e I de Moran dos resíduos.",
+    "caption": "Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda antecedente de floresta e z dos descritores primários, bruta e parcial (controles: latitude, água e altitude), com IC 95% por bootstrap em blocos de 1°, p-valor da mesma reamostragem corrigido por Holm e por Benjamini–Hochberg sobre os 16 testes, I de Moran dos resíduos, n efetivo de Clifford et al. e p-valor com esse n, sem correção (D-028).",
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/resultado_preregistrado.csv",
     "tex": "reports/tables/08_gradiente/resultado_preregistrado.tex",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "robustez",
@@ -24,6 +78,6 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/robustez.csv",
     "tex": "reports/tables/08_gradiente/robustez.tex",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

@@ -40,6 +40,10 @@ with app.setup(hide_code=True):
     CONTROL_NAMES = {"logistic": "logístico", "henon": "Hénon", "lorenz": "Lorenz",
                      "white": "ruído branco", "ar1": "AR(1)", "sine_noise": "seno + ruído",
                      "seasonal_trend": "AR(1) sazonal com tendência"}
+    EXTRA_NAMES = {"wolf": "Lyapunov (Wolf)", "kantz": "Lyapunov (Kantz)",
+                   "cao_de2": "Cao · D_E2", "smap": "S-map (ganho, 1 dia)"}
+    REALISTIC_NAMES = {"ar1_doy": "AR(1), memória sazonal", "ar1_trend": "AR(1) com tendência",
+                       "setar": "SETAR, dois regimes", "ar1_garch": "AR(1)-GARCH"}
 
 
 @app.function(hide_code=True)
@@ -455,6 +459,123 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def realistic_rates():
+    """Taxas nos controles do gate (n = 8.766, ruído 0,2) e nas nulas realistas (F2f)."""
+    from amazon_chaos.nonlinear import realistic as RL
+
+    _, _, rates, _, _, _ = gate_results()
+    final = rates[(rates.n == 8766) & (rates.noise == 0.2)][["descriptor", "control", "rate"]]
+    desc, smaps = RL.load(SPEC)
+    new = desc[(desc.group != "nula") & (desc.n == 8766) & (desc.noise == 0.2)]
+    sm = smaps[(smaps.group != "nula") & (smaps.n == 8766) & (smaps.noise == 0.2)
+               & (smaps.horizon == 1)].assign(descriptor="smap")
+    extra = (pd.concat([new, sm]).groupby(["descriptor", "control"]).rejects.mean()
+             .rename("rate").reset_index())
+    nulls = RL.null_rates(SPEC)
+    return pd.concat([final, extra, nulls[["descriptor", "control", "rate"]]]), nulls
+
+
+@app.function(hide_code=True)
+def plot_realistic():
+    table, _ = realistic_rates()
+    rows = list(NAMES) + list(EXTRA_NAMES)
+    cols = list(POSITIVE) + list(NEGATIVE) + list(REALISTIC_NAMES)
+    grid = table.pivot_table(index="descriptor", columns="control", values="rate")
+    grid = grid.reindex(index=rows, columns=cols)
+    fig, ax = plt.subplots(figsize=(13, 6.6), layout="constrained")
+    image = ax.imshow(grid.to_numpy(), cmap="Reds", vmin=0, vmax=1, aspect="auto")
+    ax.grid(False)
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            v = grid.iat[i, j]
+            if np.isfinite(v):
+                ax.text(j, i, f"{100 * v:.0f}", ha="center", va="center", fontsize=8,
+                        color="white" if v > 0.6 else COLORS["ink"])
+    ax.set_xticks(range(len(cols)), [CONTROL_NAMES.get(c, REALISTIC_NAMES.get(c)) for c in cols],
+                  rotation=35, ha="right")
+    ax.set_yticks(range(len(rows)), [{**NAMES, **EXTRA_NAMES}[r] for r in rows])
+    for x in (len(POSITIVE) - 0.5, len(POSITIVE) + len(NEGATIVE) - 0.5):
+        ax.axvline(x, color=COLORS["ink"], lw=1.5)
+    ax.axhline(len(NAMES) - 0.5, color=COLORS["ink"], lw=1.5)
+    ax.set_title("caóticos  ·  lineares do portão  ·  nulas realistas, sem caos", loc="left")
+    fig.colorbar(image, ax=ax, label="fração das séries que rejeitam (p ≤ 0,05)", shrink=0.8)
+    return fig
+
+
+@app.cell(hide_code=True)
+def _():
+    _, _nulls = realistic_rates()
+    _tab = _nulls.assign(
+        Descritor=_nulls.descriptor.map({**NAMES, **EXTRA_NAMES}),
+        Nula=_nulls.control.map(REALISTIC_NAMES),
+        Taxa=[f"{100 * r:.0f}% [{100 * a:.0f}; {100 * b:.0f}]" for r, a, b in zip(
+            _nulls.rate, _nulls.ci_low, _nulls.ci_high, strict=True)])
+    _tab = _tab.pivot_table(index="Descritor", columns="Nula", values="Taxa",
+                            aggfunc="first").reindex(
+        [{**NAMES, **EXTRA_NAMES}[k] for k in list(NAMES) + list(EXTRA_NAMES)])
+    _tab = _tab[list(REALISTIC_NAMES.values())].reset_index()
+    _tab.columns.name = None
+    mo.vstack([
+        mo.md(r"""
+        ## 🧱 Um portão mais exigente (comparativo)
+
+        O portão pré-registrado tem uma limitação que a revisão crítica do trabalho apontou:
+        os seus controles negativos são lineares e quase todos estacionários, e o clima não
+        é nenhuma das duas coisas. A memória de um dia para o outro muda ao longo do ano,
+        a variância responde a choques que demoram a se dissipar e há tendência. Um
+        descritor que rejeita a hipótese das substitutas nos dados pode estar vendo isso, e
+        não dinâmica determinística. Para medir esse risco, fixamos antes do cálculo
+        (D-027) quatro processos estocásticos sem nenhum caos, ajustados às séries médias
+        das bacias: um AR(1) cuja memória varia com o dia do ano, um AR(1) com tendência,
+        um modelo de dois regimes (SETAR), em que a memória depende de o dia anterior ter
+        sido mais quente ou mais frio que o normal, e um AR(1) com variância condicional
+        (GARCH), em que dias muito anômalos tornam os seguintes mais variáveis. Cada um foi
+        simulado de 1990 a 2024 com o calendário real, passado pela mesma anomalia
+        padronizada dos dados e testado 80 vezes com os oito descritores e as mesmas
+        substitutas. Acrescentamos três estimadores que o portão não tinha: o Lyapunov de
+        Wolf e o de Kantz, ao lado do de Rosenstein, o afastamento $D_{E2}$ do método de Cao,
+        que mede se os valores futuros dependem do passado reconstruído, e o ganho do S-map,
+        uma previsão local cuja vantagem sobre a linear não depende das substitutas [9, 10,
+        11, 12]. Este portão não substitui o pré-registrado; ele mede a taxa de falso
+        positivo com hipóteses nulas mais próximas do clima.
+        """),
+        book.figure(plot_realistic(), "portao_realista",
+                    "Figura 5. Comparativo (D-027). Fração das séries em que cada descritor "
+                    "rejeita a hipótese das substitutas, em % (S-map: teste de Diebold–Mariano "
+                    "do ganho sobre a previsão linear, 1 dia): controles caóticos e lineares do "
+                    "portão (8.766 passos, ruído 0,2, 10 repetições) e quatro nulas "
+                    "estocásticas realistas, sem caos (80 séries cada)."),
+        mo.md(r"""
+        O resultado é sério para a leitura do capítulo 7. O AR(1) com memória sazonal, um
+        processo puramente estocástico, faz o determinismo da recorrência rejeitar a
+        hipótese em 81% das séries e os padrões ordinais em mais da metade; com os
+        parâmetros do VPD, os padrões ordinais rejeitam em praticamente todas. O AR(1) com
+        variância condicional engana o determinismo, a laminaridade e os expoentes de
+        Lyapunov quase sempre. Os descritores que passaram no portão pré-registrado
+        detectam, portanto, qualquer afastamento da hipótese linear e estacionária das
+        substitutas, inclusive os que o clima tem sem ser caótico. Dois resultados se
+        sustentam. O erro de previsão quase nunca rejeita nas nulas, como nas células. E o
+        $D_{E2}$ de Cao separa as duas coisas: rejeita em todos os controles caóticos e em no
+        máximo 8% das séries de cada nula realista. O ganho do S-map é significativo em
+        parte das séries da SETAR, que é de fato não linear, mas é minúsculo, menos de 0,2%
+        do erro, contra 37% a 57% nos sistemas caóticos. A Tabela 3 traz as taxas das nulas
+        com os intervalos.
+        """),
+        book.table(_tab, "portao_realista",
+                   "Tabela 3. Comparativo (D-027). Taxa de rejeição (p ≤ 0,05) de cada "
+                   "descritor nas quatro nulas realistas, com IC 95% de Clopper–Pearson, 80 "
+                   "séries por nula (quatro ajustes × 20 repetições).", selection=None),
+        mo.callout(mo.md(
+            "Rejeitar as substitutas IAAFT não distingue caos de um clima estocástico com "
+            "memória sazonal ou variância condicional. Nos dados, a pergunta passa a ser se "
+            "as células rejeitam mais que essas nulas e se o teste de Cao, que as separa, "
+            "vê dependência determinística; o capítulo 7 responde às duas."), kind="warn"),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md(rf"""
@@ -467,7 +588,10 @@ def _():
     sensível a ciclos fortes, o que exige retirar o ciclo anual. A variância sazonal produz
     falsos positivos que só a padronização controla, e não por completo no caso do Lyapunov,
     que por isso fica como exploratório. Essas lições definiram como as séries são tratadas
-    e como os resultados são lidos nos capítulos seguintes. O pré-registro que as fixou
+    e como os resultados são lidos nos capítulos seguintes. O portão mais exigente, com
+    nulas estocásticas realistas, acrescentou uma lição posterior: rejeitar as substitutas
+    não basta para falar em dinâmica determinística, e o teste de Cao passa a ser o árbitro
+    dessa pergunta. O pré-registro que as fixou
     está {SPEC['status']} desde {SPEC.get('frozen_on', 'o início da análise')}, e toda
     mudança posterior foi registrada como uma nova versão ou como análise complementar.
     """)
@@ -504,6 +628,18 @@ def _():
     [8] Dakos, V. et al. Methods for detecting early warnings of critical transitions in
     time series illustrated using simulated ecological data. *PLoS ONE*, v. 7, e41010,
     2012.
+
+    [9] Wolf, A.; Swift, J. B.; Swinney, H. L.; Vastano, J. A. Determining Lyapunov
+    exponents from a time series. *Physica D*, v. 16, p. 285–317, 1985.
+
+    [10] Kantz, H. A robust method to estimate the maximal Lyapunov exponent of a time
+    series. *Physics Letters A*, v. 185, p. 77–87, 1994.
+
+    [11] Cao, L. Practical method for determining the minimum embedding dimension of a
+    scalar time series. *Physica D*, v. 110, p. 43–50, 1997.
+
+    [12] Sugihara, G. Nonlinear forecasting for the classification of natural time series.
+    *Philosophical Transactions of the Royal Society A*, v. 348, p. 477–495, 1994.
     """)
     return
 

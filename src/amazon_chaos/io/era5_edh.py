@@ -19,6 +19,7 @@ from pathlib import Path
 
 import aiohttp
 import numpy as np
+import pandas as pd
 import xarray as xr
 import zarr
 
@@ -258,3 +259,74 @@ def static_fields(config, when="2001-01-01T00:00", url=EDH_URL):
         out[name].attrs["long_name"] = label
     out.attrs = {"source": url, "instant": when}
     return out
+
+
+# Horário da passagem do MODIS Terra (F2e, D-027): 10h30 solares locais caem entre 13,8 e
+# 14,5 UTC nas duas bacias; as horas cheias vizinhas são baixadas, e a interpolação para a
+# longitude de cada célula fica para a análise.
+PASSAGE = {"variables": ("skt", "t2m", "tcc"), "hours_utc": (13, 14, 15),
+           "months": (6, 7, 8, 9), "years": (2001, 2024)}
+
+
+def passage_times(year, hours=PASSAGE["hours_utc"], months=PASSAGE["months"]):
+    days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D")
+    days = days[days.month.isin(months)]
+    return pd.DatetimeIndex([d + pd.Timedelta(hours=h) for d in days for h in hours])
+
+
+def passage_fields(config, out, years=None, open_dataset=open_edh, report=print, retries=5,
+                   wait_seconds=60, url=EDH_URL):
+    """`skt`, `t2m` e `tcc` nas horas da passagem do Terra, na estação seca, ano a ano.
+
+    Grava um NetCDF por ano em `out` e retoma pelos que já existem; o manifesto
+    (`manifest.json`) guarda as regras e o SHA-256 de cada arquivo.
+    """
+    first, last = years or PASSAGE["years"]
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    lats, lons = grid_coordinates(config["spatial"]["area"])
+    east = np.round(lons % 360, 6)
+    names = list(PASSAGE["variables"])
+    todo = [y for y in range(first, last + 1) if not (out / f"{y}.nc").exists()]
+    region = config.get("region_name", config["experiment_id"])
+    ds = open_dataset() if todo else None
+    started = time.monotonic()
+    for done, year in enumerate(todo, start=1):
+        times = passage_times(year)
+        for attempt in range(1, retries + 1):
+            try:
+                block = (ds[names].sel(latitude=lats, longitude=east, method="nearest",
+                                       tolerance=1e-6)
+                         .sel(valid_time=times).load())
+                break
+            except NETWORK_ERRORS as error:
+                if attempt == retries:
+                    raise
+                pause = wait_seconds * 2 ** (attempt - 1)
+                report(f"⚠️ {region}: instabilidade de rede no skt de {year} "
+                       f"({type(error).__name__}, tentativa {attempt}/{retries}); "
+                       f"tento de novo em {pause} s.")
+                time.sleep(pause)
+                ds = open_dataset()
+        block = block.reset_coords(drop=True).assign_coords(latitude=lats, longitude=lons)
+        for name in names:
+            if not np.isfinite(block[name].values).all():
+                raise ValueError(f"{name} com valores ausentes em {year}")
+            block[name].encoding = {}
+        block.attrs = {"edh_source_url": url, "edh_precision": EDH_PRECISION}
+        temporary = out / f"{year}.tmp.nc"
+        block.to_netcdf(temporary,
+                        encoding={n: {"zlib": True, "complevel": 4} for n in names})
+        temporary.replace(out / f"{year}.nc")
+        if done % 6 == 0 or done == len(todo):
+            remaining = (time.monotonic() - started) / done * (len(todo) - done)
+            report(f"🌡️ {region}: skt da passagem do Terra, {done}/{len(todo)} anos"
+                   + (f" · ⏳ faltam ~{_duration(remaining)}" if done < len(todo) else ""))
+    files = [out / f"{y}.nc" for y in range(first, last + 1)]
+    (out / "manifest.json").write_text(json.dumps({
+        "rules": {**PASSAGE, "years": [first, last]}, "source_url": url,
+        "written_utc": datetime.now(UTC).isoformat(timespec="seconds"),
+        "files": [{"name": f.name, "size_bytes": f.stat().st_size, "sha256": sha256_file(f)}
+                  for f in files],
+    }, indent=2), encoding="utf-8")
+    return files

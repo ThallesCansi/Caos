@@ -567,6 +567,108 @@ def _(cells_variable):
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def extra_basin():
+    """Wolf, Kantz e Cao nas séries das bacias (F2d, F2h) e temperatura + umidade contra
+    nulas multivariadas (F2c), com Holm sobre 2 bacias × 2 alvos (D-027)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear import estimators as E
+    from amazon_chaos.nonlinear import multivariate as M
+
+    lyap, multi = [], []
+    for slug in SLUGS:
+        cfg = load_region(slug)
+        lyap.append(pd.read_parquet(E.output_dir(cfg, SPEC) / "bacia.parquet"))
+        table = pd.read_parquet(M.output_dir(cfg, SPEC) / "bacia.parquet")
+        multi.append(M.pvalues(table))
+    multi = pd.concat(multi, ignore_index=True)
+    multi["holm"] = multi.groupby(["null", "metodo", "estatistica"]).pvalue.transform(
+        lambda p: G.adjust(p, "holm"))
+    return pd.concat(lyap, ignore_index=True), multi
+
+
+@app.cell(hide_code=True)
+def _():
+    _lyap, _multi = extra_basin()
+    _names = {"wolf": "Lyapunov (Wolf)", "kantz": "Lyapunov (Kantz)", "cao_de2": "Cao · D_E2"}
+    _t3 = pd.DataFrame({
+        "Bacia": _lyap.region.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")),
+        "Variável": _lyap.variable.map(R.VARIABLES), "Estimador": _lyap.descriptor.map(_names),
+        "Observado": _lyap.observed.round(3), "Média das substitutas": _lyap.null_mean.round(3),
+        "z": _lyap.z.round(1), "p": _lyap.pvalue.round(3),
+        "m de saturação (Cao)": _lyap.cao_m.astype(int)})
+    _m = _multi[_multi.estatistica == "ganho"]
+    _t4 = pd.DataFrame({
+        "Bacia": _m.region.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")),
+        "Alvo": _m.alvo.map({"t2m": "temperatura", "q": "umidade específica"}),
+        "Previsor": _m.metodo.map({"nn": "vizinhos", "smap": "S-map"}), "Nula": _m["null"],
+        "Ganho observado": _m.observado.round(4), "Ganho nas substitutas": _m.nulo_media.round(4),
+        "p": _m.pvalue.round(3), "p Holm": _m.holm.round(3)})
+    mo.vstack([
+        mo.md(r"""
+        ## 🧮 Mais três estimadores e as duas variáveis juntas (comparativo)
+
+        Depois da revisão crítica, acrescentamos às séries das bacias, com as mesmas 199
+        substitutas IAAFT, três estimadores que o pré-registro não tinha (D-027): os
+        expoentes de Lyapunov de Wolf e de Kantz, ao lado do de Rosenstein, e o afastamento
+        $D_{E2}$ do método de Cao, que mede se o valor seguinte depende do passado
+        reconstruído além do que um processo sem memória determinística permitiria [8, 9,
+        10]. A Tabela 3 traz os resultados.
+        """),
+        book.table(_t3, "estimadores_bacia",
+                   "Tabela 3. Comparativo (D-027). Lyapunov de Wolf e de Kantz e afastamento "
+                   "D_E2 de Cao nas séries médias das bacias, contra 199 substitutas IAAFT, com "
+                   "a dimensão em que o E1 de Cao satura.", selection=None),
+        mo.md(r"""
+        Os três contam a história da Tabela 2 por outros caminhos. O Kantz fica acima das
+        substitutas, mas o capítulo 5 mostra que ele faz o mesmo num processo estocástico
+        com variância condicional; o Wolf fica abaixo delas. O $D_{E2}$ de Cao, o único dos
+        três que separa caos de processos estocásticos no portão, fica entre 0,02 e 0,05.
+        Na temperatura, ele não se distingue das substitutas; no VPD, fica um pouco acima
+        delas nas duas bacias, e no Tapajós acima também de quase todas as séries das nulas
+        estocásticas. Mesmo assim, é de quatro a dez vezes menor que nos sistemas caóticos
+        do portão (0,08 a 0,32), e a dimensão só satura em 8 ou 9: os valores futuros
+        dependem pouco do passado reconstruído, com um traço de dependência a mais no VPD.
+
+        A segunda pergunta é se temperatura e umidade, juntas, têm uma estrutura que cada
+        uma sozinha não tem. Prevemos cada variável a partir do seu próprio passado, do
+        passado da outra e dos dois juntos, por vizinhos próximos e por S-map, e medimos o
+        ganho de juntar as duas. A nula preserva os dois espectros e a correlação entre as
+        variáveis em cada escala de tempo, com a mesma fase aleatória nos dois canais
+        (Prichard e Theiler [11]) ou na sua versão IAAFT; substitutas independentes para
+        cada variável destruiriam a correlação entre elas e rejeitariam por construção.
+        """),
+        book.table(_t4, "multivariado_bacia",
+                   "Tabela 4. Comparativo (D-027). Ganho de prever cada variável com as duas "
+                   "juntas, em vez da melhor isolada (erro relativo ao desvio do treino), na "
+                   "série média de cada bacia e na média de 199 substitutas multivariadas FT e "
+                   "IAAFT, com p unilateral e Holm sobre as duas bacias e os dois alvos.",
+                   selection=None),
+        mo.md(r"""
+        Com vizinhos próximos, juntar as duas variáveis piora a previsão, nos dados e nas
+        substitutas: o espaço fica grande demais para cinco vizinhos. Com o S-map, juntar
+        as duas melhora um pouco a previsão, mais nos dados do que nas substitutas, mas o
+        ganho é de 0,2% a 1% do erro e, corrigido para as quatro comparações, só se sustenta
+        no Tapajós, nas duas variáveis, contra a nula de fase comum. Um modelo linear
+        com os mesmos atrasos prevê quase tão bem quanto o S-map conjunto. A interação entre
+        temperatura e umidade nas séries das bacias é, portanto, essencialmente a que a
+        correlação linear entre elas já descreve.
+
+        Repetimos a análise nas cerca de 60 células da subamostra de cada bacia, com 39
+        substitutas IAAFT multivariadas por célula. O erro conjunto nunca fica abaixo do das
+        substitutas, e o ganho do S-map conjunto na previsão da temperatura passa do nível de
+        5% em 13% das células do Xingu e 23% das do Tapajós, nenhuma delas depois da correção
+        de Benjamini–Hochberg. Na umidade específica, o ganho passa do nível de 5% em 73% das
+        células do Xingu e 50% das do Tapajós, e a correção mantém 57% das do Xingu e nenhuma
+        do Tapajós. Há, portanto, um pouco de estrutura conjunta não linear na previsão da
+        umidade, mais clara no Xingu, mas de novo com ganhos pequenos: a mediana nas células
+        é de 0,6% do erro no Xingu e de 1,2% no Tapajós.
+        """),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
@@ -580,7 +682,8 @@ def _():
     uniformes, quedas mais bruscas que subidas e períodos agitados que se agrupam. Ela não
     inclui o que distinguiria um caos de baixa dimensão: o expoente de Lyapunov não se
     separa das substitutas, e a previsão não linear fica pior, e não melhor, do que nas
-    séries lineares equivalentes.
+    séries lineares equivalentes. Os estimadores acrescentados depois, sobretudo o teste de
+    Cao, e a análise conjunta de temperatura e umidade apontam na mesma direção.
 
     O quadro mais coerente com esses resultados é o de um processo não linear e
     estocástico, em que o ruído não é um acessório que esconde uma dinâmica simples, mas
@@ -618,6 +721,18 @@ def _():
     [7] Kwiatkowski, D.; Phillips, P. C. B.; Schmidt, P.; Shin, Y. Testing the null
     hypothesis of stationarity against the alternative of a unit root. *Journal of
     Econometrics*, v. 54, p. 159–178, 1992.
+
+    [8] Wolf, A.; Swift, J. B.; Swinney, H. L.; Vastano, J. A. Determining Lyapunov
+    exponents from a time series. *Physica D*, v. 16, p. 285–317, 1985.
+
+    [9] Kantz, H. A robust method to estimate the maximal Lyapunov exponent of a time
+    series. *Physics Letters A*, v. 185, p. 77–87, 1994.
+
+    [10] Cao, L. Practical method for determining the minimum embedding dimension of a
+    scalar time series. *Physica D*, v. 110, p. 43–50, 1997.
+
+    [11] Prichard, D.; Theiler, J. Generating surrogate data for time series with several
+    simultaneously measured variables. *Physical Review Letters*, v. 73, p. 951–954, 1994.
     """)
     return
 

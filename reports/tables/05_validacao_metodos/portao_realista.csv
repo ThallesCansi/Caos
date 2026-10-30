@@ -1,0 +1,13 @@
+Descritor,"AR(1), memória sazonal",AR(1) com tendência,"SETAR, dois regimes",AR(1)-GARCH
+Lyapunov (Rosenstein),31% [21; 43],8% [3; 16],6% [2; 14],81% [71; 89]
+RQA · determinismo,81% [71; 89],24% [15; 35],4% [1; 11],100% [95; 100]
+RQA · laminaridade,86% [77; 93],18% [10; 28],28% [18; 39],98% [91; 100]
+Dimensão de correlação,64% [52; 74],6% [2; 14],6% [2; 14],45% [34; 57]
+Entropia de permutação,59% [47; 70],5% [1; 12],9% [4; 17],0% [0; 5]
+Complexidade estatística,54% [42; 65],8% [3; 16],6% [2; 14],0% [0; 5]
+Assimetria temporal,12% [6; 22],4% [1; 11],38% [27; 49],6% [2; 14]
+Erro de previsão não linear,10% [4; 19],0% [0; 5],5% [1; 12],16% [9; 26]
+Lyapunov (Wolf),36% [26; 48],5% [1; 12],2% [0; 9],30% [20; 41]
+Lyapunov (Kantz),54% [42; 65],5% [1; 12],31% [21; 43],98% [91; 100]
+Cao · D_E2,1% [0; 7],8% [3; 16],4% [1; 11],2% [0; 9]
+"S-map (ganho, 1 dia)",15% [8; 25],6% [2; 14],49% [37; 60],4% [1; 11]

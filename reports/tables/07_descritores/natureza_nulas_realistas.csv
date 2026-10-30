@@ -1,0 +1,13 @@
+Descritor,Nula mais permissiva,Xingu · temperatura,Xingu · déficit de pressão de vapor,Tapajós · temperatura,Tapajós · déficit de pressão de vapor
+Entropia de permutação,"69,6%",74% ▲,81% ▲,52%,93% ▲
+Complexidade estatística,"65,0%",69% ▲,77% ▲,51%,90% ▲
+Erro de previsão não linear,"26,2%",0%,0%,0%,0%
+RQA · determinismo,"100,0%",100%,100%,100%,100%
+RQA · laminaridade,"99,7%",100% ▲,100% ▲,100% ▲,100% ▲
+Dimensão de correlação,"74,2%",100% ▲,100% ▲,100% ▲,99% ▲
+Assimetria temporal,"49,0%",100% ▲,72% ▲,100% ▲,90% ▲
+Lyapunov (Rosenstein),"89,1%",14%,33%,35%,48%
+Lyapunov (Wolf)*,"47,8%",43%,50% ▲,37%,53% ▲
+Lyapunov (Kantz)*,"99,7%",98%,72%,100% ▲,56%
+Cao · D_E2*,"15,6%",2%,12%,18% ▲,19% ▲
+"S-map (ganho, 1 dia)","60,2%",69% ▲,42%,86% ▲,69% ▲

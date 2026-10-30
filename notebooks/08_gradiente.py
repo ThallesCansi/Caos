@@ -309,19 +309,42 @@ def plot_forest():
     return fig
 
 
+@app.function(hide_code=True)
+@mo.cache
+def preregistered():
+    """Os 16 testes pré-registrados, com Holm, BH e a inferência espacial de D-028."""
+    res = model_results()
+    pre = res[res.modelo == "pré-registrado"].reset_index(drop=True)
+    spatial = pd.DataFrame([
+        G.spatial_inference(cells(row.bacia)[cells(row.bacia).elegivel], "perda_antecedente",
+                            f"z_{row.variavel}_{row.descritor}")
+        for row in pre.itertuples()]).drop(columns="moran_residuos")
+    pre = pd.concat([pre, spatial], axis=1)
+    pre["p_holm"] = G.adjust(pre.p_blocos, "holm")
+    pre["p_bh"] = G.adjust(pre.p_blocos, "fdr_bh")
+    pre["p_n_efetivo_holm"] = G.adjust(pre.p_n_efetivo, "holm")
+    return pre
+
+
 @app.cell(hide_code=True)
 def _():
-    _res = model_results()
-    _pre = _res[_res.modelo == "pré-registrado"].copy()
+    _pre = preregistered().copy()
     _pre["Bacia"] = _pre.bacia.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", ""))
     _pre["Descritor"] = _pre.descritor.map(R.NAMES)
     _pre["Variável"] = _pre.variavel.map(R.VARIABLES)
     _pre["IC 95%"] = [f"[{a:+.2f}; {b:+.2f}]" for a, b in zip(_pre.ic_inf, _pre.ic_sup,
                                                              strict=True)]
     _tab = _pre[["Bacia", "Descritor", "Variável", "celulas", "rho_bruto", "rho_parcial",
-                 "IC 95%", "moran_residuos"]].rename(columns={
+                 "IC 95%", "p_holm", "p_bh", "moran_residuos", "n_efetivo",
+                 "p_n_efetivo"]].rename(columns={
         "celulas": "Células", "rho_bruto": "ρ bruto", "rho_parcial": "ρ parcial",
-        "moran_residuos": "Moran dos resíduos"}).round(2)
+        "p_holm": "p Holm", "p_bh": "p BH", "moran_residuos": "Moran dos resíduos",
+        "n_efetivo": "n efetivo", "p_n_efetivo": "p (n efetivo)"}).round(
+        {"ρ bruto": 2, "ρ parcial": 2, "Moran dos resíduos": 2, "n efetivo": 0,
+         "p Holm": 3, "p BH": 3, "p (n efetivo)": 3})
+    _tab["n efetivo"] = _tab["n efetivo"].astype(int)
+    _n_holm = int((_pre.p_holm < 0.05).sum())
+    _n_eff = int((_pre.p_n_efetivo < 0.05).sum())
     mo.vstack([
         mo.md(r"""
         ## 📊 O resultado principal e duas objeções
@@ -330,14 +353,23 @@ def _():
         duas variáveis e nas duas bacias: a correlação bruta, a parcial, o intervalo de 95%
         obtido por reamostragem de blocos espaciais de 1° e o índice de Moran dos resíduos,
         que mede quanto da variação não explicada ainda se parece entre células vizinhas
-        (zero indicaria independência; 1, semelhança total) [4].
+        (zero indicaria independência; 1, semelhança total) [4]. Como são 16 testes, a
+        tabela traz também o p-valor de cada um, obtido da mesma reamostragem que dá o
+        intervalo, corrigido para comparações múltiplas por dois métodos: o de Holm, que
+        controla a chance de um único falso positivo entre os 16, e o de Benjamini e
+        Hochberg, que controla a fração esperada de falsos positivos entre os destacados.
+        As duas últimas colunas fazem outra correção, explicada abaixo, para a semelhança
+        entre células vizinhas (D-028).
         """),
         book.table(_tab, "resultado_preregistrado",
                    "Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda "
                    "antecedente de floresta e z dos descritores primários, bruta e parcial "
                    "(controles: latitude, água e altitude), com IC 95% por bootstrap em blocos "
-                   "de 1° e I de Moran dos resíduos.", selection=None),
-        mo.md(r"""
+                   "de 1°, p-valor da mesma reamostragem corrigido por Holm e por "
+                   "Benjamini–Hochberg sobre os 16 testes, I de Moran dos resíduos, n efetivo "
+                   "de Clifford et al. e p-valor com esse n, sem correção (D-028).",
+                   selection=None),
+        mo.md(rf"""
         Nas duas bacias, a perturbação antecedente se associa a uma dinâmica menos
         estruturada. Quanto maior a perda até 2000, maior a entropia de permutação e menor a
         complexidade do VPD, e menor o determinismo da temperatura, com intervalos que não
@@ -347,12 +379,27 @@ def _():
         parciais que se destacam ficam entre 0,2 e 0,46 em módulo: associações moderadas,
         bem menores que as brutas, que passavam de 0,6.
 
+        Dos 16 testes, {_n_holm} continuam abaixo de 0,05 depois da correção de Holm, a mais
+        exigente: o par ordinal do VPD e o determinismo da temperatura nas duas bacias e,
+        no Xingu, também o determinismo e a previsão do VPD e a previsão da temperatura.
+
         O índice de Moran dos resíduos, entre 0,4 e 0,75, mostra que a variação não explicada
-        continua organizada no espaço. Isso tem duas consequências. A primeira é estatística:
-        mesmo com blocos de 1°, os intervalos podem estar um pouco otimistas, e por isso só
-        consideramos sólidos os efeitos que se repetem nas duas bacias. A segunda é
-        substantiva: existe estrutura espacial que nem a perturbação nem os controles
-        capturam, e é nela que podem estar os confundidores restantes.
+        continua organizada no espaço; nenhuma das 999 permutações dos resíduos entre as
+        células chega perto dele. Isso tem duas consequências. A primeira é estatística:
+        células vizinhas valem menos que células independentes, e os blocos de 1° só
+        corrigem parte disso. Uma forma direta de medir quanto se perde é o tamanho efetivo
+        da amostra de Clifford, Richardson e Hémon [9], que desconta da correlação a parte
+        explicável por as duas grandezas variarem devagar no espaço. Ele cai de cerca de 650
+        células para 22 a 55 no Xingu e 94 a 213 no Tapajós, e com esse n {_n_eff} dos 16
+        testes ficam abaixo de 0,05: os mesmos pares que se repetem nas duas bacias, o
+        determinismo da temperatura e a entropia e a complexidade do VPD, e a previsão do VPD
+        no Xingu. Com a correção de Holm por cima, só o determinismo da temperatura no
+        Tapajós resiste. A leitura que adotamos, a de só considerar sólidos os efeitos que se
+        repetem nas duas bacias, é a que sobrevive a essa conta conservadora, e mesmo esses
+        efeitos são evidência moderada, e não forte. A segunda consequência é substantiva:
+        existe estrutura espacial que nem a perturbação nem os controles capturam, e é nela
+        que podem estar os confundidores restantes. A seção final do capítulo volta a esse
+        ponto.
 
         Duas objeções precisam ser enfrentadas antes de qualquer leitura causal. A primeira é
         que a perda antecedente conta como "perda" toda área que não era floresta em 2000,
@@ -777,9 +824,11 @@ def _():
         [7]. O produto que usamos dá, a cada oito dias, a temperatura radiativa da superfície
         perto das 10h30 e das 22h30, num pixel de 1 km, e só aproveitamos as medidas de boa
         qualidade, sem nuvem. Ele mede outra grandeza que o ERA5, a temperatura da própria
-        superfície, e não a do ar a 2 m; a comparação mais próxima no ERA5 é a temperatura
-        máxima diária do ar. Usamos as duas na estação seca, de junho a setembro, quando a
-        diferença entre floresta e pasto é maior.
+        superfície, e não a do ar a 2 m; nas séries diárias do ERA5, a comparação mais
+        próxima é a temperatura máxima diária do ar. Usamos as duas na estação seca, de junho
+        a setembro, quando a diferença entre floresta e pasto é maior. No fim desta seção,
+        uma comparação complementar usa a temperatura da superfície do próprio ERA5 no
+        horário do satélite.
 
         A Figura 6 faz as duas comparações deste capítulo com as duas fontes. À esquerda,
         entre células: a temperatura média de 2001 a 2024 em cada décimo das células,
@@ -851,6 +900,156 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def overpass_results():
+    """Comparativo F2e (D-027): skt e t2m do ERA5 às 10h30 solares contra o LST do MODIS."""
+    rows = []
+    veg = (*G.CONTROLS, "era5_veg_alta", "era5_veg_baixa")
+    pairs = [("perda_antecedente", "lst_dia_seca_c", G.CONTROLS, "entre células",
+              "MODIS, superfície"),
+             ("perda_antecedente", "era5_skt_1030_seca", G.CONTROLS, "entre células",
+              "ERA5, pele às 10h30"),
+             ("perda_antecedente", "era5_skt_1030_seca_limpo", G.CONTROLS, "entre células",
+              "ERA5, pele às 10h30, céu limpo"),
+             ("perda_antecedente", "era5_t2m_1030_seca", G.CONTROLS, "entre células",
+              "ERA5, ar às 10h30"),
+             ("perda_antecedente", "era5_skt_1030_seca", veg, "entre células",
+              "ERA5, pele às 10h30, com a vegetação do ERA5"),
+             ("mb_perda_floresta_2001_2012", "delta_lst_seca", G.CONTROLS, "ao longo do tempo",
+              "MODIS, superfície"),
+             ("mb_perda_floresta_2001_2012", "delta_era5_skt_1030_seca", G.CONTROLS,
+              "ao longo do tempo", "ERA5, pele às 10h30"),
+             ("mb_perda_floresta_2001_2012", "delta_era5_t2m_1030_seca", G.CONTROLS,
+              "ao longo do tempo", "ERA5, ar às 10h30")]
+    for slug in SLUGS:
+        e = cells(slug)[cells(slug).elegivel]
+        for exposure, response, controls, kind, source in pairs:
+            # o contraste em °C é bruto; na linha com a vegetação do ERA5 ele só se repetiria
+            b = binned(e, exposure, response)
+            contrast = b.y.iloc[-1] - b.y.iloc[0] if controls == G.CONTROLS else np.nan
+            rows.append({"bacia": slug, "comparacao": kind, "fonte": source,
+                         "contraste": contrast,
+                         **G.associate(e, exposure, response, controls)})
+    return pd.DataFrame(rows)
+
+
+@app.function(hide_code=True)
+def plot_overpass():
+    fig, axes = plt.subplots(2, 2, figsize=(14, 9), layout="constrained", sharex="col")
+    series = [("lst_dia_seca_c", "delta_lst_seca", "-o", COLORS["ink"], "MODIS, superfície"),
+              ("era5_skt_1030_seca", "delta_era5_skt_1030_seca", "--s", COLORS["t2m"],
+               "ERA5, pele às 10h30"),
+              ("era5_skt_1030_seca_limpo", None, ":^", COLORS["vpd"],
+               "ERA5, pele às 10h30, céu limpo"),
+              ("era5_t2m_1030_seca", "delta_era5_t2m_1030_seca", "-.D", COLORS["muted"],
+               "ERA5, ar a 2 m às 10h30")]
+    for row, slug in zip(axes, SLUGS, strict=True):
+        e = cells(slug)[cells(slug).elegivel]
+        name = load_region(slug)["name"].replace("Bacia do Rio ", "")
+        for ax, x, col, title in [
+                (row[0], "perda_antecedente", 0, f"{name}: entre células"),
+                (row[1], "mb_perda_floresta_2001_2012", 1, f"{name}: ao longo do tempo")]:
+            for *columns, style, color, label in series:
+                column = columns[col]
+                if column is None:
+                    continue
+                b = binned(e, x, column)
+                y = b.y - (e[column].mean() if col == 0 else 0)
+                ax.errorbar(b.x, y, yerr=1.96 * b.s, fmt=style, color=color, ms=5,
+                            capsize=2, lw=1.4, label=label)
+            ax.axhline(0, color=COLORS["muted"], lw=1)
+            ax.set(title=title, ylabel="anomalia em relação à média da bacia (°C)" if col == 0
+                   else "aquecimento de 2001–2012 a 2013–2024 (°C)")
+    axes[1, 0].set_xlabel("perda antecedente (fração sem floresta em 2000)")
+    axes[1, 1].set_xlabel("perda de floresta 2001–2012 (fração)")
+    handles, names = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, names, loc="outside lower center", ncol=4, frameon=False, fontsize=9)
+    return fig
+
+
+@app.cell(hide_code=True)
+def _():
+    _res = overpass_results()
+    _tab = _res.assign(
+        Bacia=_res.bacia.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")),
+        **{"IC 95%": [f"[{a:+.2f}; {b:+.2f}]" for a, b in zip(_res.ic_inf, _res.ic_sup,
+                                                             strict=True)]})
+    _tab = _tab[["Bacia", "comparacao", "fonte", "rho_parcial", "IC 95%", "contraste"]].rename(
+        columns={"comparacao": "Comparação", "fonte": "Medida", "rho_parcial": "ρ parcial",
+                 "contraste": "Décimo mais − menos perturbado (°C)"}).round(2)
+    mo.vstack([
+        mo.md(r"""
+        ### Uma comparação mais justa: a temperatura de pele do ERA5 na hora do satélite
+
+        A comparação acima tem um ponto fraco evidente. O MODIS mede a temperatura radiativa
+        da superfície perto das 10h30, em dias sem nuvem, e a máxima diária do ar a 2 m é
+        outra grandeza, medida em outra hora e em todos os dias. Parte do contraste entre as
+        duas fontes poderia vir só disso. O ERA5 também calcula uma temperatura de pele, a da
+        própria superfície do modelo, e por isso fizemos uma comparação complementar, fixada
+        antes do cálculo (decisão D-027): baixamos a temperatura de pele, a do ar a 2 m e a
+        cobertura de nuvens às 13, 14 e 15 horas UTC na estação seca de 2001 a 2024 e, em
+        cada célula, interpolamos para as 10h30 solares locais, o horário nominal da passagem
+        do Terra. Calculamos a média de todos os dias e também a média só dos dias com menos
+        de 30% de cobertura de nuvens nesse horário, o que aproxima a amostragem do satélite.
+        Ela não substitui a Tabela 3; serve para saber quanto do contraste vinha da
+        diferença de grandeza e de horário.
+
+        A Figura 7 repete os décimos da Figura 6 com essas medidas, uma bacia em cada linha.
+        À esquerda, entre células, a temperatura de pele do ERA5 às 10h30 sobe com a perda
+        antecedente, ao contrário da máxima do ar, mas muito menos que a superfície do MODIS:
+        do décimo menos ao mais perturbado, cerca de 2,4 °C no Xingu e 1,2 °C no Tapajós,
+        contra 6 a 7 °C no satélite. Restringir aos dias de céu limpo não aproxima as duas
+        fontes; a diferença até diminui um pouco. A temperatura do ar no mesmo horário fica
+        mais fresca nas células com mais perda, como a máxima diária, porque elas estão no sul
+        mais alto das bacias. À direita, ao longo do tempo, nenhuma medida do ERA5 acompanha o
+        aquecimento de 1,3 a 1,4 °C que o MODIS vê nas células que mais perderam floresta
+        entre 2001 e 2012. No Xingu, o ERA5 mostra o mesmo aquecimento regional, de meio
+        grau, em todos os décimos; no Tapajós, ele aquece mais as células sem perda, as do
+        norte da bacia, perto de 1 °C, do que as que mais desmataram, perto de meio grau, o
+        oposto do satélite.
+        """),
+        book.figure(plot_overpass(), "passagem",
+                    "Figura 7. Comparativo complementar (D-027). Temperatura da superfície na "
+                    "estação seca pelo MODIS (diurna) e, no ERA5, temperatura de pele e do ar a "
+                    "2 m interpoladas para as 10h30 solares (passagem do Terra), em todos os dias "
+                    "e só nos dias com cobertura de nuvens abaixo de 0,3, por décimo das células "
+                    "elegíveis. Esquerda: média de 2001 a 2024 contra a perda antecedente, como "
+                    "anomalia em relação à média da bacia. Direita: mudança de 2001–2012 para "
+                    "2013–2024 contra a perda de floresta de 2001 a 2012. Hastes: IC 95%."),
+        mo.md(r"""
+        A Tabela 4 traz as correlações parciais com os mesmos controles da Tabela 3 e o
+        contraste em graus entre os décimos extremos. Entre células, a temperatura de pele do
+        ERA5 se associa à perda antecedente com uma correlação parcial perto de 0,3 nas duas
+        bacias, um terço da do MODIS, e o intervalo exclui zero. No Xingu essa associação
+        desaparece quando a vegetação alta e baixa do próprio ERA5 entra nos controles: o que
+        o modelo registra ali é o desmatamento anterior a 2000 que já estava no seu mapa de
+        vegetação. No Tapajós ela resiste ao mesmo controle, o que sugere outra rota no
+        modelo, como a umidade do solo mais baixa no planalto do sul. Ao longo do tempo,
+        nenhuma associação do ERA5 é positiva; no Tapajós, a da pele chega a ser negativa,
+        com as células que mais desmataram aquecendo um pouco menos que as outras na
+        superfície do modelo.
+        """),
+        book.table(_tab, "passagem",
+                   "Tabela 4. Comparativo complementar (D-027). Correlação parcial de Spearman "
+                   "(controles: latitude, água e altitude; na linha indicada, também a "
+                   "vegetação alta e baixa do ERA5) entre a perturbação e a temperatura da "
+                   "estação seca às 10h30 solares no ERA5, ao lado do MODIS, com IC 95% por "
+                   "blocos de 1° e a diferença bruta entre as médias do décimo mais e do menos "
+                   "perturbado.",
+                   selection=None),
+        mo.callout(mo.md(
+            "A comparação com a mesma grandeza e o mesmo horário qualifica a Tabela 3 sem "
+            "mudar a sua leitura. Entre células, parte do contraste vinha da diferença de "
+            "grandeza: a superfície do ERA5 às 10h30 registra cerca de um quarto a um terço "
+            "do aquecimento que o satélite vê, e no Xingu só pelo mapa de vegetação fixo do "
+            "modelo. Ao longo do tempo, a cegueira se confirma: nenhuma grandeza do ERA5 "
+            "registra o aquecimento da superfície onde a floresta foi perdida depois de 2000."),
+            kind="info"),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     # Versão de referência da Figura 1 para as duas bacias (sem exibição).
@@ -859,6 +1058,257 @@ def _():
                     "Figura 1. Fração da área terrestre de cada célula sem floresta em 2000 "
                     "(perda antecedente) e desmatada entre 2000 e 2024, segundo o MapBiomas, "
                     "e fração de vegetação alta fixa usada pelo ERA5.", region=_slug)
+    return
+
+
+@app.function(hide_code=True)
+@mo.cache
+def residual_correlograms():
+    """Correlograma dos resíduos dos postos, nos pares que se repetem nas duas bacias."""
+    rows = []
+    for slug in SLUGS:
+        e = cells(slug)[cells(slug).elegivel]
+        for var, d in [("t2m", "rqa_det"), ("vpd", "pe_entropy")]:
+            data = e[["perda_antecedente", f"z_{var}_{d}", "latitude", "longitude",
+                      *G.CONTROLS]].dropna()
+            data = data.loc[:, ~data.columns.duplicated()]
+            ctrl = data[list(G.CONTROLS)].to_numpy()
+            rx = G._residual_ranks(data.perda_antecedente.to_numpy(), ctrl)
+            ry = G._residual_ranks(data[f"z_{var}_{d}"].to_numpy(), ctrl)
+            for name, values in [("exposição", rx), ("resposta", ry)]:
+                rows.append(G.correlogram(values, data.latitude, data.longitude).assign(
+                    bacia=slug, par=f"{R.NAMES[d]} · {R.VARIABLES[var]}", serie=name))
+    return pd.concat(rows, ignore_index=True)
+
+
+@app.function(hide_code=True)
+def plot_correlogram():
+    res = residual_correlograms()
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.6), sharey=True, layout="constrained")
+    styles = {"exposição": ("-", "o"), "resposta": ("--", "s")}
+    pairs = list(res.par.unique())
+    colors = dict(zip(pairs, [COLORS["t2m"], COLORS["vpd"]], strict=True))
+    for ax, slug in zip(axes, SLUGS, strict=True):
+        part = res[res.bacia == slug]
+        for (pair, serie), g in part.groupby(["par", "serie"], sort=False):
+            if serie == "exposição" and pair != pairs[0]:
+                continue  # a exposição é a mesma nos dois pares
+            line, marker = styles[serie]
+            label = ("perda antecedente (resíduo)" if serie == "exposição"
+                     else f"z de {pair} (resíduo)")
+            ax.plot(g.distancia, g.moran, line, marker=marker, ms=4,
+                    color=COLORS["ink"] if serie == "exposição" else colors[pair], label=label)
+        ax.axhline(0, color=COLORS["muted"], lw=1)
+        ax.axvline(1.0, color=COLORS["muted"], lw=1, ls=":")
+        ax.set(title=load_region(slug)["name"], xlabel="distância entre células (graus)",
+               ylabel="I de Moran")
+    handles, names = axes[0].get_legend_handles_labels()
+    fig.legend(handles, names, loc="outside lower center", ncol=3, frameon=False)
+    return fig
+
+
+@app.function(hide_code=True)
+@mo.cache
+def placebo_results():
+    """Exposição-placebo (D-028): perda de 2013–2024 contra o z de 2001–2012."""
+    rows = []
+    for slug in SLUGS:
+        e = cells(slug)[cells(slug).elegivel]
+        forest = e[e.floresta_frac_2000 >= 0.5 * e.fracao_terra]
+        for var in R.VARIABLES:
+            for d in PRIMARY:
+                for exposure, label in [("perda_antecedente", "perda antecedente"),
+                                        ("mb_perda_floresta_2013_2024",
+                                         "placebo: perda de 2013–2024")]:
+                    rows.append({"bacia": slug, "variavel": var, "descritor": d,
+                                 "exposicao_rotulo": label,
+                                 **G.associate(forest, exposure, f"z12_{var}_{d}")})
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _pl = placebo_results()
+    _pl["celula"] = [f"{r:+.2f} [{a:+.2f}; {b:+.2f}]" for r, a, b in zip(
+        _pl.rho_parcial, _pl.ic_inf, _pl.ic_sup, strict=True)]
+    _tab = _pl.pivot_table(index=["bacia", "variavel", "descritor"],
+                           columns="exposicao_rotulo", values="celula", aggfunc="first",
+                           sort=False).reset_index()
+    _tab.insert(0, "Bacia", _tab.pop("bacia").map(
+        lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")))
+    _tab.insert(1, "Variável", _tab.pop("variavel").map(R.VARIABLES))
+    _tab.insert(2, "Descritor", _tab.pop("descritor").map(R.NAMES))
+    _tab.columns.name = None
+    _n = {s: int(_pl[(_pl.bacia == s)].celulas.iloc[0]) for s in SLUGS}
+    mo.vstack([
+        mo.md(r"""
+        ## 🧪 Duas checagens da inferência
+
+        A Tabela 1 mostrou que a variação não explicada continua organizada no espaço e que,
+        descontada essa organização, o número efetivo de células independentes é bem menor
+        que o número de células. A Figura 8 mostra de onde vem isso. Ela traz o correlograma
+        dos resíduos dos dois pares que se repetem nas duas bacias: o índice de Moran entre
+        células a cada distância, de um quarto de grau a cinco graus, para a perda
+        antecedente e para o descritor, depois de retirados os controles. A linha
+        pontilhada marca 1°, o tamanho dos blocos usados nos intervalos.
+        """),
+        book.figure(plot_correlogram(), "correlograma",
+                    "Figura 8. Correlograma (I de Moran por classe de distância de 0,25°) dos "
+                    "resíduos dos postos, depois de retirados a latitude, a água e a altitude, "
+                    "da perda antecedente e do z do determinismo da temperatura e da entropia "
+                    "de permutação do VPD, nas células elegíveis. Linha pontilhada: 1°, o "
+                    "tamanho dos blocos do bootstrap (D-028)."),
+        mo.md(r"""
+        A semelhança entre células cai com a distância, mas não some dentro de um bloco.
+        Depois de retirados os controles, a da perda antecedente se anula perto de 1° no
+        Tapajós e perto de 2° no Xingu, onde o desmatamento avançou em frentes mais largas;
+        a dos descritores vai mais longe, até 2 a 2,5°, sobretudo a da entropia do VPD.
+        Os blocos de 1° capturam a parte mais forte dessa semelhança, mas não toda, e
+        células de blocos vizinhos ainda se parecem: é por isso que o tamanho efetivo da
+        amostra cai tanto e que os intervalos da Tabela 1 devem ser lidos como um pouco
+        otimistas. A conclusão prática é a que já adotamos, só considerar os efeitos que
+        se repetem nas duas bacias, e com o devido cuidado.
+
+        A segunda checagem ataca a objeção mais séria a qualquer comparação entre lugares:
+        o desmatamento não avança ao acaso, e sim onde o acesso, o relevo e o clima já o
+        favoreciam. Se a associação da Tabela 1 vier só disso, ela deveria aparecer também
+        com o desmatamento que ainda não tinha acontecido. A Tabela 5 testa essa ideia com
+        uma exposição-placebo, fixada antes do cálculo (D-028): a perda de floresta de 2013 a
+        2024, que não pode ter causado a dinâmica de 2001 a 2012, contra os descritores
+        dessa primeira década, ao lado da perda antecedente, nas mesmas células, as que
+        ainda eram ao menos metade floresta em 2000.
+        """),
+        book.table(_tab, "placebo",
+                   "Tabela 5. Exposição-placebo (D-028, exploratória). Correlação parcial de "
+                   "Spearman, com IC 95% por blocos de 1°, entre o z dos descritores primários "
+                   "em 2001–2012 e a perda antecedente ou a perda de floresta de 2013 a 2024 "
+                   f"(MapBiomas), nas células elegíveis com ao menos 50% de floresta em 2000 "
+                   f"({_n['xingu']} no Xingu, {_n['tapajos']} no Tapajós).", selection=None),
+        mo.md(r"""
+        No Xingu, o placebo não se associa a nada: todas as correlações ficam perto de zero,
+        enquanto a perda antecedente, nas mesmas células, mantém as associações do VPD e do
+        determinismo da temperatura. Ali, a associação não é um retrato de onde o
+        desmatamento iria avançar. No Tapajós, a leitura é mais dividida. O placebo também
+        fica perto de zero no VPD e no determinismo da temperatura, os pares que se repetem
+        nas duas bacias, mas aparece nos padrões ordinais e na previsão da temperatura,
+        justamente onde a perda antecedente não mostra nada. As células do Tapajós que
+        seriam desmatadas depois de 2012 já tinham uma temperatura com dinâmica diferente
+        antes disso. Essa é a seleção
+        geográfica de que a objeção fala: ela existe, mas não explica os efeitos que o
+        trabalho destaca.
+        """),
+        mo.callout(mo.md(
+            "As duas checagens tornam a conclusão mais modesta, não a invertem. A associação "
+            "entre perda antecedente e dinâmica diária é moderada e, depois de descontada a "
+            "semelhança entre vizinhas, só se sustenta nos pares que se repetem nas duas "
+            "bacias; ela não é um retrato de onde o desmatamento viria a avançar, embora no "
+            "Tapajós essa seleção exista em outros descritores."), kind="info"),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+@mo.cache
+def comparative_associations():
+    """Perda antecedente contra os descritores dos comparativos de D-027 (exploratórios)."""
+    from amazon_chaos.nonlinear import estimators as E
+    from amazon_chaos.nonlinear import extremes as X
+    from amazon_chaos.nonlinear import multivariate as M
+    from amazon_chaos.nonlinear import smap as SM
+
+    rows = []
+    for slug in SLUGS:
+        cfg = load_region(slug)
+        e = cells(slug)[cells(slug).elegivel]
+        sm = SM.load(cfg, SPEC)
+        for (var, h), g in sm.groupby(["variable", "horizon"]):
+            frame = e.join(g.set_index("cell_id").gain.rename("y"), how="inner")
+            rows.append({"bacia": slug, "grupo": "S-map", "variavel": R.VARIABLES[var],
+                         "medida": f"ganho sobre o linear, {int(h)} dia" + ("s" if h > 1 else ""),
+                         **G.associate(frame, "perda_antecedente", "y")})
+        sub = pd.read_parquet(E.output_dir(cfg, SPEC) / "subamostra.parquet")
+        for (var, d), g in sub.groupby(["variable", "descriptor"]):
+            frame = e.join(g.set_index("cell_id").z.rename("y"), how="inner")
+            rows.append({"bacia": slug, "grupo": "Lyapunov e Cao (subamostra)",
+                         "variavel": R.VARIABLES[var],
+                         "medida": {"wolf": "z do Lyapunov de Wolf",
+                                    "kantz": "z do Lyapunov de Kantz",
+                                    "cao_de2": "z do D_E2 de Cao"}[d],
+                         **G.associate(frame, "perda_antecedente", "y")})
+        multi = pd.read_parquet(M.output_dir(cfg, SPEC) / "subamostra.parquet")
+        multi = multi[multi.surrogate < 0].set_index("cell_id")
+        for k, name in enumerate(M.RULES["channels"]):
+            frame = e.join(multi[f"alvo{k}_smap_ganho"].rename("y"), how="inner")
+            rows.append({"bacia": slug, "grupo": "Temperatura + umidade (subamostra)",
+                         "variavel": {"t2m": "temperatura", "q": "umidade específica"}[name],
+                         "medida": "ganho do S-map conjunto, 1 dia",
+                         **G.associate(frame, "perda_antecedente", "y")})
+        ext = X.cell_table(cfg, SPEC)
+        ext = ext[ext.elegivel]
+        for var, label in [("tmax", "máxima"), ("tmin", "mínima"), ("amplitude", "amplitude")]:
+            for d in PRIMARY:
+                column = f"z_{var}_{d}"
+                if column in ext and ext[column].notna().sum() > 30:
+                    rows.append({"bacia": slug, "grupo": "Mínima, máxima e amplitude",
+                                 "variavel": label, "medida": f"z: {R.NAMES[d]}",
+                                 **G.associate(ext, "perda_antecedente", column)})
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _r = comparative_associations()
+    _r["ci"] = [f"{r:+.2f} [{a:+.2f}; {b:+.2f}]" for r, a, b in zip(
+        _r.rho_parcial, _r.ic_inf, _r.ic_sup, strict=True)]
+    _r["sinal"] = np.where(_r.exclui_zero, np.sign(_r.rho_parcial), 0)
+    _keys = ["grupo", "variavel", "medida"]
+    _tab = _r.pivot_table(index=_keys, columns="bacia", values="ci", aggfunc="first",
+                          sort=False)
+    _both = _r.pivot_table(index=_keys, columns="bacia", values="sinal", sort=False)
+    _tab["Nas duas bacias"] = np.where((_both.xingu == _both.tapajos) & (_both.xingu != 0),
+                                       "sim", "")
+    _tab = _tab.rename(columns={s: load_region(s)["name"].replace("Bacia do Rio ", "")
+                                for s in SLUGS}).reset_index().rename(columns={
+        "grupo": "Comparativo", "variavel": "Variável", "medida": "Medida"})
+    _tab.columns.name = None
+    mo.vstack([
+        mo.md(r"""
+        ## 🧩 Os comparativos diante da perturbação
+
+        As extensões da revisão crítica (D-027) produziram, além dos descritores do
+        pré-registro, outras medidas da dinâmica de cada célula: o ganho do S-map sobre a
+        previsão linear, em todas as células; os expoentes de Wolf e de Kantz e o $D_{E2}$ de
+        Cao, na subamostra de cerca de 60 células por bacia, junto com o ganho de prever cada
+        variável com temperatura e umidade juntas; e os descritores da temperatura mínima, da
+        máxima e da amplitude diária. A Tabela 6 dá a correlação parcial de cada
+        uma com a perda antecedente, com os controles e a inferência da Tabela 1. Tudo aqui
+        é exploratório, e a regra fixada antes foi só destacar o que aparece nas duas
+        bacias, com o mesmo sinal e intervalos que excluem zero.
+        """),
+        book.table(_tab, "comparativos",
+                   "Tabela 6. Comparativo, exploratório (D-027). Correlação parcial "
+                   "(controles: latitude, água e altitude) entre a perda antecedente e as "
+                   "medidas dos comparativos, com IC 95% por blocos de 1°; \"sim\": o intervalo "
+                   "exclui zero com o mesmo sinal nas duas bacias.", selection=None),
+        mo.md(r"""
+        Três padrões aparecem nas duas bacias. O ganho do S-map é maior nas células com
+        mais perda antecedente, na temperatura no horizonte de um dia e no VPD nos de três
+        e sete dias: a previsão local tira um pouco mais de vantagem do estado atual onde a
+        floresta já tinha sido convertida, embora o ganho continue minúsculo em toda parte,
+        e no VPD a vários dias seja praticamente nulo na maioria das células. O $D_{E2}$ de Cao no VPD é menor
+        nessas mesmas células, isto é, a dependência do passado reconstruído fica ainda mais
+        perto da de um processo estocástico, o que combina com a entropia de permutação
+        maior da Tabela 1. E o determinismo da amplitude diária, como o da temperatura
+        média, é menor onde a perda é maior. Nas extremas, a máxima repete a média, com
+        associações nos padrões ordinais no Xingu e nenhuma no Tapajós, e a mínima não se
+        associa a nada. Nenhum desses padrões é um sinal novo que a média escondesse; eles
+        reforçam, por outros caminhos e com a mesma cautela, a leitura de que as células
+        convertidas têm uma dinâmica diária um pouco menos estruturada. O ganho de juntar
+        temperatura e umidade, por sua vez, não se associa à perda em nenhuma das bacias: a
+        interação entre as duas variáveis, que já era quase toda linear, não muda com a
+        conversão da floresta.
+        """),
+    ])
     return
 
 
@@ -876,7 +1326,10 @@ def _():
     ordinais do déficit de pressão de vapor mais próximos dos de um processo aleatório e
     menos determinismo nas recorrências da temperatura. O padrão se repete nas duas bacias e,
     no caso do déficit de pressão de vapor, não é efeito da vegetação natural do Cerrado: ele
-    acompanha a conversão da floresta para a agropecuária.
+    acompanha a conversão da floresta para a agropecuária. É uma associação moderada:
+    descontada a semelhança entre células vizinhas, só os pares que se repetem nas duas
+    bacias ficam de pé, e a exposição-placebo mostra que ela não é apenas um retrato de
+    onde o desmatamento iria avançar.
 
     Segundo, essa diferença passa em boa parte pelo mapa de vegetação que o próprio ERA5 usa.
     Quando ele é levado em conta, a associação diminui ou desaparece. O contraste entre
@@ -900,6 +1353,53 @@ def _():
     fortemente a superfície, como o satélite mostra, e a reanálise, sozinha, não consegue
     acompanhar essas mudanças da paisagem.
     """)
+    return
+
+
+@app.function(hide_code=True)
+def support_table(models: list[str], by_exposure: bool = False) -> pd.DataFrame:
+    res = model_results()
+    res = res[res.modelo.isin(models)]
+    return pd.DataFrame({
+        "Bacia": res.bacia.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")),
+        "Variável": res.variavel.map(R.VARIABLES), "Descritor": res.descritor.map(R.NAMES),
+        ("Exposição" if by_exposure else "Modelo"):
+            res.exposicao.map(G.EXPOSURES) if by_exposure else res.modelo,
+        "Células": res.celulas,
+        "ρ parcial [IC 95%]": [f"{r:+.2f} [{a:+.2f}; {b:+.2f}]" for r, a, b in zip(
+            res.rho_parcial, res.ic_inf, res.ic_sup, strict=True)],
+        "p (blocos)": res.p_blocos.round(3)})
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.vstack([
+        mo.md(r"""
+        ## 📎 Tabelas de apoio
+
+        As Figuras 3, 4 e 5 mostram em gráficos resultados que também precisam estar em
+        números. A Tabela A1 traz os três modelos da Figura 3, a Tabela A2 as outras medidas
+        de perturbação da Figura 4 e a Tabela A3 a comparação ao longo do tempo da Figura 5,
+        pré-registrada, com a sensibilidade das células em que a dimensão de imersão não
+        mudou entre as metades. São pré-registradas só a linha correspondente da Tabela
+        A1, que repete a Tabela 1, e a linha de todas as células da Tabela A3; o resto é
+        exploratório ou de sensibilidade.
+        """),
+        book.table(support_table(list(MODELS)), "modelos",
+                   "Tabela A1. Valores da Figura 3: correlação parcial entre a perturbação e "
+                   "o z de cada descritor primário nos três modelos, com IC 95% e p por "
+                   "bootstrap em blocos de 1°.", selection=None),
+        book.table(support_table(["outras exposições"], by_exposure=True), "exposicoes",
+                   "Tabela A2. Valores da Figura 4: correlação parcial (controles: latitude, "
+                   "água e altitude) entre cada medida de perturbação e o z de cada descritor "
+                   "primário, com IC 95% e p por bootstrap em blocos de 1°.", selection=None),
+        book.table(support_table(["longitudinal", "longitudinal, m igual"]), "longitudinal",
+                   "Tabela A3. Valores da Figura 5: correlação parcial entre a perda de "
+                   "floresta de 2001 a 2012 e a mudança de cada descritor primário entre "
+                   "2001–2012 e 2013–2024, em todas as células elegíveis e só nas que mantêm "
+                   "a dimensão de imersão, com IC 95% e p por bootstrap em blocos de 1°.",
+                   selection=None),
+    ])
     return
 
 
@@ -934,6 +1434,9 @@ def _():
     [8] Baker, J. C. A.; Spracklen, D. V. Climate benefits of intact Amazon forests and the
     biophysical consequences of disturbance. *Frontiers in Forests and Global Change*, v. 2,
     47, 2019.
+
+    [9] Clifford, P.; Richardson, S.; Hémon, D. Assessing the significance of the
+    correlation between two spatial processes. *Biometrics*, v. 45, n. 1, p. 123–134, 1989.
     """)
     return
 

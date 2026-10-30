@@ -41,16 +41,16 @@ variables:
     source: MapBiomas
     unit: fraction
     role: disturbance_state
-    status: planned
+    status: implemented
 
   deforested_area_km2:
     source: PRODES
     unit: km2
     role: disturbance_state
-    status: planned
+    status: implemented
 
   fire_pressure:
     source: BDQueimadas
-    unit: TBD
+    unit: focos por 100 km² por ano
     role: disturbance_pressure
-    status: planned
+    status: implemented

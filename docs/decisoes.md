@@ -165,6 +165,8 @@ Substitui, nesses pontos, D-008 (`-- --region <slug>` e `legacy/jupyter/`), D-00
 
 **Viés de céu limpo (23/10/2026):** na estação seca, a mediana das células tem cerca de 378 das 384 composições possíveis (16 por ano × 24 anos) com qualidade boa; o 10º percentil é 335 no Xingu e 371 no Tapajós. Com o número de composições válidas nos controles, a associação entre a perda antecedente e o LST fica em +0,80 e +0,71, e a longitudinal em +0,71 e +0,76; só na metade das células com mais composições válidas, +0,85 e +0,68.
 
+**Comparativo F2e (29/10/2026, D-027):** a máxima diária do ar não é a grandeza do LST. Com a temperatura de pele (`skt`) do ERA5 interpolada para as 10h30 solares na estação seca (`features/lst.era5_overpass`, `amazon-chaos era5 overpass`), a associação entre células com a perda antecedente é de +0,25 [+0,05; +0,46] no Xingu e +0,29 [+0,09; +0,47] no Tapajós, com 2,4 e 1,2 °C entre o décimo mais e o menos perturbado, contra 6,7 e 6,4 °C no MODIS; só nos dias com `tcc` < 0,3, +0,29 e +0,32, com contrastes menores (1,7 e 0,8 °C). Com a vegetação alta e baixa do ERA5 nos controles, a do Xingu cai a +0,05 [−0,12; +0,25] e a do Tapajós fica em +0,29 [+0,10; +0,42]. Ao longo do tempo, −0,13 [−0,30; +0,05] e −0,43 [−0,53; −0,29]: no Tapajós, o ERA5 aquece mais a pele das células sem perda. Pela regra de leitura fixada, o resultado qualifica a leitura entre células (parte do contraste MODIS × ERA5 era diferença de grandeza; a superfície do ERA5 registra de um quarto a um terço do contraste em °C, e no Xingu só pelo mapa de vegetação fixo) e confirma a cegueira ao desmatamento posterior a 2000. Caderno 08, Figura 7 e Tabela 4, como comparativo complementar.
+
 **Leitura:** evidencia, com observação independente do modelo, a limitação de D-011 e a interpretação de D-014 e D-015: o resultado longitudinal nulo do caderno 08 não indica ausência de efeito do desmatamento, e sim que o ERA5 não o registra. O LST não entra na análise não linear: as lacunas de nuvem impedem séries diárias. É análise complementar, prevista no plano mas não no pré-registro dos descritores.
 
 ## D-019 — A pergunta no nível do sistema, não da base de dados
@@ -250,6 +252,10 @@ O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
 
 **Natureza:** descritiva, sobre a associação entre o tempo e o início do fogo; não separa ignição humana de propagação.
 
+**Correção (29/10/2026):** os terços de perda antecedente eram cortados sobre a tabela de eventos, de modo que as células com muitos episódios (as perturbadas) deslocavam os cortes e empurravam células preservadas para o terço do meio. Os cortes passam a ser feitos nas células elegíveis, e cada evento herda o terço da sua célula (`fire_weather.cell_thirds`). Mudaram de terço 47% dos eventos no Xingu e 30% no Tapajós. A leitura principal se mantém e fica mais nítida (na estação seca, percentil perto de 0,59–0,61 nas preservadas e perto de 0,5 nas perturbadas); as intermediárias do Xingu passam a ficar entre as duas.
+
+**Correção e complementos (29/10/2026, F1):** os controles eram tomados no dia do ano, com a janela de ±15 dias dando a volta dentro do mesmo ano civil (um evento de 5 de janeiro tinha controles no fim de dezembro do mesmo ano) e com o dia do ano deslocado em anos bissextos. Passam a ser datas reais: em cada outro ano, a mesma data (29/2 vira 28/2) e ±15 dias corridos, atravessando a virada do ano (`fire_weather.same_dates`, `composite`). A anomalia de temperatura de 30 dias prometida acima passa a ser calculada (`t2m_30d`), e a diferença entre preservadas e perturbadas é testada diretamente (`fire_weather.contrast`, IC por bootstrap dos mesmos anos nos dois grupos; caderno 10, Tabela 2). Os percentis mudam no terceiro decimal. Na estação seca, a diferença preservadas − perturbadas exclui zero nas duas bacias no VPD de 7 e de 30 dias (+0,08 a +0,10), nos dias secos (+0,09) e na chuva do mês (−0,08 a −0,10, CHIRPS e ERA5); na temperatura, nas duas escalas no Tapajós e só na de 7 dias no Xingu. A estação seca do fogo continua de junho a outubro, como fixado; com junho a setembro, as diferenças ficam iguais ou até 0,012 maiores.
+
 ## D-026 — O território: Terras Indígenas e Unidades de Conservação como chave de leitura
 
 **Status:** aceito em 23/10/2026 (`features/territory.py`, caderno 11), como ponte com a parte socioespacial.
@@ -257,3 +263,119 @@ O resultado pré-registrado (Tabela 1 do caderno 08) permanece o principal.
 **Desenho:** a fração de cada célula, dentro da bacia, em Terras Indígenas (FUNAI), em Unidades de Conservação federais (ICMBio) e na união das duas, com os limites atuais das camadas de contexto. A classe da célula é: TI ou UC se a categoria cobre pelo menos metade dela; fora se menos de 10% é protegido; mista nos demais casos. Comparação por classe (medianas) e correlação parcial com a fração protegida (controles: latitude, água e altitude; IC por blocos de 1°) para a perturbação, os focos de fogo, o LST do MODIS e a máxima do ERA5 na estação seca, a entropia da chuva do CHIRPS e, a partir do caderno 10, o percentil do tempo antes do início dos episódios de fogo na estação seca.
 
 **Limites:** os limites são os atuais, e muitas áreas foram criadas ou homologadas durante o período; a localização das áreas protegidas não é aleatória (tendem a estar em áreas mais remotas), então a comparação é uma associação e não mede o efeito da proteção. Rodovias, como a BR-163, não entram por falta de uma camada no projeto.
+
+## D-027 — Extensões complementares da revisão crítica (comparativos)
+
+**Status:** aceito em 29/10/2026, antes de qualquer cálculo; regras fixadas aqui para não serem escolhidas depois de ver os resultados.
+
+**Natureza:** nove análises complementares, não pré-registradas, motivadas pela revisão crítica de 29/10 (quatro sugestões recebidas e cinco recomendações). São **comparativos**: nenhuma recalcula, refaz ou substitui o pré-registro (D-010), o gate congelado (`1c2fb37657`) ou o lote `81333bb007`, que seguem como resultado principal. Cada uma é relatada ao lado do resultado principal correspondente, identificada como complementar.
+
+**Regras comuns:**
+- células: as elegíveis do caderno 08 (v2 do pré-registro); "subamostra" é a de D-024 (`sensitivity.subsample`, semente 20261023; 60 células no Xingu e 62 no Tapajós);
+- séries: anomalia padronizada (`regional.standardized_anomalies`, normal 1991–2020), sem remover tendência; janela 2001–2024, salvo menção;
+- (τ, m, w): pela regra do pré-registro (`suite.embedding_parameters`), salvo quando a própria extensão varia o parâmetro;
+- sementes: `batch._seed(spec, célula, variável, janela, <rótulo da extensão>)` para tudo o que é novo; quando a extensão muda só um parâmetro, as substitutas usam a **mesma** semente do lote (`batch._seed(spec, célula, variável, janela)`), para que a diferença venha só do parâmetro, e a variante que coincide com a regra original tem de reproduzir o lote (verificação de código, não resultado);
+- p de Monte Carlo como no pré-registro; a fração de células com p ≤ 0,05 (D-013) e a correção de Benjamini–Hochberg dentro da família de cada extensão, por região × variável × janela;
+- associação com a perturbação: `gradient.associate` com a perda antecedente (1 − floresta em 2000), controles latitude, água e altitude, IC por bootstrap em blocos de 1°;
+- leitura: um comparativo **confirma** o resultado principal quando o sinal é o mesmo e o IC contém a estimativa principal nas mesmas células; caso contrário, **qualifica-o**, e o texto diz em que direção. Um achado que só exista num comparativo é destacado apenas se aparecer nas duas bacias, e é sempre rotulado como exploratório;
+- cada extensão grava as suas regras num dicionário `RULES` com hash próprio no nome da pasta de saída, com manifesto e commit (`execucao.json`), como em `nonlinear/precip.py`.
+
+**F2a — Atrasos de imersão e atrasos ordinais.** Subamostra; t2m e VPD; descritores primários; 39 substitutas IAAFT com a semente do lote.
+- grade de imersão τ ∈ {1, 2, 3, 5, 7}: em cada τ, m pelos falsos vizinhos nesse atraso (máximo 8, limiar 0,05, Theiler max(10, τ) na busca) e w = max(10, τ·m); afeta RQA·DET e erro de previsão;
+- atraso ordinal L ∈ {1, 2, 4, 7} na entropia e na complexidade (ordem 5, isto é, padrões de 4L dias);
+- o primeiro mínimo local da AMI (até 60 dias, sem a regra 1/e) é registrado em cada célula; quando existe, entra como mais uma variante de τ ("τ = mínimo da AMI");
+- τ = 1 e L = 1 reproduzem o lote;
+- leitura: por descritor e parâmetro, a fração de células que rejeitam, a mediana do z, a correlação de postos do z com o lote e a correlação parcial com a perturbação. A associação principal "resiste ao atraso" se, em todos os pontos da grade, o sinal for o mesmo e o IC contiver o valor do lote nas mesmas células. O descritor "se estabiliza" a partir do menor τ (ou L) depois do qual a mediana do z muda menos de 10% entre pontos vizinhos da grade.
+
+**Resultado F2a (29/10/2026):** τ = 1 e L = 1 reproduzem o lote. O primeiro mínimo da AMI fica em 10 a 12 dias na mediana das células; a regra escolhe τ = 1 porque a AMI cai abaixo de 1/e no primeiro dia. Em todos os τ, o DET rejeita em 98–100% das células e o erro de previsão em nenhuma. A associação do DET da temperatura com a perda antecedente resiste no Tapajós (−0,31 no lote; −0,34 a −0,42 na grade) e, no Xingu, mantém o sinal mas enfraquece (−0,54 para −0,20 a −0,39), fora do IC: qualifica. Nos ordinais, L = 2 e 4 derrubam a rejeição do VPD de ~90% para 30–50%, e a associação do par do VPD no Xingu (+0,39/−0,43) cai para cerca de ±0,25 e some em L = 7 (qualifica: a marca está na escala diária); no Tapajós o par do VPD resiste. Caderno 07, Tabelas 3 e 4.
+
+**F2b — Mínima, máxima e amplitude térmica.** Variáveis `t2m_c_min`, `t2m_c_max` e `t2m_c_range` dos `daily_*.nc` (extremos das 24 amostras horárias), cada uma em anomalia padronizada própria.
+- todas as células, as três janelas: entropia e complexidade (ordem 5, atraso 1) com 39 IAAFT, no molde de `nonlinear/precip.py`; família exploratória (os dois descritores), BH por região × variável × janela;
+- subamostra, janela 2001–2024: RQA·DET e erro de previsão, (τ, m, w) pela regra, 39 IAAFT;
+- associação: o modelo pré-registrado do caderno 08 no z, no valor observado e no excesso (observado − média nula, D-022); longitudinal com a perda de 2001–2012 (MapBiomas), como no caderno 08;
+- leitura: lado a lado com a temperatura média do lote. Como o ERA5 tem vegetação fixa (D-011), o resultado esperado é nulo; uma associação na máxima ou na amplitude que não exista na média é relatada como indício de que o ciclo diurno carrega um sinal que a média dilui, e só é destacada se aparecer nas duas bacias.
+
+**F2c — Multivariado temperatura + umidade específica.** Série média de cada bacia (como D-016), t2m e `q_gkg_mean` em anomalia padronizada.
+- espaço de estados: cada canal com o seu (τ, m) pela regra, na própria série da bacia; o vetor conjunto concatena os dois atrasos;
+- alvos: t2m e q, horizonte 1; para cada alvo, quatro previsores: só o próprio canal, só o outro canal, os dois juntos e um VAR linear com os mesmos atrasos; cada um por vizinhos (5 vizinhos, 60% de treino, Theiler w, como `statistics.nonlinear_prediction_error`) e por S-map (regras de F2g);
+- estatística: o erro do previsor conjunto e o ganho (erro do melhor previsor de um canal − erro do conjunto);
+- nula: 199 substitutas FT multivariadas (Prichard e Theiler, 1994: a mesma fase aleatória somada aos dois canais, que preserva os espectros e o espectro cruzado) e, como segunda nula, 199 IAAFT multivariadas (Schreiber e Schmitz, 2000); p unilateral (erro menor, ganho maior); Holm sobre 2 bacias × 2 alvos, separadamente por nula;
+- depois, na subamostra, com 39 substitutas: fração de células com p ≤ 0,05 e associação do ganho com a perturbação;
+- leitura: rejeitar a nula multivariada indica estrutura conjunta não linear além da correlação cruzada linear; substitutas independentes por canal não são usadas, porque destruiriam a correlação cruzada e rejeitariam por construção.
+
+*Nota de implementação (29/10/2026, antes de qualquer resultado):* o S-map com validação deixando um de fora em todos os pontos do treino custa cerca de 180 s por série, o que levaria o F2c a dezenas de horas. No F2c, θ passa a ser escolhido deixando um de fora em 1 de cada 4 pontos do treino (com a mesma exclusão de Theiler; a previsão do teste usa a biblioteca inteira), cerca de 60 s por série; e a subamostra usa só a nula IAAFT multivariada (39). Medido na série do Xingu, os erros do teste mudam na quarta casa decimal.
+
+**F2d — Wolf e Kantz ao lado de Rosenstein** (`nonlinear/lyapunov.py`). Mesmo (τ, m, w) da regra.
+- Rosenstein: como no pré-registro (passos 0–5);
+- Kantz (1994): S(k) = ⟨ln da distância média, após k passos, entre um ponto e os vizinhos dentro do raio ε⟩, para ε nos quantis 1%, 2%, 5% e 10% das distâncias entre pares (fora da janela de Theiler), com no mínimo 5 vizinhos; λ = inclinação em k ∈ [0, 5] no raio de 2%; as curvas dos outros raios são relatadas;
+- Wolf et al. (1985): tempo de evolução de 3 passos; substituição quando a distância passa de 10% do diâmetro do atrator reconstruído; candidatos a substituto acima de 0,1% do diâmetro e com ângulo menor que 0,3 rad (relaxado em degraus de 0,3 rad até 1,2 rad se não houver candidato);
+- onde: os sete controles do gate (mesmas séries, sementes, comprimentos e ruídos de `gate.tasks`) e as nulas de F2f, com 39 IAAFT; as séries das bacias com 199 IAAFT (D-016); a subamostra com 39;
+- leitura: (1) viés contra o λ conhecido nos controles sem ruído (Lorenz ≈ 0,091 por passo com Δt = 0,1; Hénon 0,419; logístico ln 2); (2) se cada estimador separa caos de ruído contra substitutas pelo critério do gate (poder ≥ 0,8 em 2 positivos e falso positivo ≤ 0,2 no ruído branco e no AR(1)) e nas nulas de F2f. A concordância entre os três estimadores **não** é evidência de caos; o Lyapunov continua exploratório.
+
+**F2e — Temperatura de pele do ERA5 contra o MODIS LST.**
+- dados: `skt`, `t2m` e `tcc` (cobertura total de nuvens) do Earth Data Hub, às 13, 14 e 15 UTC, de junho a setembro (estação seca de `features/lst.py`), 2001–2024, na grade das duas bacias;
+- horário: em cada célula, interpolação linear entre as horas UTC vizinhas para as 10h30 solares locais, isto é, 10,5 − longitude/15 h UTC (de 13,8 a 14,5 UTC nas bacias), o horário nominal de passagem do Terra; o horário de cada composição do MOD11A2 não foi baixado;
+- medidas por célula: médias da estação seca de `skt` e de `t2m` às 10h30 em 2001–2024 e em cada metade; e a média de `skt` só nas horas com `tcc` < 0,3 (céu quase limpo, aproximando a amostragem do MODIS);
+- associação: a de D-018 (perda antecedente; latitude, água e altitude; blocos de 1°), entre células e ao longo do tempo (perda de 2001–2012 contra a mudança entre as metades), e o contraste em °C entre o décimo mais e o menos desmatado;
+- leitura: se a associação com o `skt` às 10h30 ficar perto de zero, como a da máxima do ar, a cegueira do ERA5 se confirma com uma grandeza homogênea ao LST; se ela aparecer, parte do contraste MODIS × ERA5 de D-018 era diferença de grandeza e de horário, e o texto é corrigido nesse ponto.
+
+**F2f — Gate com nulas realistas** (`synthetic.py`, `gate.py`). Relatado ao lado do gate congelado, sem substituí-lo.
+- quatro nulas sem caos, simuladas em 1990–2024 com calendário diário, passadas pela mesma anomalia padronizada dos dados e cortadas em 2001–2024 (8.766 dias):
+  1. AR(1) com φ por dia do ano e variância sazonal;
+  2. AR(1) com φ fixo, variância sazonal e tendência linear;
+  3. SETAR de dois regimes (limiar em zero no dia anterior);
+  4. AR(1) com inovações GARCH(1,1) (α = 0,1, β = 0,85, ω pela variância incondicional);
+- parâmetros: estimados por um procedimento fixo na série média de cada bacia × variável (t2m, VPD) em 1991–2020, o que dá quatro ajustes por nula: φ(dia do ano) é a autocorrelação de passo 1 da anomalia padronizada numa janela circular de 31 dias; a variância sazonal é a da anomalia bruta; a tendência é a inclinação por mínimos quadrados de 2001–2024; o SETAR é ajustado por mínimos quadrados em cada regime;
+- 20 repetições por nula × ajuste (80 por nula), sem ruído de observação; os oito descritores pré-registrados com 39 IAAFT e as mesmas regras, mais Wolf, Kantz (F2d), Cao (F2h) e o ganho do S-map (F2g); sementes por `gate._seed` com o nome da nula;
+- leitura: a taxa de rejeição de cada descritor em cada nula, com IC de Clopper–Pearson, é a taxa de falso positivo realista. A fração de células que rejeitam no lote (D-013) é lida contra ela, e não contra 5%: se a fração das células não passar do limite superior do IC da nula mais permissiva, a rejeição nas células não se distingue de um processo estocástico sazonal ou não linear.
+
+**F2g — S-map em todas as células** (Sugihara, 1994; numpy, sem pyEDM).
+- séries: t2m e VPD, todas as células, janela 2001–2024; (τ, m, w) pela regra;
+- θ ∈ {0; 0,25; 0,5; 1; 2; 4; 8}; θ = 0 é um AR(m) linear ajustado localmente com pesos iguais;
+- treino nos primeiros 60% e teste nos últimos 40%, como o erro de previsão; θ escolhido só no treino, por validação deixando um de fora com exclusão de Theiler; empate fica com o menor θ; nenhum alvo do teste entra na biblioteca;
+- horizontes de 1, 3 e 7 dias; referências também da persistência e da climatologia (anomalia zero);
+- índice: ganho G = 1 − RMSE(θ escolhido)/RMSE(θ = 0) no teste; significância pelo teste de Diebold–Mariano unilateral (variância HAC com h − 1 defasagens) e BH sobre as células por região × variável × horizonte;
+- calibração: o mesmo índice nos controles do gate e nas nulas de F2f;
+- leitura: G > 0 com DM significativo indica não linearidade dependente do estado **sem depender da nula IAAFT**. O G de horizonte 1 entra no `gradient.associate` como descritor exploratório, com os horizontes 3 e 7 ao lado.
+
+**F2h — Cao (1997), E1 e E2.** m de 1 a 10, τ pela regra, vizinho mais próximo fora da janela de Theiler.
+- onde: séries das bacias (com 199 IAAFT), controles do gate e nulas de F2f, subamostra (com 39 IAAFT);
+- índices: a dimensão de saturação, menor m com E1(m) ≥ 0,9 e |E1(m+1) − E1(m)| < 0,05; e o afastamento D_E2 = max_m |1 − E2(m)|;
+- leitura: E2 perto de 1 em todo m é o sinal de processo estocástico; o limiar entre "perto" e "longe" não é fixado a priori, mas lido na distribuição de D_E2 dos controles positivos, das nulas lineares e das nulas de F2f, e nas substitutas de cada série.
+
+**F2i — Chuva: dither em cada substituta e erro espectral do IAAFT.**
+- dither repetido: a série original recebe o dither de D-021 com a mesma semente; as substitutas IAAFT são geradas da série **sem** dither e cada uma recebe o seu próprio dither (semente derivada da substituta), de modo que original e nula tenham o mesmo tratamento dos empates. Todas as células, as duas fontes, janela 2001–2024, entropia e complexidade, 39 substitutas com a semente do lote da chuva; comparado ao lote do caderno 09 nas mesmas células (fração que rejeita, z e associação, com os controles de secura de D-023);
+- erro espectral: o erro relativo final de cada substituta IAAFT (`IAAFTResult.spectral_error`), na subamostra, para a chuva das duas fontes e para t2m e VPD; resumido por mediana e máximo por célula;
+- leitura: se o dither repetido mantiver a rejeição e a associação do caderno 09, o tratamento dos empates não era a origem do resultado; o erro espectral mostra quanto a nula IAAFT da chuva se afasta do espectro observado em comparação com as variáveis contínuas.
+
+**Resultados (30/10/2026):**
+- *F2f, gate realista* (`gate/realista_bea8860a92`, 600 séries, sem erros; caderno 05, Figura 5 e Tabela 3): o AR(1) com memória sazonal faz o DET rejeitar em 81% das séries, a LAM em 86% e o par ordinal em 54–59% (90–100% com os ajustes do VPD); o AR-GARCH faz DET, LAM e Kantz rejeitarem em 98–100% e o Rosenstein em 81%; o erro de previsão rejeita em no máximo 16%; o D_E2 de Cao, em no máximo 8% (poder de 100% nos três caóticos, 0% no ruído branco e no AR(1)). Pela regra fixada (caderno 07, Tabela 5), as células se distinguem da nula mais permissiva no D2, na assimetria, no par ordinal do VPD (e da temperatura do Xingu, por pouco) e no S-map da temperatura; não no DET, na LAM nem no Lyapunov. Qualifica: a rejeição das substitutas não basta para falar em dinâmica determinística.
+- *F2d, Wolf e Kantz*: recuperam o λ do Hénon e do logístico; o Kantz rejeita nas nulas quase como o Rosenstein, e o Wolf fica abaixo das substitutas nos dados. Não acrescentam evidência (caderno 06, Tabela 3; caderno 07, Tabela 5).
+- *F2h, Cao*: nas células, D_E2 mediano ≈ 0,02, igual ao das substitutas e das nulas (percentil 95 de 0,03), contra 0,08–0,32 nos caóticos; saturação em m = 8–9. Nas bacias, o VPD fica um pouco acima das substitutas (p = 0,04 e 0,005). Confirma a leitura de processo estocástico com não linearidade fraca. Exploratório: o z do D_E2 do VPD se associa negativamente à perda antecedente nas duas bacias (−0,33 e −0,36).
+- *F2g, S-map*: nas nulas, o DM rejeita em até 49% (SETAR), mas o ganho fica abaixo de 0,3% no percentil 99; nos caóticos, 37–57%. Nas células, o DM (1 dia) rejeita em 69–86% na temperatura e 42–69% no VPD, com ganho mediano de 0,2–0,6%. Exploratório, nas duas bacias: o ganho na temperatura (1 dia) cresce com a perda antecedente (+0,29 e +0,24), e o do VPD a 3 e 7 dias também (caderno 08, Tabela 6).
+- *F2b, extremas*: a máxima repete a média (associação ordinal só no Xingu); a mínima tem pouca estrutura e nenhuma associação; o DET da amplitude se associa à perda (−0,38 e −0,44, subamostra) como o da média. Confirma; nenhum sinal exclusivo do ciclo diurno (caderno 08, Tabela 6).
+- *F2c, T + q (bacias)*: o erro conjunto é maior nos dados que nas substitutas; o ganho de juntar as duas no S-map é de 0,2–1% e, com Holm, só se sustenta no Tapajós contra a FT multivariada. Um VAR quase empata com o S-map conjunto (caderno 06, Tabela 4). *F2c, T + q (subamostra; 60 células no Xingu, 62 no Tapajós; 39 IAAFT multivariadas)*: o erro conjunto nunca fica abaixo do das substitutas. O ganho do S-map conjunto passa de p ≤ 0,05 em 13% (Xingu) e 23% (Tapajós) das células para a temperatura, nenhuma depois de BH; para a umidade específica, em 73% e 50%, e BH mantém 57% no Xingu e nenhuma no Tapajós (ganho mediano de 0,6% e 1,2% do erro). O ganho não se associa à perda antecedente em nenhuma bacia (caderno 08, Tabela 6). Leitura: um pouco de estrutura conjunta não linear na umidade, mais clara no Xingu, sem relação com a perturbação.
+- *F2i, dither da chuva*: observado idêntico ao lote; rejeição de 100% mantida; z um pouco maior; associação com a perda no mesmo lugar. O erro espectral do IAAFT é de cerca de 2% na chuva, contra 0,04% em t2m e VPD (caderno 09).
+
+**Custos previstos:** F2e é só download (minutos a poucas horas no HPC); F2a, F2b e F2i, de 1 a 4 h no HPC cada; F2f com F2d e F2h, algumas horas no HPC; F2g, menos de 1 h por bacia; F2c, minutos nas bacias e cerca de 1 h na subamostra.
+
+## D-028 — Gradiente: multiplicidade, inferência espacial e exposição-placebo
+
+**Status:** fixado em 29/10/2026, antes do cálculo (F1 da revisão crítica). Complementa a Tabela 1 do caderno 08 sem mudar as estimativas: ρ parcial, IC por blocos e Moran dos resíduos continuam os mesmos.
+
+**Multiplicidade.** A família confirmatória são os 16 testes pré-registrados (2 bacias × 2 variáveis × 4 descritores primários, perda antecedente, controles latitude, água e altitude). O p-valor de cada um vem do mesmo bootstrap em blocos de 1° que dá o IC (999 reamostras, semente 20261021): p = 2 · (min(#{ρ* ≤ 0}, #{ρ* ≥ 0}) + 1) / (999 + 1), limitado a 1, o teste que corresponde ao IC percentil. Sobre os 16, Holm (controle do erro da família) e Benjamini–Hochberg. Todo o resto do caderno 08 (outras exposições, modelos de sensibilidade, longitudinal, MODIS) é rotulado como exploratório.
+
+**Inferência espacial** (`gradient.spatial_inference`), nos resíduos dos postos usados na correlação parcial:
+- I de Moran com teste de permutação dos resíduos entre células (999 permutações, semente 20261029), com a vizinhança atual (4 ortogonais);
+- correlograma: I de Moran em classes de distância de 0,25° até 5° (largura 0,25°), para mostrar o alcance da autocorrelação diante do bloco de 1°;
+- n efetivo de Clifford, Richardson e Hémon (1989), a aproximação usual do teste de Dutilleul (1993): σ²(r) = Σ_k n_k ρ_x(k) ρ_y(k) / n², com classes de 0,5° até a maior distância e o termo de distância zero (n_0 = n, ρ = 1); n' = 1 + 1/σ², e p bilateral por t = r √((n' − 2)/(1 − r²)) com n' − 2 graus de liberdade. Holm sobre os 16 também nesse p.
+
+**Bootstrap × permutação em blocos.** O pré-registro (`disturbance.inference.spatial_blocks_degrees`) fala em "permutação por blocos de 1° × 1°". O caderno 08 usa, desde o primeiro cálculo, o bootstrap em blocos de 1°, que dá o intervalo de confiança da correlação parcial e não só um p. Fica registrado como a implementação da inferência por blocos; o p desta decisão vem do mesmo bootstrap.
+
+**Exposição-placebo.** A perda de 2013 a 2024 não pode ter causado a dinâmica de 2001 a 2012. Se ela se associar aos descritores dessa década tanto quanto a perda antecedente, a associação reflete a geografia de onde o desmatamento avança, e não um efeito.
+- células: elegíveis com floresta ≥ 50% da área terrestre em 2000;
+- exposição: `mb_perda_floresta_2013_2024` (MapBiomas); resposta: z dos 4 descritores primários na janela 2001–2012; controles e inferência da Tabela 1;
+- referência: a perda antecedente contra o mesmo z, nas mesmas células;
+- leitura: placebo perto de zero onde a principal aparece reforça que a associação não é só seleção geográfica; placebo do mesmo tamanho e sinal a enfraquece. Exploratório.
+
+**Resultado (29/10/2026):** com Holm sobre os 16, 9 ficam abaixo de 0,05: o par ordinal do VPD e o DET da temperatura nas duas bacias, e no Xingu também o DET e a previsão do VPD e a previsão da temperatura. O Moran dos resíduos (0,39–0,76) tem p = 0,001 por permutação em todos. O correlograma dos resíduos se anula perto de 1° (Tapajós) e 2° (Xingu) na exposição e de 2 a 2,5° nos descritores. O n efetivo cai para 22–55 células no Xingu e 94–213 no Tapajós; com ele, 7 dos 16 ficam abaixo de 0,05 (os pares que se repetem nas duas bacias e a previsão do VPD no Xingu), e com Holm por cima só o DET da temperatura no Tapajós (0,017). Placebo: no Xingu, nada (|ρ| ≤ 0,11), enquanto a perda antecedente nas mesmas 593 células dá +0,47 e −0,46 no par ordinal do VPD e −0,25 e −0,30 no DET; no Tapajós (500 células), o placebo aparece nos padrões ordinais e na previsão da temperatura (+0,17, −0,18, −0,27), onde a exposição principal é nula, e fica perto de zero no VPD e no DET da temperatura. Leitura: a conclusão fica mais modesta, não muda de sinal; caderno 08, Tabela 1 (colunas novas), Figura 8 e Tabela 5.

@@ -95,16 +95,16 @@ Antes dos dados reais, cada descritor passa pelo **gate F4**: controles positivo
 
 ### 8.2 Reconstrução
 
-- **τ** pelo primeiro mínimo da informação mútua média (AMI); **m** por falsos vizinhos mais próximos (FNN). Ambos sobre as anomalias.
-- Avaliar uma grade pré-registrada em torno dos valores estimados, nunca um único par escolhido a dedo.
-- Janela de Theiler para excluir vizinhos temporais.
+- **τ** pelo menor valor entre o primeiro mínimo local da informação mútua média (AMI) e o primeiro τ com AMI < AMI(0)/e; nas anomalias diárias o critério de 1/e prevalece e dá τ = 1, enquanto o primeiro mínimo fica em 10 a 12 dias (F2a, D-027). **m** pelo menor m com fração de falsos vizinhos (FNN) abaixo de 0,05, até 8. Ambos sobre as anomalias padronizadas, escolhidos na série observada e mantidos nas substitutas.
+- Janela de Theiler w = max(10, τ·m).
+- Robustez: τ·{0,5; 2} e m ± 1 em todos os descritores (caderno 07), τ = 2 na subamostra (D-024) e a grade τ ∈ {1, 2, 3, 5, 7}, mínimo da AMI e atraso ordinal L ∈ {1, 2, 4, 7} (F2a, D-027).
 
 ### 8.3 Descritores
 
 | Descritor | O que mede | Cuidados |
 |---|---|---|
 | Maior expoente de Lyapunov (Rosenstein) | divergência de trajetórias próximas | a região de ajuste é pré-registrada; AR(1) também produz inclinação positiva (laboratório), por isso a comparação é contra substitutas |
-| RQA (DET, LAM, ENTR) | estrutura de recorrência | taxa de recorrência fixa, não limiar fixo |
+| RQA (DET, LAM) | estrutura de recorrência | taxa de recorrência fixa (5%), não limiar fixo; a entropia das diagonais (ENTR) não foi calculada |
 | Dimensão de correlação D2 | complexidade geométrica | pouco confiável com cerca de 9 mil pontos e ruído; procurar platô, com relato honesto |
 | Entropia de permutação e complexidade estatística | plano complexidade–entropia (Bandt–Pompe; Rosso et al., 2007) | ordem e atraso pré-registrados |
 | Assimetria temporal e erro de previsão não linear | irreversibilidade e previsibilidade | já usados no protocolo de substitutas (§8.4) |
@@ -112,23 +112,24 @@ Antes dos dados reais, cada descritor passa pelo **gate F4**: controles positivo
 
 O resultado de cada descritor é uma distribuição, com robustez na grade e posição em relação às substitutas, não um número isolado.
 
-### 8.4 Substitutas (protocolo do caderno 06)
+### 8.4 Substitutas
 
 - **FT:** processo linear gaussiano estacionário condicionado ao espectro. **IAAFT:** transformação estática monotônica de um processo linear gaussiano estacionário, com marginal exata e espectro aproximado. São hipóteses diferentes. Rejeitar qualquer uma delas **não demonstra caos determinístico**.
-- **Configuração padrão:** diário, 2001–2024, normal 1991–2020, 199 substitutas, α=0,05, semente 20261013.
-- **Família primária:** quatro hipóteses (anomalia de temperatura × duas regiões × dois métodos), com assimetria temporal no atraso 1 e escore absoluto, corrigidas por **Holm**. Testes bloqueados contam como p=1 na correção.
-- **Família exploratória:** chuva, séries originais, previsão por vizinhos, atrasos de 7 e 30 dias e as janelas 2001–2012 e 2013–2024, corrigidas por **Benjamini–Hochberg**.
-- **p de Monte Carlo** inclusivo, com correção +1 (resolução de 0,005 com M=199).
-- **Previsão não linear:** imersão 3, atraso 1, horizonte 1, cinco vizinhos, primeiros 60% para treino, exclusão de Theiler de 14 amostras. Nenhum alvo de avaliação entra no treino.
+- **p de Monte Carlo** inclusivo, com correção +1; a alternativa de cada descritor (unilateral, bilateral ou absoluta) está no pré-registro.
+- **Lote por célula (D-010, caderno 07):** 39 substitutas IAAFT (até 200 iterações) por célula, variável e janela, com semente própria derivada por SHA-256 da semente do pré-registro (20261020), da célula, da variável e da janela (`batch._seed`). Famílias do pré-registro: primária (entropia e complexidade de permutação, erro de previsão e RQA·DET), secundária (D2, LAM, assimetria) e exploratória (Lyapunov); Benjamini–Hochberg dentro de cada família, sobre as células, por região × variável × janela (D-020). Com 39 substitutas o menor p unilateral é 0,025, e os resultados são lidos também pela fração de células com p ≤ 0,05 e pelo z (D-013).
+- **Erro de previsão:** previsor de vizinhos (média dos 5 mais próximos), horizonte 1, treino nos primeiros 60%, com o (τ, m, w) da regra; nenhum alvo do teste entra no treino. Os padrões m = 3 e Theiler 14 de `statistics.nonlinear_prediction_error` são só valores-padrão da função e não são usados no lote.
+- **Séries das bacias (D-016, caderno 06):** 199 substitutas FT e IAAFT, e IAAFT depois de retirar a tendência, com Holm sobre os descritores primários de cada bacia × método.
 - **Bloqueios de qualidade:** índice incompleto, duplicado ou irregular; valores não finitos; série constante; unidade incompatível; chuva negativa. Diagnósticos de estacionariedade (ADF, KPSS, tendência HAC, CUSUM, momentos em blocos) são **heurísticos** e não certificam estacionariedade.
-- **Calibração medida** (40 repetições, 512 pontos): branco gaussiano com 7,5% (FT) e 5% (IAAFT) de rejeição; AR(1) com φ=0,8, 5% em ambos; logístico, 40 de 40 em ambos. Os intervalos são largos, e compatibilidade com 5% não prova calibração exata.
-- **No lote por célula** (caderno 07) usam-se 39 substitutas IAAFT por célula. Isso é o bastante para um teste unilateral com α=0,05, e os resultados são resumidos pela fração de células que rejeitam e pelos z-scores, com correção para múltiplos testes espaciais.
+- **Validação:** o gate congelado (`1c2fb37657`, caderno 05) mede poder e falso positivo dos descritores em controles caóticos e lineares; o gate com nulas realistas (F2f, D-027) mede o falso positivo em processos estocásticos sazonais e não lineares sem caos.
 
 ## 9. Comparação espacial (F7)
 
-- **Transversal:** regressão dos descritores contra a perturbação antecedente, com latitude, elevação e fração de água como controles. A inferência é feita por blocos espaciais, com o I de Moran dos resíduos.
+- **Transversal:** correlação parcial de Spearman entre os descritores e a perturbação antecedente, com latitude, altitude e fração de água como controles. A inferência é feita por bootstrap em blocos espaciais de 1° (IC percentil, 999 reamostras); o pré-registro dizia "permutação por blocos", e o bootstrap em blocos, que dá intervalo e não só p, foi o implementado desde o primeiro cálculo do caderno 08 (D-028). O I de Moran dos resíduos acompanha cada associação. Os 16 testes pré-registrados (2 bacias × 2 variáveis × 4 descritores primários) têm p-valor do mesmo bootstrap em blocos, corrigido por Holm e por Benjamini–Hochberg; ao lado, o I de Moran por permutação, o correlograma dos resíduos e o n efetivo de Clifford et al. (1989), com o p-valor correspondente (D-028). O resto do caderno 08 é exploratório.
+- **Exposição-placebo (D-028):** a perda de 2013–2024 contra os descritores de 2001–2012, nas células com ao menos metade de floresta em 2000, para separar efeito de seleção geográfica.
 - **Longitudinal:** a mudança do descritor entre 2001–2012 e 2013–2024 contra a mudança da perturbação, na mesma célula. Isso elimina a geografia fixa.
 - **Checagem MODIS:** se o gradiente de LST observado aparece no t2m do ERA5 (D-011).
+  Comparativo (D-027, F2e): a temperatura de pele do ERA5 às 10h30 solares, a mesma grandeza e o mesmo horário do LST, registra um quarto a um terço do contraste entre células e nada do aquecimento ao longo do tempo (D-018).
+- **Tempo antes do fogo (D-025, caderno 10):** cada início de episódio (foco depois de 30 dias sem foco na célula) é comparado com controles da mesma célula, na mesma data dos outros anos sem foco a ±15 dias corridos. O resultado é o percentil do evento entre os controles, com IC por bootstrap de anos. Preservadas × perturbadas (terços de perda antecedente cortados nas células) são comparadas diretamente pela diferença dos percentis médios, reamostrando os mesmos anos. A estação seca do fogo é junho a outubro, e não junho a setembro como no resto do trabalho.
 - **Comparáveis:** localização, relevo, água e condições de fundo justificadas. Não ajustar por respostas climáticas posteriores que façam parte do efeito.
 - Antes de prometer inferência, verificar se há diversidade de perturbação e comparáveis suficientes.
 

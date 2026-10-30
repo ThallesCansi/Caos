@@ -80,3 +80,73 @@ def cell_lst(cfg, files: list[Path] | None = None) -> tuple[pd.DataFrame, pd.Dat
                             for year, acc in sorted(yearly.items())},
                            index=pd.Index(cells.cell_id, name="cell_id"))
     return clim, dry
+
+
+# ── ERA5 na passagem do Terra (F2e, D-027) ───────────────────────────────────
+
+SOLAR_HOUR = 10.5
+CLEAR_SKY = 0.3
+HALVES = {"2001_2012": (2001, 2012), "2013_2024": (2013, 2024)}
+
+
+def overpass_utc(longitude) -> np.ndarray:
+    """Hora UTC das 10h30 solares locais: 10,5 − longitude/15 (de 13,8 a 14,5 nas bacias)."""
+    return SOLAR_HOUR - np.asarray(longitude, dtype=float) / 15
+
+
+def at_overpass(ds: xr.Dataset) -> xr.Dataset:
+    """Interpola os campos horários (13–15 UTC) para as 10h30 solares de cada longitude."""
+    day = ds.valid_time.dt.floor("D").values
+    hour = ds.valid_time.dt.hour.values
+    hourly = (ds.assign_coords(day=("valid_time", day), hour=("valid_time", hour))
+              .set_index(valid_time=["day", "hour"]).unstack("valid_time"))
+    target = xr.DataArray(overpass_utc(ds.longitude), coords={"longitude": ds.longitude})
+    if float(target.min()) < hourly.hour.min() or float(target.max()) > hourly.hour.max():
+        raise ValueError("as horas baixadas não cobrem a passagem em todas as longitudes")
+    lower = np.floor(target).clip(max=float(hourly.hour.max()) - 1)
+    frac = target - lower
+    return hourly.sel(hour=lower) * (1 - frac) + hourly.sel(hour=lower + 1) * frac
+
+
+def era5_overpass(cfg, folder: Path) -> pd.DataFrame:
+    """Médias da estação seca, por célula, de skt e t2m às 10h30 solares, em °C.
+
+    Uma coluna por janela (2001–2024 e metades), as mudanças entre as metades e a média de
+    skt só nos dias com cobertura de nuvens < 0,3 às 10h30 (perto da amostragem do MODIS).
+    """
+    files = sorted(folder.glob("[0-9][0-9][0-9][0-9].nc"))
+    if not files:
+        raise FileNotFoundError("Passagem ausente: rode `amazon-chaos era5 passage <região>`")
+    sums: dict[str, xr.DataArray] = {}
+
+    def add(key, field):
+        sums[key] = field if key not in sums else sums[key] + field
+
+    for path in files:
+        year = int(path.stem)
+        with xr.open_dataset(path) as ds:
+            day = at_overpass(ds.load())
+        day = day.sel(day=day.day.dt.month.isin(DRY_MONTHS))
+        skt, t2m = day.skt - 273.15, day.t2m - 273.15
+        clear = day.tcc < CLEAR_SKY
+        labels = ["2001_2024"] + [h for h, (a, b) in HALVES.items() if a <= year <= b]
+        for label in labels:
+            add(f"skt_{label}", skt.sum("day"))
+            add(f"t2m_{label}", t2m.sum("day"))
+            add(f"n_{label}", skt.notnull().sum("day"))
+        add("skt_limpo", skt.where(clear).sum("day"))
+        add("n_limpo", clear.sum("day"))
+    grid = {}
+    for label in ("2001_2024", *HALVES):
+        suffix = "" if label == "2001_2024" else f"_{label}"
+        grid[f"era5_skt_1030_seca{suffix}"] = sums[f"skt_{label}"] / sums[f"n_{label}"]
+        grid[f"era5_t2m_1030_seca{suffix}"] = sums[f"t2m_{label}"] / sums[f"n_{label}"]
+    grid["era5_skt_1030_seca_limpo"] = sums["skt_limpo"] / sums["n_limpo"]
+    grid["era5_fracao_limpo"] = sums["n_limpo"] / sums["n_2001_2024"]
+    frame = xr.Dataset(grid).to_dataframe().reset_index()
+    cells = regions.cells(cfg)[["cell_id", "latitude", "longitude"]]
+    out = cells.merge(frame, on=["latitude", "longitude"], how="left").set_index("cell_id")
+    for name in ("skt", "t2m"):
+        out[f"delta_era5_{name}_1030_seca"] = (out[f"era5_{name}_1030_seca_2013_2024"]
+                                               - out[f"era5_{name}_1030_seca_2001_2012"])
+    return out.drop(columns=["latitude", "longitude"])

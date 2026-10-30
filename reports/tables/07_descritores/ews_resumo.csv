@@ -1,0 +1,9 @@
+Bacia,Variável,Indicador,Células,τ de Kendall mediano,τ > 0,"p ≤ 0,05"
+Xingu,temperatura,Autocorrelação (EWS),779,-0.48,11%,0%
+Xingu,temperatura,Variância (EWS),779,0.7,79%,26%
+Xingu,déficit de pressão de vapor,Autocorrelação (EWS),779,-0.6,11%,0%
+Xingu,déficit de pressão de vapor,Variância (EWS),779,0.47,82%,11%
+Tapajós,temperatura,Autocorrelação (EWS),762,-0.07,46%,1%
+Tapajós,temperatura,Variância (EWS),762,0.81,100%,69%
+Tapajós,déficit de pressão de vapor,Autocorrelação (EWS),762,0.19,56%,4%
+Tapajós,déficit de pressão de vapor,Variância (EWS),762,0.79,100%,49%

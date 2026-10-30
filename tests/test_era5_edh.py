@@ -221,3 +221,46 @@ def test_edh_plan_mirrors_cds_days_and_grid():
     assert len(jobs) == 421 and jobs[-1]["month"] == "2025-01"
     assert jobs[-1]["request"]["day"] == ["01"]
     assert all(len(j["request"]["variable"]) == 6 for j in jobs)
+
+
+def passage_mirror(path):
+    """Espelho com skt, t2m e tcc em junho de 2024, no formato do EDH."""
+    times = pd.date_range("2024-06-01", "2024-09-30 23:00", freq="h")
+    lats = np.arange(0, -5.01, -0.25)
+    lons = np.arange(300, 310.01, 0.25)
+    rng = np.random.default_rng(1)
+    ds = xr.Dataset(
+        {name: xr.DataArray(rng.random((len(times), len(lats), len(lons)), dtype="float32"),
+                            dims=("valid_time", "latitude", "longitude"))
+         for name in ("skt", "t2m", "tcc", "sp")},
+        coords={"valid_time": times, "latitude": lats, "longitude": lons},
+    )
+    ds.chunk({"valid_time": 240, "latitude": 8, "longitude": 8}).to_zarr(
+        path, zarr_format=3, consolidated=True)
+    return ds
+
+
+def test_passage_fields_selects_hours_grid_and_resumes(tmp_path):
+    from amazon_chaos.io.era5_edh import passage_fields, passage_times
+
+    cfg = small_config()
+    source = passage_mirror(tmp_path / "edh.zarr")
+    out = tmp_path / "passagem"
+    files = passage_fields(cfg, out, (2024, 2024),
+                           open_dataset=lambda: open_edh(str(tmp_path / "edh.zarr")),
+                           report=lambda _: None)
+    with xr.open_dataset(files[0]) as got:
+        assert set(got.data_vars) == {"skt", "t2m", "tcc"}
+        assert got.sizes["valid_time"] == 122 * 3  # jun–set, 13, 14 e 15 UTC
+        assert set(pd.DatetimeIndex(got.valid_time.values).hour) == {13, 14, 15}
+        assert list(got.longitude.values) == [-56.0, -55.75]
+        expected = source.skt.sel(valid_time=passage_times(2024), latitude=[-2.25, -2.5],
+                                  longitude=[304.0, 304.25])
+        np.testing.assert_array_equal(got.skt.values, expected.values)
+    manifest = json.loads((out / "manifest.json").read_text())
+    assert manifest["files"][0]["sha256"] == sha256_file(files[0])
+
+    def offline():
+        raise AssertionError("Anos já gravados não devem acessar a rede")
+
+    passage_fields(cfg, out, (2024, 2024), open_dataset=offline)

@@ -30,13 +30,15 @@ with app.setup(hide_code=True):
     SPEC = load_spec()
     SLUGS = ["xingu", "tapajos"]
     SHORT = {"xingu": "Xingu", "tapajos": "Tapajós"}
-    THIRDS = ["preservada", "intermediária", "perturbada"]
+    THIRDS = list(F.THIRDS)
     THIRD_COLORS = {"preservada": "#2e7d4f", "intermediária": "#c9a227",
                     "perturbada": COLORS["t2m"]}
     DRY_SEASON = (6, 7, 8, 9, 10)
-    SHOWN = ["vpd_7d", "vpd_30d", "t2m_7d", "chuva_30d_chirps", "dias_secos_chirps"]
+    SHOWN = ["vpd_7d", "vpd_30d", "t2m_7d", "t2m_30d", "chuva_30d_chirps",
+             "dias_secos_chirps"]
     LABELS = {"vpd_7d": "VPD, 7 dias", "vpd_30d": "VPD, 30 dias",
-              "t2m_7d": "temperatura, 7 dias", "chuva_30d_chirps": "chuva, 30 dias (CHIRPS)",
+              "t2m_7d": "temperatura, 7 dias", "t2m_30d": "temperatura, 30 dias",
+              "chuva_30d_chirps": "chuva, 30 dias (CHIRPS)",
               "chuva_30d_era5": "chuva, 30 dias (ERA5)",
               "dias_secos_chirps": "dias seguidos sem chuva"}
 
@@ -50,8 +52,17 @@ def events(slug):
     ev = ev.join(cells[["perda_antecedente", "elegivel"]], on="cell_id")
     ev = ev[ev.elegivel].copy()
     ev["estacao"] = np.where(ev.dia.dt.month.isin(DRY_SEASON), "seca", "chuvosa")
-    ev["terco"] = pd.qcut(ev.perda_antecedente.rank(method="first"), 3, labels=THIRDS)
+    # os cortes dos terços são feitos nas células, e cada evento herda o da sua célula
+    ev["terco"] = ev.cell_id.map(F.cell_thirds(cells)).astype(
+        pd.CategoricalDtype(THIRDS, ordered=True))
     return ev
+
+
+@app.function(hide_code=True)
+@mo.cache
+def contrasts():
+    return pd.concat([F.contrast(events(slug), ["estacao"]).assign(bacia=slug)
+                      for slug in SLUGS], ignore_index=True)
 
 
 @app.function(hide_code=True)
@@ -102,13 +113,26 @@ def _():
         anterior; e o número de dias seguidos sem chuva até a véspera, estes dois pelo CHIRPS,
         a chuva observada do capítulo anterior.
 
-        Cada medida do evento é comparada com a dos seus controles: os dias a até 15 dias do
-        calendário do evento, na mesma célula, nos anos em que ela não teve foco nessa
-        janela, cerca de 300 dias por evento. O resultado é o percentil do evento entre os
+        Cada medida do evento é comparada com a dos seus controles: em cada um dos outros
+        anos, a mesma data do calendário e os 15 dias corridos de cada lado, na mesma célula,
+        desde que ela não tenha tido foco nesse intervalo, cerca de 300 dias por evento. Um
+        evento de 5 de janeiro tem, assim, controles no fim de dezembro do ano anterior. O resultado é o percentil do evento entre os
         controles. Um percentil de 0,5 quer dizer que o fogo começou com o tempo de um dia
         típico; 0,6 quer dizer que, naquele lugar e naquela época, só 40% dos dias sem fogo
         tinham um VPD tão alto. Como uma mesma seca atinge muitas células de uma vez, os
         intervalos de confiança reamostram anos inteiros, e não eventos (D-025).
+
+        Aqui a estação seca vai de junho a outubro, e não de junho a setembro como nos
+        capítulos 3, 4 e 8. A escolha foi fixada antes do cálculo (D-025) porque outubro,
+        ainda seco no sul das duas bacias, é um dos meses com mais fogo; com junho a
+        setembro, as diferenças entre as paisagens ficam iguais ou um pouco maiores.
+
+        Para comparar paisagens, dividimos as células elegíveis em três terços de igual
+        número de células pela perda antecedente, das mais preservadas às mais perturbadas,
+        e cada evento herda o terço da sua célula. Os cortes são feitos nas células, e não
+        nos eventos: as células perturbadas queimam muito mais vezes, e cortar sobre os
+        eventos empurraria boa parte das células preservadas para o terço do meio. Por isso
+        o terço preservado tem bem menos eventos que os outros dois.
         """),
         mo.callout(mo.md(nb.pt("Inícios de episódio de fogo de 2003 a 2024 nas células "
                                "elegíveis: " + "; ".join(f"{SHORT[s]}, {_n[s]:,}"
@@ -210,6 +234,13 @@ def _():
         _tab.percentil, _tab.ic_inf, _tab.ic_sup, strict=True)]
     _tab = _tab[["Bacia", "Estação", "Medida", "eventos", "Percentil [IC 95%]"]].rename(
         columns={"eventos": "Eventos"})
+    _con = contrasts()
+    _con = pd.DataFrame({
+        "Bacia": _con.bacia.map(SHORT), "Estação": _con.estacao,
+        "Medida": _con.medida.map(LABELS), "Preservadas": _con.preservada.round(3),
+        "Perturbadas": _con.perturbada.round(3),
+        "Diferença [IC 95%]": [f"{d:+.3f} [{a:+.3f}; {b:+.3f}]" for d, a, b in zip(
+            _con.diferenca, _con.ic_inf, _con.ic_sup, strict=True)]})
     mo.vstack([
         mo.md(r"""
         ## 🌡️ O tempo antes do fogo
@@ -228,22 +259,45 @@ def _():
         mo.md(r"""
         Na estação chuvosa, o padrão é o mesmo nas três paisagens e nas duas bacias: o fogo só
         começa depois de uma janela de tempo seco. O VPD da semana anterior fica entre os
-        percentis 0,59 e 0,64, os dias secos seguidos entre 0,57 e 0,62, e os intervalos dos
+        percentis 0,59 e 0,64, os dias secos seguidos entre 0,57 e 0,67, e os intervalos dos
         dois ficam longe de 0,5; a chuva do mês anterior fica um pouco abaixo do normal, com
-        intervalos que tocam o meio. Fora da época do fogo, é preciso uma janela de alguns
-        dias sem chuva para queimar.
+        intervalos que quase sempre tocam o meio. Fora da época do fogo, é preciso uma janela
+        de alguns dias sem chuva para queimar.
 
         Na estação seca, as paisagens se separam. Nas células preservadas, o fogo continua
-        exigindo tempo anormalmente seco: VPD no percentil 0,57, dias secos em 0,58, menos
-        chuva no mês anterior, todos com intervalos que excluem 0,5. Nas células
-        intermediárias e perturbadas, o percentil fica perto de 0,5 em todas as medidas, e
-        os intervalos incluem o meio da distribuição: o fogo começa com o tempo de um dia
-        qualquer da estação seca. A Tabela 1 traz os valores de todas as células juntas.
+        exigindo tempo anormalmente seco: VPD perto do percentil 0,59, dias secos perto de
+        0,61, menos chuva no mês anterior, nas duas bacias e com intervalos que excluem 0,5.
+        Nas células perturbadas, o percentil fica perto de 0,5 em todas as medidas, e os
+        intervalos incluem o meio da distribuição: o fogo começa com o tempo de um dia
+        qualquer da estação seca. As células intermediárias ficam entre as duas no Xingu,
+        onde os dias secos e a chuva do mês anterior ainda se afastam do normal, e perto
+        das perturbadas no Tapajós. Na estação seca, portanto, o papel do tempo diminui
+        aos poucos à medida que a paisagem é convertida. A temperatura do mês anterior
+        acompanha o VPD com menos força, perto do normal na estação chuvosa e um pouco acima
+        dele nas células preservadas na estação seca. A Tabela 1 traz os valores de todas as
+        células juntas.
         """),
         book.table(_tab, "resumo",
                    "Tabela 1. Percentil médio dos inícios de episódio de fogo entre os seus "
                    "controles, por bacia, estação e medida, em todas as células elegíveis, com "
                    "IC 95% por bootstrap de anos.", selection=None),
+        mo.md(r"""
+        Intervalos que não se sobrepõem sugerem uma diferença entre as paisagens, mas não a
+        testam. A Tabela 2 faz o teste direto: a diferença entre o percentil médio dos
+        eventos das células preservadas e o das perturbadas, com o intervalo obtido
+        reamostrando os mesmos anos para os dois grupos, já que eles dividem as mesmas
+        secas. Na estação seca, a diferença fica perto de 0,1 e exclui zero nas duas bacias
+        no VPD da semana e do mês, nos dias secos e na chuva do mês anterior, pelas duas
+        fontes; na temperatura, ela exclui zero nas duas escalas no Tapajós e só na semana
+        anterior no Xingu. Na estação chuvosa, as diferenças são menores, e só a dos dias
+        secos seguidos exclui zero nas duas bacias: mesmo fora da época do fogo, ele começa
+        nas preservadas depois de uma janela seca um pouco mais longa.
+        """),
+        book.table(_con, "contraste",
+                   "Tabela 2. Diferença do percentil médio dos inícios de episódio de fogo "
+                   "entre as células preservadas e as perturbadas (terços de perda "
+                   "antecedente), por bacia, estação e medida, com IC 95% por bootstrap dos "
+                   "mesmos anos nos dois grupos.", selection=None),
         mo.callout(mo.md(
             "Na estação seca, o fogo da paisagem convertida começa com o tempo de um dia "
             "qualquer, como se esperaria de queimas agendadas pelo uso da terra; o fogo das "
@@ -276,8 +330,8 @@ def _():
     importa onde a floresta está de pé e quase não importa onde ela já foi convertida. Isso
     liga a dinâmica do clima, assunto dos capítulos anteriores, ao território: o calendário
     do fogo numa paisagem de pasto e lavoura é um calendário humano, e a vulnerabilidade da
-    floresta ao fogo aparece justamente nos dias em que o tempo foge do normal, os dias que
-    secas como as de 2015 e 2024 tornaram mais frequentes. É nessa fronteira, entre o fogo
+    floresta ao fogo aparece justamente nos dias em que o tempo foge do normal, como os
+    das secas de 2015–2016 e 2023–2024. É nessa fronteira, entre o fogo
     que se acende por decisão e o que se espalha por condição, que a leitura socioespacial
     deste trabalho se apoia.
     """)

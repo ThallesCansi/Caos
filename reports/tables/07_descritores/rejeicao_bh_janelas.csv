@@ -1,0 +1,97 @@
+Bacia,Janela,Descritor,Variável,Rejeitam (BH),BH por descritor,z mediano
+Xingu,2001–2012,Complexidade estatística,temperatura,55%,55%,2.4
+Xingu,2001–2024,Complexidade estatística,temperatura,63%,63%,3.4
+Xingu,2013–2024,Complexidade estatística,temperatura,51%,51%,2.4
+Xingu,2001–2012,Complexidade estatística,déficit de pressão de vapor,53%,53%,2.5
+Xingu,2001–2024,Complexidade estatística,déficit de pressão de vapor,73%,73%,4.5
+Xingu,2013–2024,Complexidade estatística,déficit de pressão de vapor,70%,70%,3.4
+Xingu,2001–2012,Entropia de permutação,temperatura,63%,63%,-2.8
+Xingu,2001–2024,Entropia de permutação,temperatura,69%,69%,-3.9
+Xingu,2013–2024,Entropia de permutação,temperatura,56%,56%,-2.8
+Xingu,2001–2012,Entropia de permutação,déficit de pressão de vapor,58%,58%,-3.0
+Xingu,2001–2024,Entropia de permutação,déficit de pressão de vapor,76%,76%,-5.2
+Xingu,2013–2024,Entropia de permutação,déficit de pressão de vapor,74%,74%,-3.9
+Xingu,2001–2012,Erro de previsão não linear,temperatura,6%,0%,0.2
+Xingu,2001–2024,Erro de previsão não linear,temperatura,0%,0%,4.6
+Xingu,2013–2024,Erro de previsão não linear,temperatura,0%,0%,2.0
+Xingu,2001–2012,Erro de previsão não linear,déficit de pressão de vapor,7%,0%,-0.1
+Xingu,2001–2024,Erro de previsão não linear,déficit de pressão de vapor,0%,0%,3.7
+Xingu,2013–2024,Erro de previsão não linear,déficit de pressão de vapor,0%,0%,2.5
+Xingu,2001–2012,RQA · determinismo,temperatura,100%,100%,7.7
+Xingu,2001–2024,RQA · determinismo,temperatura,100%,100%,11.8
+Xingu,2013–2024,RQA · determinismo,temperatura,100%,100%,9.1
+Xingu,2001–2012,RQA · determinismo,déficit de pressão de vapor,100%,100%,11.2
+Xingu,2001–2024,RQA · determinismo,déficit de pressão de vapor,100%,100%,16.4
+Xingu,2013–2024,RQA · determinismo,déficit de pressão de vapor,100%,100%,13.0
+Xingu,2001–2012,Assimetria temporal,temperatura,100%,100%,-6.9
+Xingu,2001–2024,Assimetria temporal,temperatura,100%,100%,-10.4
+Xingu,2013–2024,Assimetria temporal,temperatura,100%,100%,-7.9
+Xingu,2001–2012,Assimetria temporal,déficit de pressão de vapor,0%,0%,-1.6
+Xingu,2001–2024,Assimetria temporal,déficit de pressão de vapor,65%,65%,-3.3
+Xingu,2013–2024,Assimetria temporal,déficit de pressão de vapor,0%,58%,-2.9
+Xingu,2001–2012,Dimensão de correlação,temperatura,74%,74%,-3.4
+Xingu,2001–2024,Dimensão de correlação,temperatura,100%,100%,-8.1
+Xingu,2013–2024,Dimensão de correlação,temperatura,87%,87%,-4.3
+Xingu,2001–2012,Dimensão de correlação,déficit de pressão de vapor,0%,89%,-4.8
+Xingu,2001–2024,Dimensão de correlação,déficit de pressão de vapor,99%,99%,-10.5
+Xingu,2013–2024,Dimensão de correlação,déficit de pressão de vapor,0%,91%,-5.2
+Xingu,2001–2012,RQA · laminaridade,temperatura,0%,100%,9.1
+Xingu,2001–2024,RQA · laminaridade,temperatura,100%,100%,12.8
+Xingu,2013–2024,RQA · laminaridade,temperatura,0%,100%,9.2
+Xingu,2001–2012,RQA · laminaridade,déficit de pressão de vapor,0%,100%,11.6
+Xingu,2001–2024,RQA · laminaridade,déficit de pressão de vapor,0%,100%,15.9
+Xingu,2013–2024,RQA · laminaridade,déficit de pressão de vapor,0%,100%,11.9
+Xingu,2001–2012,Lyapunov (Rosenstein),temperatura,0%,0%,0.2
+Xingu,2001–2024,Lyapunov (Rosenstein),temperatura,0%,0%,0.1
+Xingu,2013–2024,Lyapunov (Rosenstein),temperatura,0%,0%,-0.2
+Xingu,2001–2012,Lyapunov (Rosenstein),déficit de pressão de vapor,0%,0%,-1.1
+Xingu,2001–2024,Lyapunov (Rosenstein),déficit de pressão de vapor,0%,0%,-1.5
+Xingu,2013–2024,Lyapunov (Rosenstein),déficit de pressão de vapor,0%,0%,-1.6
+Tapajós,2001–2012,Complexidade estatística,temperatura,0%,0%,2.0
+Tapajós,2001–2024,Complexidade estatística,temperatura,0%,0%,1.9
+Tapajós,2013–2024,Complexidade estatística,temperatura,0%,0%,0.5
+Tapajós,2001–2012,Complexidade estatística,déficit de pressão de vapor,80%,80%,4.8
+Tapajós,2001–2024,Complexidade estatística,déficit de pressão de vapor,84%,84%,5.6
+Tapajós,2013–2024,Complexidade estatística,déficit de pressão de vapor,69%,69%,3.5
+Tapajós,2001–2012,Entropia de permutação,temperatura,0%,0%,-2.3
+Tapajós,2001–2024,Entropia de permutação,temperatura,0%,0%,-2.2
+Tapajós,2013–2024,Entropia de permutação,temperatura,0%,0%,-0.8
+Tapajós,2001–2012,Entropia de permutação,déficit de pressão de vapor,86%,86%,-5.6
+Tapajós,2001–2024,Entropia de permutação,déficit de pressão de vapor,91%,91%,-6.5
+Tapajós,2013–2024,Entropia de permutação,déficit de pressão de vapor,78%,78%,-4.2
+Tapajós,2001–2012,Erro de previsão não linear,temperatura,0%,0%,1.5
+Tapajós,2001–2024,Erro de previsão não linear,temperatura,0%,0%,4.3
+Tapajós,2013–2024,Erro de previsão não linear,temperatura,0%,0%,2.1
+Tapajós,2001–2012,Erro de previsão não linear,déficit de pressão de vapor,0%,0%,1.6
+Tapajós,2001–2024,Erro de previsão não linear,déficit de pressão de vapor,0%,0%,4.4
+Tapajós,2013–2024,Erro de previsão não linear,déficit de pressão de vapor,0%,0%,2.5
+Tapajós,2001–2012,RQA · determinismo,temperatura,0%,100%,9.2
+Tapajós,2001–2024,RQA · determinismo,temperatura,0%,100%,14.2
+Tapajós,2013–2024,RQA · determinismo,temperatura,0%,100%,11.2
+Tapajós,2001–2012,RQA · determinismo,déficit de pressão de vapor,100%,100%,11.8
+Tapajós,2001–2024,RQA · determinismo,déficit de pressão de vapor,100%,100%,15.4
+Tapajós,2013–2024,RQA · determinismo,déficit de pressão de vapor,100%,100%,12.9
+Tapajós,2001–2012,Assimetria temporal,temperatura,100%,100%,-7.4
+Tapajós,2001–2024,Assimetria temporal,temperatura,100%,100%,-12.0
+Tapajós,2013–2024,Assimetria temporal,temperatura,100%,100%,-8.8
+Tapajós,2001–2012,Assimetria temporal,déficit de pressão de vapor,0%,0%,-2.3
+Tapajós,2001–2024,Assimetria temporal,déficit de pressão de vapor,84%,84%,-3.8
+Tapajós,2013–2024,Assimetria temporal,déficit de pressão de vapor,73%,73%,-3.2
+Tapajós,2001–2012,Dimensão de correlação,temperatura,94%,94%,-5.2
+Tapajós,2001–2024,Dimensão de correlação,temperatura,100%,100%,-12.9
+Tapajós,2013–2024,Dimensão de correlação,temperatura,98%,98%,-6.2
+Tapajós,2001–2012,Dimensão de correlação,déficit de pressão de vapor,0%,94%,-6.3
+Tapajós,2001–2024,Dimensão de correlação,déficit de pressão de vapor,98%,98%,-13.7
+Tapajós,2013–2024,Dimensão de correlação,déficit de pressão de vapor,94%,94%,-7.2
+Tapajós,2001–2012,RQA · laminaridade,temperatura,0%,100%,9.7
+Tapajós,2001–2024,RQA · laminaridade,temperatura,100%,100%,14.5
+Tapajós,2013–2024,RQA · laminaridade,temperatura,0%,100%,11.2
+Tapajós,2001–2012,RQA · laminaridade,déficit de pressão de vapor,0%,100%,11.9
+Tapajós,2001–2024,RQA · laminaridade,déficit de pressão de vapor,0%,0%,14.8
+Tapajós,2013–2024,RQA · laminaridade,déficit de pressão de vapor,0%,0%,12.0
+Tapajós,2001–2012,Lyapunov (Rosenstein),temperatura,0%,0%,-0.5
+Tapajós,2001–2024,Lyapunov (Rosenstein),temperatura,0%,0%,-1.1
+Tapajós,2013–2024,Lyapunov (Rosenstein),temperatura,0%,0%,-1.2
+Tapajós,2001–2012,Lyapunov (Rosenstein),déficit de pressão de vapor,0%,0%,-1.0
+Tapajós,2001–2024,Lyapunov (Rosenstein),déficit de pressão de vapor,0%,0%,-2.1
+Tapajós,2013–2024,Lyapunov (Rosenstein),déficit de pressão de vapor,0%,0%,-2.1

@@ -104,7 +104,7 @@ def build(root: Path | None = None) -> Path:
         shutil.rmtree(site / folder, ignore_errors=True)
         (site / folder).mkdir(parents=True)
     cards = []
-    for name, (title, subtitle, _) in COVERS.items():
+    for name, (title, subtitle, *_) in COVERS.items():
         page = root / "reports/html" / f"{name}.html"
         cover = root / "notebooks/__marimo__/assets" / name / "opengraph.png"
         for path, hint in ((page, "make notebooks"), (cover, "make capas")):

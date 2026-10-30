@@ -115,7 +115,16 @@ def run(cfg, spec, cells: pd.DataFrame, *, n: int = 60, workers=None, report=pri
 
 
 def compare(cfg, spec, cells: pd.DataFrame) -> pd.DataFrame:
-    """Cada variante ao lado do lote original, nas mesmas células.
+    """Cada variante ao lado do lote original, nas mesmas células."""
+    chosen = subsample(cells)  # as células da primeira tentativa, fora do sorteio, ficam de fora
+    files = [f for f in sorted((output_dir(cfg) / "celulas").glob("*.parquet"))
+             if f.stem in set(chosen)]
+    variants = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
+    return against_batch(cfg, spec, cells, variants)
+
+
+def against_batch(cfg, spec, cells: pd.DataFrame, variants: pd.DataFrame) -> pd.DataFrame:
+    """Variantes (coluna `variant`) ao lado do lote original, nas mesmas células.
 
     Por descritor e variável: fração com p ≤ α, correlação de Spearman entre o z da variante
     e o do lote, e correlação parcial do z com a perda antecedente (controles do caderno 08).
@@ -126,13 +135,9 @@ def compare(cfg, spec, cells: pd.DataFrame) -> pd.DataFrame:
     from amazon_chaos.nonlinear import results as R
 
     alpha = spec["surrogates"]["alpha"] + R.TOLERANCE
-    chosen = subsample(cells)  # as células da primeira tentativa, fora do sorteio, ficam de fora
-    files = [f for f in sorted((output_dir(cfg) / "celulas").glob("*.parquet"))
-             if f.stem in set(chosen)]
-    variants = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
     base = R.load(cfg, spec)
     base = base[(base.kind == "teste") & (base.window == "2001_2024")
-                & base.descriptor.isin(spec["families"]["primary"])
+                & base.descriptor.isin(variants.descriptor.unique())
                 & base.cell_id.isin(variants.cell_id)].assign(variant="lote original")
     table = pd.concat([base, variants], ignore_index=True)
     rows = []

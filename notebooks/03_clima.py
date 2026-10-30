@@ -531,7 +531,7 @@ def _():
             "O sul de cada bacia é ao mesmo tempo o mais seco, o mais sazonal e o mais "
             "desmatado. Qualquer comparação entre células perturbadas e preservadas que não "
             "leve isso em conta confundiria clima de fundo com efeito da perturbação; por "
-            "isso o último capítulo compara células controlando a latitude e o relevo."),
+            "isso o capítulo 8 compara células controlando a latitude e o relevo."),
             kind="danger"),
         mo.md(r"""
         A Figura 7 mostra o mesmo gradiente nas duas estações: o trimestre mais chuvoso e o

@@ -102,6 +102,10 @@ def dryness():
         for name, controls in variants.items():
             rows.append({"bacia": slug, "modelo": name,
                          **G.associate(e, "perda_antecedente", column, controls)})
+        rows.append({"bacia": slug, "modelo": "+ os três, dia seco < 1 mm",
+                     **G.associate(e, "perda_antecedente", column,
+                                   G.CONTROLS + ("chuva_anual_chirps", "dias_secos_1mm_chirps",
+                                                 "meses_secos_chirps"))})
         rows.append({"bacia": slug, "modelo": "conversão, + os três",
                      **G.associate(e, "agro_frac_2000", column,
                                    G.CONTROLS + DRY + ("natural_nao_florestal_2000",))})
@@ -232,8 +236,8 @@ def plot_days(slug):
         s = series[source][cell]
         ax.bar(s.index, s.values, width=1.0, color=SOURCE_COLORS[source])
         ax.set_ylabel("mm por dia")
-        ax.set_title(f"{SOURCES[source]}: {(s < 0.1).mean():.0%} dos dias com menos de "
-                     f"0,1 mm; {(s >= 20).sum()} dias com 20 mm ou mais", loc="left",
+        ax.set_title(f"{SOURCES[source]}: {(s < 1).mean():.0%} dos dias com menos de "
+                     f"1 mm; {(s >= 20).sum()} dias com 20 mm ou mais", loc="left",
                      fontsize=10)
     lat, lon = cells(slug).loc[cell, ["latitude", "longitude"]]
     fig.suptitle(f"{load_region(slug)['name']} · célula em {lat:.2f}°, {lon:.2f}° · {YEAR}",
@@ -459,7 +463,8 @@ def _():
         climatologia do próprio CHIRPS, uma medida de cada vez e as três juntas; troca a
         exposição pela conversão agropecuária, controlando a vegetação natural aberta; e,
         por fim, fica só com as células em que quase não havia vegetação natural aberta em
-        2000. Antes de calcular, fixamos que a associação só seria tratada como robusta numa
+        2000. O dia seco desse controle é o de menos de 0,1 mm, fixado na decisão; uma linha
+        repete os três controles com o limiar de 1 mm usado no resto do trabalho. Antes de calcular, fixamos que a associação só seria tratada como robusta numa
         bacia se sobrevivesse aos três controles juntos e ao recorte das células de floresta
         (D-023).
         """),
@@ -467,12 +472,13 @@ def _():
                    "Tabela 3. Entropia de permutação da chuva do CHIRPS (valor observado) "
                    "contra a perda antecedente, com controles crescentes da climatologia do "
                    "CHIRPS (chuva anual, fração de dias com menos de 0,1 mm, meses com menos de "
-                   "100 mm), com a conversão agropecuária em 2000 como exposição e só nas "
+                   "100 mm; numa linha, dias com menos de 1 mm), com a conversão agropecuária em 2000 como exposição e só nas "
                    "células com menos de 5% de vegetação natural não florestal. Correlação "
                    "parcial com IC 95% por blocos de 1°.", selection=None),
         mo.md(r"""
         No Xingu, a associação passa por todos os testes. Ela muda pouco com cada controle,
-        fica em cerca de −0,35 com os três juntos, repete-se com a conversão agropecuária e
+        fica em cerca de −0,35 com os três juntos, com qualquer dos dois limiares de dia
+        seco, repete-se com a conversão agropecuária e
         tem o mesmo tamanho nas células de floresta, onde a vegetação aberta natural não pode
         explicá-la. No Tapajós, ela resiste aos controles da secura, menor, mas desaparece nas
         células de floresta. Lá, onde a perda antecedente se confunde muito mais com o
@@ -489,6 +495,92 @@ def _():
             "A Tabela 3 e o recorte das células de floresta são análises complementares, "
             "motivadas pelo resultado da Tabela 2 e registradas como tal (D-023)."),
             kind="warn"),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+@mo.cache
+def dither_check():
+    """Dither em cada substituta ao lado do lote (F2i, D-027) e erro espectral do IAAFT."""
+    from amazon_chaos.nonlinear import precip_dither as PD
+    from amazon_chaos.nonlinear.results import benjamini_hochberg
+
+    rows, spectral = [], []
+    for slug in SLUGS:
+        cfg = load_region(slug)
+        out = PD.output_dir(cfg, SPEC)
+        new = pd.read_parquet(out / "descritores.parquet")
+        new = new[new.descriptor != "erro"].copy()
+        new["q"] = new.groupby("variable").pvalue.transform(
+            lambda p: benjamini_hochberg(p.to_numpy()))
+        e = cells(slug)[cells(slug).elegivel]
+        base = P.load(cfg, SPEC)
+        base = base[(base.kind == "teste") & (base.window == "2001_2024")]
+        for (source, desc), g in new.groupby(["variable", "descriptor"]):
+            b = base[(base.variable == source) & (base.descriptor == desc)]
+            frame = e.join(g.set_index("cell_id").z.rename("y"), how="inner")
+            a_new = G.associate(frame, "perda_antecedente", "y")
+            a_old = G.associate(e, "perda_antecedente", f"z_{source}_{desc}")
+            rows.append({"bacia": slug, "fonte": SOURCES[source], "descritor": desc,
+                         "rej_lote": float(b.rejects.mean()),
+                         "rej_novo": float((g.q <= SPEC["surrogates"]["alpha"]).mean()),
+                         "z_lote": float(b.z.median()), "z_novo": float(g.z.median()),
+                         "rho_lote": a_old["rho_parcial"], "rho_novo": a_new["rho_parcial"],
+                         "ic_inf": a_new["ic_inf"], "ic_sup": a_new["ic_sup"]})
+        spectral.append(pd.read_parquet(out / "espectro.parquet").assign(bacia=slug))
+    return pd.DataFrame(rows), pd.concat(spectral, ignore_index=True)
+
+
+@app.cell(hide_code=True)
+def _():
+    _r, _s = dither_check()
+    _names = {"pe_entropy": "Entropia de permutação", "pe_complexity": "Complexidade estatística"}
+    _tab = pd.DataFrame({
+        "Bacia": _r.bacia.map(SHORT), "Fonte": _r.fonte, "Descritor": _r.descritor.map(_names),
+        "Rejeitam (lote)": [f"{100 * v:.0f}%" for v in _r.rej_lote],
+        "Rejeitam (dither repetido)": [f"{100 * v:.0f}%" for v in _r.rej_novo],
+        "z mediano (lote → novo)": [f"{a:.1f} → {b:.1f}" for a, b in zip(
+            _r.z_lote, _r.z_novo, strict=True)],
+        "ρ parcial do z (lote → novo)": [f"{a:+.2f} → {b:+.2f} [{c:+.2f}; {d:+.2f}]"
+                                         for a, b, c, d in zip(_r.rho_lote, _r.rho_novo,
+                                                               _r.ic_inf, _r.ic_sup,
+                                                               strict=True)]})
+    _err = _s.groupby("variable").mediana.median()
+    mo.vstack([
+        mo.md(r"""
+        ## 🎛️ Os empates e as substitutas (comparativo)
+
+        No lote da chuva, o ruído minúsculo que desfaz os empates entre dias secos foi
+        somado só à série observada, antes de gerar as substitutas. Elas herdam esse ruído
+        como valores, mas não passam pelo mesmo tratamento. Para ter certeza de que isso
+        não cria a rejeição da Tabela 1, refizemos o teste com o tratamento simétrico,
+        fixado antes do cálculo (D-027): as substitutas são geradas da chuva sem ruído, e
+        cada uma recebe depois o seu próprio ruído, como a observada. A Tabela 4 compara
+        os dois.
+        """),
+        book.table(_tab, "dither",
+                   "Tabela 4. Comparativo (D-027). Fração das células que rejeitam depois de "
+                   "Benjamini–Hochberg, z mediano e correlação parcial do z com a perda "
+                   "antecedente (controles do capítulo 8, IC 95% por blocos de 1°) no lote "
+                   "original e com o ruído que desfaz os empates aplicado também a cada "
+                   "substituta, 2001–2024.", selection=None),
+        mo.callout(mo.md(nb.pt(
+            "Erro espectral do IAAFT (mediana das células da subamostra): chuva do CHIRPS, "
+            f"{100 * _err['precip_chirps']:.1f}%; chuva do ERA5, "
+            f"{100 * _err['precip_era5']:.1f}%; temperatura, {100 * _err['t2m']:.2f}%; VPD, "
+            f"{100 * _err['vpd']:.2f}%.")), kind="info"),
+        mo.md(r"""
+        Nada muda. Todas as células continuam rejeitando a hipótese linear nas duas fontes,
+        o z fica até um pouco maior, e a associação do z com a perda antecedente fica onde
+        estava, um pouco mais forte no CHIRPS do Xingu. O valor observado da entropia, usado na Tabela 3, é exatamente o mesmo. O
+        tratamento dos empates não era a origem do resultado. Há, porém, uma diferença que
+        convém registrar: as substitutas IAAFT reproduzem o espectro da chuva com um erro
+        de cerca de 2%, cinquenta vezes maior que o da temperatura e do VPD. Numa série
+        com tantos zeros, a nula não consegue ter ao mesmo tempo a distribuição e o
+        espectro exatos da chuva, e a rejeição maciça da Tabela 1 deve ser lida com essa
+        imprecisão em mente.
+        """),
     ])
     return
 

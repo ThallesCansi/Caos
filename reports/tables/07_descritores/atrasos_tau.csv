@@ -1,0 +1,9 @@
+Bacia,Variável,Descritor,τ = 1,τ = 2,τ = 3,τ = 5,τ = 7,AMI,Resiste,Estabiliza em
+Xingu,temperatura,Erro de previsão não linear,-0.26 (0%),-0.24 (0%),-0.19 (0%),-0.24 (0%),-0.31 (0%),-0.17 (0%),sim,τ = 1
+Xingu,temperatura,RQA · determinismo,-0.54 (100%),-0.39 (100%),-0.24 (100%),-0.29 (100%),-0.24 (98%),-0.20 (98%),não,τ = 5
+Xingu,déficit de pressão de vapor,Erro de previsão não linear,-0.42 (0%),-0.39 (0%),-0.34 (0%),-0.32 (0%),-0.37 (0%),-0.34 (0%),sim,τ = 1
+Xingu,déficit de pressão de vapor,RQA · determinismo,-0.14 (100%),-0.18 (100%),-0.28 (100%),-0.10 (100%),-0.20 (100%),-0.10 (100%),sim,τ = 5
+Tapajós,temperatura,Erro de previsão não linear,-0.24 (0%),-0.17 (0%),-0.15 (0%),-0.09 (0%),-0.09 (0%),-0.13 (0%),sim,τ = 2
+Tapajós,temperatura,RQA · determinismo,-0.31 (100%),-0.42 (100%),-0.37 (100%),-0.42 (100%),-0.34 (100%),-0.40 (100%),sim,não
+Tapajós,déficit de pressão de vapor,Erro de previsão não linear,+0.09 (0%),-0.03 (0%),-0.02 (0%),+0.01 (0%),-0.01 (0%),+0.10 (0%),não,τ = 1
+Tapajós,déficit de pressão de vapor,RQA · determinismo,-0.21 (100%),-0.23 (100%),-0.17 (100%),-0.21 (100%),-0.18 (98%),-0.24 (100%),sim,τ = 5

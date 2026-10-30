@@ -8,6 +8,8 @@ A pergunta se desdobra em três: que tipo de dinâmica o clima diário local tem
 
 Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Período: 2001–2024, com o arquivo 1990–2000 para sensibilidade. Método: reconstrução do espaço de fases, Lyapunov, RQA, D2, entropia de permutação e sinais precoces, sempre contra controles sintéticos e séries substitutas. Os detalhes estão em [docs/metodologia.md](docs/metodologia.md).
 
+O pré-registro (D-010), o gate congelado `1c2fb37657` e o lote `81333bb007` são o resultado principal. As extensões da revisão crítica de 29/10/2026 (D-027: grade de atrasos, mínima e máxima, temperatura + umidade, Wolf e Kantz, temperatura de pele do ERA5, gate com nulas realistas, S-map, Cao e dither da chuva) são comparativos, apresentados ao lado do resultado principal nos capítulos em que cabem, sem substituí-lo.
+
 ## Cadernos (Marimo)
 
 Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzidos e gera as figuras da monografia. Os mapas mostram as duas bacias juntas; as figuras de uma só série têm um seletor de bacia, e as versões impressas das duas são gravadas.
@@ -21,10 +23,10 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes, MODIS | pronto |
 | `05_validacao_metodos` | o portão: descritores em controles sintéticos | pronto |
 | `06_surrogates` | substitutas FT/IAAFT nas séries das bacias (D-016) | pronto |
-| `07_descritores` | descritores por célula, robustez, EWS | pronto |
-| `08_gradiente` | perturbação × dinâmica, robustez e checagem MODIS (D-014, D-015, D-018, D-022) | pronto |
+| `07_descritores` | descritores por célula, robustez, EWS e a grade de atrasos (D-024, D-027) | pronto |
+| `08_gradiente` | perturbação × dinâmica, multiplicidade, inferência espacial e placebo, robustez e checagem MODIS, com a temperatura de pele do ERA5 no horário do satélite (D-014, D-015, D-018, D-022, D-027, D-028) | pronto |
 | `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação (D-021, D-023) | pronto |
-| `10_fogo` | o tempo antes do início dos episódios de fogo (pergunta secundária, D-025) | pronto |
+| `10_fogo` | o tempo antes do início dos episódios de fogo, com o contraste direto entre paisagens (pergunta secundária, D-025) | pronto |
 | `11_territorio` | Terras Indígenas e Unidades de Conservação diante do clima e do fogo (D-026) | pronto |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).

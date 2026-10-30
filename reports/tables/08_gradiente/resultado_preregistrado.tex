@@ -1,26 +1,26 @@
 \begin{table}
-\caption{Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda antecedente de floresta e z dos descritores primários, bruta e parcial (controles: latitude, água e altitude), com IC 95% por bootstrap em blocos de 1° e I de Moran dos resíduos.}
+\caption{Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda antecedente de floresta e z dos descritores primários, bruta e parcial (controles: latitude, água e altitude), com IC 95% por bootstrap em blocos de 1°, p-valor da mesma reamostragem corrigido por Holm e por Benjamini–Hochberg sobre os 16 testes, I de Moran dos resíduos, n efetivo de Clifford et al. e p-valor com esse n, sem correção (D-028).}
 \label{tab:08_gradiente::resultado_preregistrado}
-\begin{tabular}{lllrrrlr}
+\begin{tabular}{lllrrrlrrrrr}
 \toprule
-Bacia & Descritor & Variável & Células & ρ bruto & ρ parcial & IC 95\% & Moran dos resíduos \\
+Bacia & Descritor & Variável & Células & ρ bruto & ρ parcial & IC 95\% & p Holm & p BH & Moran dos resíduos & n efetivo & p (n efetivo) \\
 \midrule
-Xingu & Entropia de permutação & temperatura & 668 & 0,62 & 0,26 & [+0,03; +0,43] & 0,51 \\
-Xingu & Complexidade estatística & temperatura & 668 & -0,61 & -0,24 & [-0,42; +0,00] & 0,54 \\
-Xingu & Erro de previsão não linear & temperatura & 668 & 0,06 & -0,3 & [-0,45; -0,11] & 0,52 \\
-Xingu & RQA · determinismo & temperatura & 668 & -0,63 & -0,38 & [-0,48; -0,26] & 0,42 \\
-Xingu & Entropia de permutação & déficit de pressão de vapor & 668 & 0,69 & 0,46 & [+0,27; +0,59] & 0,65 \\
-Xingu & Complexidade estatística & déficit de pressão de vapor & 668 & -0,69 & -0,45 & [-0,59; -0,26] & 0,64 \\
-Xingu & Erro de previsão não linear & déficit de pressão de vapor & 668 & -0,52 & -0,44 & [-0,59; -0,25] & 0,56 \\
-Xingu & RQA · determinismo & déficit de pressão de vapor & 668 & -0,52 & -0,37 & [-0,51; -0,18] & 0,63 \\
-Tapajós & Entropia de permutação & temperatura & 652 & 0,74 & 0,01 & [-0,10; +0,16] & 0,55 \\
-Tapajós & Complexidade estatística & temperatura & 652 & -0,74 & -0,01 & [-0,16; +0,11] & 0,54 \\
-Tapajós & Erro de previsão não linear & temperatura & 652 & -0,15 & -0,04 & [-0,18; +0,09] & 0,48 \\
-Tapajós & RQA · determinismo & temperatura & 652 & -0,46 & -0,3 & [-0,42; -0,16] & 0,44 \\
-Tapajós & Entropia de permutação & déficit de pressão de vapor & 652 & 0,64 & 0,23 & [+0,10; +0,37] & 0,69 \\
-Tapajós & Complexidade estatística & déficit de pressão de vapor & 652 & -0,64 & -0,23 & [-0,36; -0,10] & 0,71 \\
-Tapajós & Erro de previsão não linear & déficit de pressão de vapor & 652 & 0,06 & -0,03 & [-0,12; +0,07] & 0,39 \\
-Tapajós & RQA · determinismo & déficit de pressão de vapor & 652 & -0,29 & -0,11 & [-0,31; +0,08] & 0,76 \\
+Xingu & Entropia de permutação & temperatura & 668 & 0,62 & 0,26 & [+0,03; +0,43] & 0,14 & 0,032 & 0,51 & 49 & 0,071 \\
+Xingu & Complexidade estatística & temperatura & 668 & -0,61 & -0,24 & [-0,42; +0,00] & 0,324 & 0,079 & 0,54 & 47 & 0,109 \\
+Xingu & Erro de previsão não linear & temperatura & 668 & 0,06 & -0,3 & [-0,45; -0,11] & 0,032 & 0,004 & 0,52 & 30 & 0,106 \\
+Xingu & RQA · determinismo & temperatura & 668 & -0,63 & -0,38 & [-0,48; -0,26] & 0,032 & 0,004 & 0,42 & 55 & 0,004 \\
+Xingu & Entropia de permutação & déficit de pressão de vapor & 668 & 0,69 & 0,46 & [+0,27; +0,59] & 0,032 & 0,004 & 0,65 & 26 & 0,018 \\
+Xingu & Complexidade estatística & déficit de pressão de vapor & 668 & -0,69 & -0,45 & [-0,59; -0,26] & 0,032 & 0,004 & 0,64 & 27 & 0,018 \\
+Xingu & Erro de previsão não linear & déficit de pressão de vapor & 668 & -0,52 & -0,44 & [-0,59; -0,25] & 0,032 & 0,004 & 0,56 & 29 & 0,017 \\
+Xingu & RQA · determinismo & déficit de pressão de vapor & 668 & -0,52 & -0,37 & [-0,51; -0,18] & 0,032 & 0,004 & 0,63 & 22 & 0,087 \\
+Tapajós & Entropia de permutação & temperatura & 652 & 0,74 & 0,01 & [-0,10; +0,16] & 1 & 0,636 & 0,55 & 213 & 0,898 \\
+Tapajós & Complexidade estatística & temperatura & 652 & -0,74 & -0,01 & [-0,16; +0,11] & 1 & 0,636 & 0,54 & 203 & 0,891 \\
+Tapajós & Erro de previsão não linear & temperatura & 652 & -0,15 & -0,04 & [-0,18; +0,09] & 1 & 0,636 & 0,48 & 99 & 0,721 \\
+Tapajós & RQA · determinismo & temperatura & 652 & -0,46 & -0,3 & [-0,42; -0,16] & 0,032 & 0,004 & 0,44 & 119 & 0,001 \\
+Tapajós & Entropia de permutação & déficit de pressão de vapor & 652 & 0,64 & 0,23 & [+0,10; +0,37] & 0,032 & 0,004 & 0,69 & 102 & 0,019 \\
+Tapajós & Complexidade estatística & déficit de pressão de vapor & 652 & -0,64 & -0,23 & [-0,36; -0,10] & 0,032 & 0,004 & 0,71 & 99 & 0,021 \\
+Tapajós & Erro de previsão não linear & déficit de pressão de vapor & 652 & 0,06 & -0,03 & [-0,12; +0,07] & 1 & 0,636 & 0,39 & 171 & 0,677 \\
+Tapajós & RQA · determinismo & déficit de pressão de vapor & 652 & -0,29 & -0,11 & [-0,31; +0,08] & 1 & 0,392 & 0,76 & 94 & 0,287 \\
 \bottomrule
 \end{tabular}
 \end{table}

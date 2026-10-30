@@ -6,7 +6,25 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/estacionariedade.csv",
     "tex": "reports/tables/06_surrogates/estacionariedade.tex",
-    "commit": "57fe776+modificado"
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "estimadores_bacia",
+    "region": null,
+    "caption": "Tabela 3. Comparativo (D-027). Lyapunov de Wolf e de Kantz e afastamento D_E2 de Cao nas séries médias das bacias, contra 199 substitutas IAAFT, com a dimensão em que o E1 de Cao satura.",
+    "overleaf": true,
+    "csv": "reports/tables/06_surrogates/estimadores_bacia.csv",
+    "tex": "reports/tables/06_surrogates/estimadores_bacia.tex",
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "multivariado_bacia",
+    "region": null,
+    "caption": "Tabela 4. Comparativo (D-027). Ganho de prever cada variável com as duas juntas, em vez da melhor isolada (erro relativo ao desvio do treino), na série média de cada bacia e na média de 199 substitutas multivariadas FT e IAAFT, com p unilateral e Holm sobre as duas bacias e os dois alvos.",
+    "overleaf": true,
+    "csv": "reports/tables/06_surrogates/multivariado_bacia.csv",
+    "tex": "reports/tables/06_surrogates/multivariado_bacia.tex",
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "resultado_bacias",
@@ -15,6 +33,6 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/resultado_bacias.csv",
     "tex": "reports/tables/06_surrogates/resultado_bacias.tex",
-    "commit": "57fe776+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

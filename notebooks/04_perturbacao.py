@@ -113,7 +113,7 @@ def _():
     células. Em seguida vemos a floresta em quatro datas e a perturbação em oito medidas,
     nos mapas e no tempo. Depois comparamos as fontes entre si e, por fim, apresentamos a
     medida principal do trabalho, a perda antecedente de floresta, com uma ressalva sobre o
-    que ela mede que vai reaparecer no último capítulo. Os mapas mostram as duas bacias
+    que ela mede que vai reaparecer no capítulo 8. Os mapas mostram as duas bacias
     juntas, como estão no território: o Tapajós a oeste e o Xingu a leste.
     """)
     return
@@ -478,7 +478,7 @@ def _():
         parecem mais entre si do que com uma floresta: ambos são mais baixos, mais claros,
         mais quentes e transpiram menos. Mas significa que uma associação entre a perda
         antecedente e o clima pode refletir, em parte, a vegetação natural, e não a ação
-        humana. O último capítulo enfrenta essa objeção diretamente, substituindo a medida
+        humana. O capítulo 8 enfrenta essa objeção diretamente, substituindo a medida
         principal pela fração de agropecuária e controlando a vegetação natural.
         """),
         mo.callout(mo.md(
@@ -558,7 +558,7 @@ def _():
         concordam muito bem onde medem a mesma coisa e divergem de um modo explicável onde
         as definições diferem, sobretudo no Cerrado. A medida principal do trabalho, a perda
         antecedente de floresta, é anterior ao clima que vamos analisar e contínua, mas
-        mistura conversão e vegetação natural, uma ambiguidade que o último capítulo trata
+        mistura conversão e vegetação natural, uma ambiguidade que o capítulo 8 trata
         explicitamente. O satélite mostra que a conversão aquece a superfície em vários
         graus, e que o ERA5 não registra esse aquecimento. As tabelas completas, com as quarenta medidas de cada célula, estão
         abaixo.

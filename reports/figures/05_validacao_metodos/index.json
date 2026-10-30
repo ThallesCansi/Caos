@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/controles.png",
     "pdf": "reports/figures/05_validacao_metodos/controles.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "diagnosticos",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/diagnosticos.png",
     "pdf": "reports/figures/05_validacao_metodos/diagnosticos.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "padronizacao",
@@ -24,7 +24,16 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/padronizacao.png",
     "pdf": "reports/figures/05_validacao_metodos/padronizacao.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "portao_realista",
+    "region": null,
+    "caption": "Figura 5. Comparativo (D-027). Fração das séries em que cada descritor rejeita a hipótese das substitutas, em % (S-map: teste de Diebold–Mariano do ganho sobre a previsão linear, 1 dia): controles caóticos e lineares do portão (8.766 passos, ruído 0,2, 10 repetições) e quatro nulas estocásticas realistas, sem caos (80 séries cada).",
+    "overleaf": true,
+    "png": "reports/figures/05_validacao_metodos/portao_realista.png",
+    "pdf": "reports/figures/05_validacao_metodos/portao_realista.pdf",
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "taxas_rejeicao",
@@ -33,6 +42,6 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/taxas_rejeicao.png",
     "pdf": "reports/figures/05_validacao_metodos/taxas_rejeicao.pdf",
-    "commit": "01c4b6b+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

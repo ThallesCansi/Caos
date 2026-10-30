@@ -169,7 +169,11 @@ def load(cfg, spec) -> pd.DataFrame:
 
 
 def climatology(cfg, first: str = "2001", last: str = "2024") -> pd.DataFrame:
-    """Por célula e fonte: chuva anual (mm), fração de dias com < 0,1 mm e meses < 100 mm."""
+    """Por célula e fonte: chuva anual (mm), fração de dias com < 0,1 mm e meses < 100 mm.
+
+    A fração de dias com < 1 mm, a convenção de dia seco do resto do trabalho, fica ao
+    lado como sensibilidade do controle de secura (D-023).
+    """
     out = {}
     for source in SOURCES:
         rain = load_series(cfg, source).loc[first:last]
@@ -179,6 +183,7 @@ def climatology(cfg, first: str = "2001", last: str = "2024") -> pd.DataFrame:
         short = source.removeprefix("precip_")
         out[f"chuva_anual_{short}"] = rain.sum() / years
         out[f"dias_secos_{short}"] = (rain < 0.1).mean()
+        out[f"dias_secos_1mm_{short}"] = (rain < 1.0).mean()
         out[f"meses_secos_{short}"] = (normal < 100).sum()
     return pd.DataFrame(out)
 

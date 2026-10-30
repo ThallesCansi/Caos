@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/11_territorio/associacao.csv",
     "tex": "reports/tables/11_territorio/associacao.tex",
-    "commit": "ae30088+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "classes",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/11_territorio/classes.csv",
     "tex": "reports/tables/11_territorio/classes.tex",
-    "commit": "ae30088+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "fogo",
@@ -24,6 +24,6 @@
     "overleaf": true,
     "csv": "reports/tables/11_territorio/fogo.csv",
     "tex": "reports/tables/11_territorio/fogo.tex",
-    "commit": "ae30088+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

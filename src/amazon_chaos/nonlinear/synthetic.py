@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 from scipy.integrate import solve_ivp
 
 
@@ -98,3 +99,86 @@ def control(kind: str, n: int, seed: int = 0, noise: float = 0.0) -> np.ndarray:
     if noise:
         x = add_noise(x, noise, seed + 1)
     return (x - x.mean()) / x.std()
+
+
+# ── Nulas realistas do gate (F2f, D-027): estocásticas, sazonais, sem caos ───
+
+REALISTIC = ("ar1_doy", "ar1_trend", "setar", "ar1_garch")
+GARCH = {"alpha": 0.10, "beta": 0.85}
+
+
+def _lag1(a: np.ndarray, b: np.ndarray) -> float:
+    ok = np.isfinite(a) & np.isfinite(b)
+    return float(np.corrcoef(a[ok], b[ok])[0, 1])
+
+
+def fit_realistic(raw: pd.Series, normal=("1991-01-01", "2020-12-31"),
+                  trend_period=("2001-01-01", "2024-12-31"), half_window: int = 15) -> dict:
+    """Parâmetros das quatro nulas, por um procedimento fixo, numa série diária bruta.
+
+    φ(dia do ano): autocorrelação de passo 1 da anomalia padronizada em janela circular de
+    ±`half_window` dias, na normal; φ fixo: a mesma sem janela; desvio sazonal: o da anomalia
+    bruta (`standardized_anomalies`); tendência: inclinação por mínimos quadrados da anomalia
+    bruta em `trend_period`, por dia; SETAR: mínimos quadrados em cada regime (z_{t−1} ≤ 0
+    e > 0) da anomalia padronizada na normal.
+    """
+    from amazon_chaos.regional import anomalies, standardized_anomalies
+
+    z_all, sd = standardized_anomalies(raw, normal)
+    z = z_all.loc[normal[0]:normal[1]]
+    prev, now = z.to_numpy()[:-1], z.to_numpy()[1:]
+    doy = z.index.day_of_year.to_numpy()[1:]
+    phi_doy = np.empty(366)
+    for d in range(1, 367):
+        gap = np.abs(doy - d)
+        near = np.minimum(gap, 366 - gap) <= half_window
+        phi_doy[d - 1] = _lag1(prev[near], now[near])
+    anomaly, _ = anomalies(raw, normal)
+    part = anomaly.loc[trend_period[0]:trend_period[1]]
+    slope = float(np.polyfit(np.arange(len(part)), part.to_numpy(), 1)[0])
+    setar = []
+    for regime in (prev <= 0, prev > 0):
+        x, y = prev[regime], now[regime]
+        b, a = np.polyfit(x, y, 1)
+        setar.append({"a": float(a), "b": float(b), "s": float(np.std(y - (a + b * x)))})
+    return {"phi_doy": phi_doy.tolist(), "phi": _lag1(prev, now), "sd_doy": sd.tolist(),
+            "trend_per_day": slope, "setar": setar}
+
+
+def simulate_realistic(kind: str, params: dict, seed: int, start="1990-01-01",
+                       end="2024-12-31", burn: int = 365) -> pd.Series:
+    """Série diária bruta de uma nula realista: z sem caos × desvio sazonal (+ tendência)."""
+    days = pd.date_range(start, end, freq="D")
+    n = len(days) + burn
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    doy = np.r_[days.day_of_year[-burn:], days.day_of_year] - 1
+    z = np.zeros(n)
+    if kind == "ar1_doy":
+        phi = np.asarray(params["phi_doy"])[doy]
+        for t in range(1, n):
+            z[t] = phi[t] * z[t - 1] + np.sqrt(1 - phi[t] ** 2) * eps[t]
+    elif kind in ("ar1_trend", "ar1_garch"):
+        phi = params["phi"]
+        if kind == "ar1_trend":
+            for t in range(1, n):
+                z[t] = phi * z[t - 1] + np.sqrt(1 - phi**2) * eps[t]
+        else:
+            alpha, beta = GARCH["alpha"], GARCH["beta"]
+            omega = (1 - alpha - beta) * (1 - phi**2)
+            h, e = 1 - phi**2, 0.0
+            for t in range(1, n):
+                h = omega + alpha * e**2 + beta * h
+                e = np.sqrt(h) * eps[t]
+                z[t] = phi * z[t - 1] + e
+    elif kind == "setar":
+        low, high = params["setar"]
+        for t in range(1, n):
+            r = low if z[t - 1] <= 0 else high
+            z[t] = r["a"] + r["b"] * z[t - 1] + r["s"] * eps[t]
+    else:
+        raise ValueError(f"Nula desconhecida: {kind}")
+    raw = z[burn:] * np.asarray(params["sd_doy"])[days.day_of_year - 1]
+    if kind == "ar1_trend":
+        raw = raw + params["trend_per_day"] * np.arange(len(days))
+    return pd.Series(raw, index=days)

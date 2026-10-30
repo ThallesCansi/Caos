@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from amazon_chaos.features.fire_weather import _window_sum, dry_run, events
+from amazon_chaos.features import fire_weather as F
+from amazon_chaos.features.fire_weather import dry_run, events
 
 
 def test_episode_starts_need_a_quiet_gap():
@@ -21,8 +22,51 @@ def test_dry_run_counts_consecutive_dry_days():
     assert dry_run(rain).a.tolist() == [0, 1, 2, 3, 0, 1]
 
 
-def test_window_sum_wraps_around_the_calendar():
-    cube = np.zeros((1, 366, 1))
-    cube[0, 0, 0] = 1.0  # 1º de janeiro
-    total = _window_sum(cube, 2)[0, :, 0]
-    assert total[[364, 365, 0, 1, 2]].tolist() == [1, 1, 1, 1, 1] and total[3] == 0
+def test_same_dates_keep_the_calendar_and_move_leap_day():
+    days = pd.Series(pd.to_datetime(["2004-02-29", "2005-01-05"]))
+    assert list(F.same_dates(days, 2003)) == list(pd.to_datetime(["2003-02-28", "2003-01-05"]))
+    assert list(F.same_dates(days, 2008)) == list(pd.to_datetime(["2008-02-29", "2008-01-05"]))
+
+
+def test_controls_use_real_dates_across_new_year():
+    days = pd.date_range(f"{F.YEARS[0]}-01-01", f"{F.YEARS[1]}-12-31", freq="D")
+    fires = pd.DataFrame(0, index=days, columns=["a"])
+    fires.loc["2005-01-05", "a"] = 1
+    fires.loc["2010-01-03", "a"] = 1  # outro evento: 2010 deixa de servir de controle
+    signal = pd.DataFrame(0.0, index=days, columns=["a"])
+    signal.loc["2005-01-05", "a"] = 1.0
+    cond = {name: signal for name in F.MEASURES}
+    out = F.composite({}, fires=fires, cond=cond)
+    assert out.dia.tolist() == list(pd.to_datetime(["2005-01-05", "2010-01-03"]))
+    # 20 anos inteiros (31 dias, dezembro do ano anterior incluído) menos o começo de 2003,
+    # que não tem os 15 dias de dezembro de 2002
+    first = 22 - 2
+    assert out.controles.tolist() == [(first - 1) * 31 + 20, (first - 1) * 31 + 18]
+    assert out.vpd_7d_percentil.tolist() == [1.0, 0.5]
+
+
+def test_contrast_resamples_years_jointly():
+    ev = pd.DataFrame({"ano": [2003, 2003, 2004, 2004] * 5,
+                       "terco": ["preservada", "perturbada"] * 10})
+    for name in F.MEASURES:
+        ev[f"{name}_percentil"] = np.where(ev.terco == "preservada", 0.7, 0.5)
+    out = F.contrast(ev, n=99)
+    assert np.allclose(out.diferenca, 0.2) and np.allclose(out.ic_inf, 0.2)
+    assert out.exclui_zero.all()
+
+
+def test_thirds_are_cut_on_cells_not_on_events():
+    from amazon_chaos.features.fire_weather import cell_thirds
+
+    cells = pd.DataFrame({"perda_antecedente": np.arange(9) / 10,
+                          "elegivel": [True] * 9},
+                         index=[f"c{i}" for i in range(9)])
+    cells.loc["fora"] = [0.95, False]
+    thirds = cell_thirds(cells)
+    assert "fora" not in thirds.index
+    assert thirds.value_counts().tolist() == [3, 3, 3]
+    # uma célula preservada com muitos episódios não muda o terço das outras
+    events = pd.DataFrame({"cell_id": ["c0"] * 50 + [f"c{i}" for i in range(1, 9)]})
+    events = events.join(thirds, on="cell_id")
+    assert events.groupby("cell_id").terco.first().to_dict() == thirds.to_dict()
+    assert (events.terco == "preservada").sum() == 52

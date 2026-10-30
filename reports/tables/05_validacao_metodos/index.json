@@ -6,7 +6,16 @@
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/ews_calibracao.csv",
     "tex": "reports/tables/05_validacao_metodos/ews_calibracao.tex",
-    "commit": "01c4b6b+modificado"
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "portao_realista",
+    "region": null,
+    "caption": "Tabela 3. Comparativo (D-027). Taxa de rejeição (p ≤ 0,05) de cada descritor nas quatro nulas realistas, com IC 95% de Clopper–Pearson, 80 séries por nula (quatro ajustes × 20 repetições).",
+    "overleaf": true,
+    "csv": "reports/tables/05_validacao_metodos/portao_realista.csv",
+    "tex": "reports/tables/05_validacao_metodos/portao_realista.tex",
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "veredito",
@@ -15,6 +24,6 @@
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/veredito.csv",
     "tex": "reports/tables/05_validacao_metodos/veredito.tex",
-    "commit": "01c4b6b+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

@@ -1,0 +1,81 @@
+Bacia,Variável,Descritor,Exposição,Células,ρ parcial [IC 95%],p (blocos)
+Xingu,temperatura,Entropia de permutação,Perda de floresta 2000–2024,668,+0.07 [-0.08; +0.18],0.38
+Xingu,temperatura,Entropia de permutação,Focos de fogo por 100 km² por ano,668,+0.10 [-0.09; +0.25],0.292
+Xingu,temperatura,Entropia de permutação,Frequência de fogo 1985–2024,668,+0.11 [-0.06; +0.28],0.232
+Xingu,temperatura,Entropia de permutação,Desmatamento PRODES acumulado até 2024,668,+0.08 [-0.07; +0.21],0.306
+Xingu,temperatura,Entropia de permutação,Desmatamento PRODES até 2007,668,+0.10 [-0.06; +0.22],0.248
+Xingu,temperatura,Complexidade estatística,Perda de floresta 2000–2024,668,-0.05 [-0.17; +0.09],0.516
+Xingu,temperatura,Complexidade estatística,Focos de fogo por 100 km² por ano,668,-0.08 [-0.23; +0.10],0.378
+Xingu,temperatura,Complexidade estatística,Frequência de fogo 1985–2024,668,-0.09 [-0.25; +0.09],0.37
+Xingu,temperatura,Complexidade estatística,Desmatamento PRODES acumulado até 2024,668,-0.06 [-0.19; +0.10],0.524
+Xingu,temperatura,Complexidade estatística,Desmatamento PRODES até 2007,668,-0.07 [-0.20; +0.09],0.448
+Xingu,temperatura,Erro de previsão não linear,Perda de floresta 2000–2024,668,-0.02 [-0.18; +0.14],0.844
+Xingu,temperatura,Erro de previsão não linear,Focos de fogo por 100 km² por ano,668,-0.13 [-0.27; +0.04],0.122
+Xingu,temperatura,Erro de previsão não linear,Frequência de fogo 1985–2024,668,-0.16 [-0.30; +0.01],0.062
+Xingu,temperatura,Erro de previsão não linear,Desmatamento PRODES acumulado até 2024,668,-0.10 [-0.26; +0.07],0.238
+Xingu,temperatura,Erro de previsão não linear,Desmatamento PRODES até 2007,668,-0.11 [-0.27; +0.06],0.188
+Xingu,temperatura,RQA · determinismo,Perda de floresta 2000–2024,668,+0.01 [-0.13; +0.17],0.886
+Xingu,temperatura,RQA · determinismo,Focos de fogo por 100 km² por ano,668,-0.08 [-0.22; +0.08],0.332
+Xingu,temperatura,RQA · determinismo,Frequência de fogo 1985–2024,668,-0.24 [-0.35; -0.12],0.002
+Xingu,temperatura,RQA · determinismo,Desmatamento PRODES acumulado até 2024,668,-0.08 [-0.22; +0.07],0.34
+Xingu,temperatura,RQA · determinismo,Desmatamento PRODES até 2007,668,-0.09 [-0.24; +0.06],0.26
+Xingu,déficit de pressão de vapor,Entropia de permutação,Perda de floresta 2000–2024,668,+0.08 [-0.07; +0.21],0.37
+Xingu,déficit de pressão de vapor,Entropia de permutação,Focos de fogo por 100 km² por ano,668,+0.12 [-0.05; +0.28],0.192
+Xingu,déficit de pressão de vapor,Entropia de permutação,Frequência de fogo 1985–2024,668,+0.21 [+0.05; +0.35],0.006
+Xingu,déficit de pressão de vapor,Entropia de permutação,Desmatamento PRODES acumulado até 2024,668,+0.18 [+0.02; +0.30],0.024
+Xingu,déficit de pressão de vapor,Entropia de permutação,Desmatamento PRODES até 2007,668,+0.21 [+0.05; +0.33],0.006
+Xingu,déficit de pressão de vapor,Complexidade estatística,Perda de floresta 2000–2024,668,-0.08 [-0.20; +0.07],0.348
+Xingu,déficit de pressão de vapor,Complexidade estatística,Focos de fogo por 100 km² por ano,668,-0.12 [-0.27; +0.05],0.18
+Xingu,déficit de pressão de vapor,Complexidade estatística,Frequência de fogo 1985–2024,668,-0.21 [-0.35; -0.05],0.006
+Xingu,déficit de pressão de vapor,Complexidade estatística,Desmatamento PRODES acumulado até 2024,668,-0.18 [-0.30; -0.03],0.022
+Xingu,déficit de pressão de vapor,Complexidade estatística,Desmatamento PRODES até 2007,668,-0.21 [-0.33; -0.05],0.006
+Xingu,déficit de pressão de vapor,Erro de previsão não linear,Perda de floresta 2000–2024,668,-0.14 [-0.27; -0.00],0.05
+Xingu,déficit de pressão de vapor,Erro de previsão não linear,Focos de fogo por 100 km² por ano,668,-0.20 [-0.34; -0.04],0.016
+Xingu,déficit de pressão de vapor,Erro de previsão não linear,Frequência de fogo 1985–2024,668,-0.25 [-0.41; -0.10],0.002
+Xingu,déficit de pressão de vapor,Erro de previsão não linear,Desmatamento PRODES acumulado até 2024,668,-0.26 [-0.39; -0.11],0.002
+Xingu,déficit de pressão de vapor,Erro de previsão não linear,Desmatamento PRODES até 2007,668,-0.28 [-0.42; -0.13],0.002
+Xingu,déficit de pressão de vapor,RQA · determinismo,Perda de floresta 2000–2024,668,-0.08 [-0.23; +0.08],0.338
+Xingu,déficit de pressão de vapor,RQA · determinismo,Focos de fogo por 100 km² por ano,668,-0.16 [-0.32; +0.03],0.11
+Xingu,déficit de pressão de vapor,RQA · determinismo,Frequência de fogo 1985–2024,668,-0.20 [-0.37; -0.01],0.044
+Xingu,déficit de pressão de vapor,RQA · determinismo,Desmatamento PRODES acumulado até 2024,668,-0.17 [-0.32; -0.00],0.048
+Xingu,déficit de pressão de vapor,RQA · determinismo,Desmatamento PRODES até 2007,668,-0.18 [-0.33; -0.01],0.042
+Tapajós,temperatura,Entropia de permutação,Perda de floresta 2000–2024,652,+0.04 [-0.10; +0.19],0.602
+Tapajós,temperatura,Entropia de permutação,Focos de fogo por 100 km² por ano,652,-0.02 [-0.13; +0.12],0.99
+Tapajós,temperatura,Entropia de permutação,Frequência de fogo 1985–2024,652,-0.12 [-0.25; +0.06],0.222
+Tapajós,temperatura,Entropia de permutação,Desmatamento PRODES acumulado até 2024,652,+0.04 [-0.12; +0.23],0.604
+Tapajós,temperatura,Entropia de permutação,Desmatamento PRODES até 2007,652,+0.04 [-0.12; +0.23],0.612
+Tapajós,temperatura,Complexidade estatística,Perda de floresta 2000–2024,652,-0.01 [-0.16; +0.12],0.86
+Tapajós,temperatura,Complexidade estatística,Focos de fogo por 100 km² por ano,652,+0.03 [-0.11; +0.14],0.83
+Tapajós,temperatura,Complexidade estatística,Frequência de fogo 1985–2024,652,+0.13 [-0.06; +0.26],0.188
+Tapajós,temperatura,Complexidade estatística,Desmatamento PRODES acumulado até 2024,652,-0.00 [-0.19; +0.14],0.902
+Tapajós,temperatura,Complexidade estatística,Desmatamento PRODES até 2007,652,-0.00 [-0.20; +0.14],0.88
+Tapajós,temperatura,Erro de previsão não linear,Perda de floresta 2000–2024,652,+0.15 [+0.01; +0.28],0.024
+Tapajós,temperatura,Erro de previsão não linear,Focos de fogo por 100 km² por ano,652,+0.02 [-0.10; +0.13],0.772
+Tapajós,temperatura,Erro de previsão não linear,Frequência de fogo 1985–2024,652,+0.05 [-0.09; +0.19],0.584
+Tapajós,temperatura,Erro de previsão não linear,Desmatamento PRODES acumulado até 2024,652,+0.16 [+0.02; +0.29],0.026
+Tapajós,temperatura,Erro de previsão não linear,Desmatamento PRODES até 2007,652,+0.13 [-0.02; +0.27],0.082
+Tapajós,temperatura,RQA · determinismo,Perda de floresta 2000–2024,652,+0.02 [-0.12; +0.15],0.824
+Tapajós,temperatura,RQA · determinismo,Focos de fogo por 100 km² por ano,652,-0.04 [-0.16; +0.09],0.552
+Tapajós,temperatura,RQA · determinismo,Frequência de fogo 1985–2024,652,-0.21 [-0.36; -0.08],0.002
+Tapajós,temperatura,RQA · determinismo,Desmatamento PRODES acumulado até 2024,652,-0.13 [-0.30; +0.01],0.084
+Tapajós,temperatura,RQA · determinismo,Desmatamento PRODES até 2007,652,-0.15 [-0.32; -0.00],0.046
+Tapajós,déficit de pressão de vapor,Entropia de permutação,Perda de floresta 2000–2024,652,-0.05 [-0.21; +0.12],0.628
+Tapajós,déficit de pressão de vapor,Entropia de permutação,Focos de fogo por 100 km² por ano,652,+0.02 [-0.13; +0.20],0.674
+Tapajós,déficit de pressão de vapor,Entropia de permutação,Frequência de fogo 1985–2024,652,+0.08 [-0.07; +0.26],0.302
+Tapajós,déficit de pressão de vapor,Entropia de permutação,Desmatamento PRODES acumulado até 2024,652,+0.08 [-0.09; +0.25],0.312
+Tapajós,déficit de pressão de vapor,Entropia de permutação,Desmatamento PRODES até 2007,652,+0.09 [-0.05; +0.26],0.236
+Tapajós,déficit de pressão de vapor,Complexidade estatística,Perda de floresta 2000–2024,652,+0.06 [-0.11; +0.22],0.528
+Tapajós,déficit de pressão de vapor,Complexidade estatística,Focos de fogo por 100 km² por ano,652,-0.02 [-0.20; +0.14],0.746
+Tapajós,déficit de pressão de vapor,Complexidade estatística,Frequência de fogo 1985–2024,652,-0.08 [-0.27; +0.07],0.316
+Tapajós,déficit de pressão de vapor,Complexidade estatística,Desmatamento PRODES acumulado até 2024,652,-0.06 [-0.24; +0.10],0.4
+Tapajós,déficit de pressão de vapor,Complexidade estatística,Desmatamento PRODES até 2007,652,-0.07 [-0.24; +0.07],0.318
+Tapajós,déficit de pressão de vapor,Erro de previsão não linear,Perda de floresta 2000–2024,652,+0.13 [-0.02; +0.26],0.1
+Tapajós,déficit de pressão de vapor,Erro de previsão não linear,Focos de fogo por 100 km² por ano,652,+0.10 [-0.03; +0.22],0.174
+Tapajós,déficit de pressão de vapor,Erro de previsão não linear,Frequência de fogo 1985–2024,652,+0.12 [-0.04; +0.25],0.148
+Tapajós,déficit de pressão de vapor,Erro de previsão não linear,Desmatamento PRODES acumulado até 2024,652,+0.11 [-0.04; +0.26],0.18
+Tapajós,déficit de pressão de vapor,Erro de previsão não linear,Desmatamento PRODES até 2007,652,+0.11 [-0.04; +0.26],0.18
+Tapajós,déficit de pressão de vapor,RQA · determinismo,Perda de floresta 2000–2024,652,+0.24 [+0.05; +0.39],0.018
+Tapajós,déficit de pressão de vapor,RQA · determinismo,Focos de fogo por 100 km² por ano,652,+0.02 [-0.17; +0.19],0.818
+Tapajós,déficit de pressão de vapor,RQA · determinismo,Frequência de fogo 1985–2024,652,+0.05 [-0.18; +0.24],0.674
+Tapajós,déficit de pressão de vapor,RQA · determinismo,Desmatamento PRODES acumulado até 2024,652,+0.21 [-0.01; +0.38],0.068
+Tapajós,déficit de pressão de vapor,RQA · determinismo,Desmatamento PRODES até 2007,652,+0.21 [-0.01; +0.38],0.07

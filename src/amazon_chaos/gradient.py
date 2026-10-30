@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from scipy.stats import rankdata, spearmanr
+from scipy.stats import t as student_t
+from statsmodels.stats.multitest import multipletests
 
 from amazon_chaos import regions
 from amazon_chaos.features.disturbance import out_dir
@@ -62,17 +64,16 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     full = tests[tests.window == "2001_2024"].pivot_table(
         index="cell_id", columns=["variable", "descriptor"], values="z")
     full.columns = [f"z_{v}_{d}" for v, d in full.columns]
+    first = tests[tests.window == "2001_2012"].pivot_table(
+        index="cell_id", columns=["variable", "descriptor"], values="z")
+    first.columns = [f"z12_{v}_{d}" for v, d in first.columns]
     observed = tests[tests.window == "2001_2024"].pivot_table(
         index="cell_id", columns=["variable", "descriptor"], values="observed")
     observed.columns = [f"obs_{v}_{d}" for v, d in observed.columns]
     null = tests[tests.window == "2001_2024"].pivot_table(
         index="cell_id", columns=["variable", "descriptor"], values="null_mean")
     null.columns = [f"nulo_{v}_{d}" for v, d in null.columns]
-    halves = tests[tests.window.isin(["2001_2012", "2013_2024"])].pivot_table(
-        index="cell_id", columns=["variable", "descriptor", "window"], values="observed")
-    delta = pd.DataFrame({
-        f"delta_{v}_{d}": halves[(v, d, "2013_2024")] - halves[(v, d, "2001_2012")]
-        for v, d, _ in halves.columns.unique()[::2]})
+    delta = half_changes(tests)
     # a regra do FNN escolhe m em cada metade; quando muda, os descritores que dependem do
     # espaço de fases (DET, LAM, D2, Lyapunov) saltam junto (D-015)
     dims = tests[tests.window.isin(["2001_2012", "2013_2024"])].pivot_table(
@@ -80,7 +81,18 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     dm = pd.DataFrame({f"dm_{v}": dims[(v, "2013_2024")] - dims[(v, "2001_2012")]
                        for v in dims.columns.get_level_values(0).unique()})
     out["perda_1990_2000"] = out.floresta_frac_1990 - out.floresta_frac_2000
-    return out.join(full).join(observed).join(null).join(delta).join(dm)
+    return out.join(full).join(first).join(observed).join(null).join(delta).join(dm)
+
+
+def half_changes(tests: pd.DataFrame) -> pd.DataFrame:
+    """Valor observado de 2013–2024 menos o de 2001–2012, por célula, variável e descritor."""
+    halves = tests[tests.window.isin(["2001_2012", "2013_2024"])].pivot_table(
+        index="cell_id", columns=["variable", "descriptor", "window"], values="observed")
+    pairs = sorted({(v, d) for v, d, _ in halves.columns})
+    return pd.DataFrame({
+        f"delta_{v}_{d}": halves[(v, d, "2013_2024")] - halves[(v, d, "2001_2012")]
+        for v, d in pairs if (v, d, "2001_2012") in halves and (v, d, "2013_2024") in halves},
+        index=halves.index)
 
 
 DRY = (6, 7, 8, 9)
@@ -118,6 +130,9 @@ def surface_table(cfg) -> pd.DataFrame:
         out[f"era5_tmax_seca_{half}"] = per_cell(tmax.sel(month=slice(first, last)))
     out["delta_lst_seca"] = out.lst_seca_2013_2024 - out.lst_seca_2001_2012
     out["delta_era5_tmax_seca"] = out.era5_tmax_seca_2013_2024 - out.era5_tmax_seca_2001_2012
+    # skt e t2m do ERA5 às 10h30 solares (F2e, D-027), quando `era5 overpass` já rodou
+    if (folder / "era5_passagem.parquet").exists():
+        out = out.join(pd.read_parquet(folder / "era5_passagem.parquet"))
     return out
 
 
@@ -142,8 +157,8 @@ def blocks(frame: pd.DataFrame, size: float = 1.0) -> np.ndarray:
             + np.floor(frame.longitude / size).astype(int).astype(str)).to_numpy()
 
 
-def block_bootstrap(frame, func, *, size=1.0, n=999, seed=20261021):
-    """IC 95% de `func(frame)` reamostrando blocos espaciais inteiros."""
+def bootstrap_values(frame, func, *, size=1.0, n=999, seed=20261021) -> np.ndarray:
+    """`func` em `n` reamostras de blocos espaciais inteiros."""
     labels = blocks(frame, size)
     groups = {b: np.flatnonzero(labels == b) for b in np.unique(labels)}
     keys = list(groups)
@@ -152,8 +167,21 @@ def block_bootstrap(frame, func, *, size=1.0, n=999, seed=20261021):
     for _ in range(n):
         idx = np.concatenate([groups[keys[k]] for k in rng.integers(0, len(keys), len(keys))])
         values.append(func(frame.iloc[idx]))
-    values = np.array(values)
+    return np.array(values)
+
+
+def block_bootstrap(frame, func, *, size=1.0, n=999, seed=20261021):
+    """IC 95% de `func(frame)` reamostrando blocos espaciais inteiros."""
+    values = bootstrap_values(frame, func, size=size, n=n, seed=seed)
     return float(np.nanquantile(values, 0.025)), float(np.nanquantile(values, 0.975))
+
+
+def bootstrap_p(values) -> float:
+    """p bilateral que corresponde ao IC percentil: o lado de zero com menos reamostras (D-028)."""
+    v = np.asarray(values, float)
+    v = v[np.isfinite(v)]
+    tail = min((v <= 0).sum(), (v >= 0).sum())
+    return float(min(1.0, 2 * (tail + 1) / (len(v) + 1)))
 
 
 def moran_i(values, latitude, longitude, radius=0.26) -> float:
@@ -184,11 +212,95 @@ def associate(frame, exposure, response, controls=CONTROLS, *, block=1.0) -> dic
         return partial_spearman(sub[exposure].to_numpy(), sub[response].to_numpy(),
                                 sub[list(controls)].to_numpy())
 
-    lo, hi = block_bootstrap(data, stat, size=block)
+    boot = bootstrap_values(data, stat, size=block)
+    lo, hi = np.nanquantile(boot, 0.025), np.nanquantile(boot, 0.975)
     rx = _residual_ranks(data[exposure].to_numpy(), ctrl)
     ry = _residual_ranks(data[response].to_numpy(), ctrl)
     slope = (rx @ ry) / (rx @ rx)
     moran = moran_i(ry - slope * rx, data.latitude, data.longitude)
     return {"exposicao": exposure, "resposta": response, "celulas": len(data),
-            "rho_bruto": float(rho), "rho_parcial": partial, "ic_inf": lo, "ic_sup": hi,
-            "exclui_zero": bool(lo > 0 or hi < 0), "moran_residuos": moran}
+            "rho_bruto": float(rho), "rho_parcial": partial, "ic_inf": float(lo),
+            "ic_sup": float(hi), "exclui_zero": bool(lo > 0 or hi < 0),
+            "p_blocos": bootstrap_p(boot), "moran_residuos": moran}
+
+
+# ── Inferência espacial (D-028) ──────────────────────────────────────────────
+
+CORRELOGRAM_EDGES = np.arange(0, 5.0001, 0.25)
+
+
+def _distances(latitude, longitude) -> np.ndarray:
+    lat, lon = np.asarray(latitude, float), np.asarray(longitude, float)
+    return np.hypot(lat[:, None] - lat[None, :], lon[:, None] - lon[None, :])
+
+
+def correlogram(values, latitude, longitude, edges=CORRELOGRAM_EDGES) -> pd.DataFrame:
+    """I de Moran em cada classe de distância (graus), com o número de pares ordenados."""
+    v = np.asarray(values, float) - np.nanmean(values)
+    d = _distances(latitude, longitude)
+    rows = []
+    for lo, hi in zip(edges[:-1], edges[1:], strict=True):
+        w = ((d > lo) & (d <= hi)).astype(float)
+        pairs = w.sum()
+        moran = len(v) / pairs * (v @ w @ v) / (v @ v) if pairs else np.nan
+        rows.append({"distancia": (lo + hi) / 2, "pares": int(pairs), "moran": float(moran)})
+    return pd.DataFrame(rows)
+
+
+def moran_test(values, latitude, longitude, *, n=999, seed=20261029, radius=0.26):
+    """I de Moran e p unilateral (I maior que o esperado) por permutação entre células."""
+    v = np.asarray(values, float) - np.nanmean(values)
+    d = _distances(latitude, longitude)
+    w = ((d > 0) & (d <= radius)).astype(float)
+    scale = len(v) / w.sum()
+    observed = scale * (v @ w @ v) / (v @ v)
+    rng = np.random.default_rng(seed)
+    null = np.array([scale * (p @ w @ p) / (p @ p) for p in
+                     (rng.permutation(v) for _ in range(n))])
+    return float(observed), float(((null >= observed).sum() + 1) / (n + 1))
+
+
+def effective_n(x, y, latitude, longitude, width=0.5) -> float:
+    """n efetivo da correlação entre x e y (Clifford, Richardson e Hémon, 1989).
+
+    σ²(r) = Σ_k n_k ρ_x(k) ρ_y(k) / n², com classes de distância de largura `width` até a
+    maior distância e o termo de distância zero (n_0 = n, ρ = 1); n' = 1 + 1/σ².
+    """
+    x = np.asarray(x, float) - np.mean(x)
+    y = np.asarray(y, float) - np.mean(y)
+    n = len(x)
+    d = _distances(latitude, longitude)
+    np.fill_diagonal(d, -1.0)
+    var = float(n)
+    sx, sy = x @ x / n, y @ y / n
+    for lo in np.arange(0, d.max() + width, width):
+        w = (d > lo) & (d <= lo + width)
+        pairs = w.sum()
+        if pairs:
+            rx = (x @ (w * 1.0) @ x) / pairs / sx
+            ry = (y @ (w * 1.0) @ y) / pairs / sy
+            var += pairs * rx * ry
+    var = max(var / n**2, 1 / n)
+    return float(1 + 1 / var)
+
+
+def spatial_inference(frame, exposure, response, controls=CONTROLS) -> dict:
+    """Moran por permutação, n efetivo e p corrigido pela autocorrelação (D-028)."""
+    data = frame[[exposure, response, "latitude", "longitude", *controls]].dropna()
+    data = data.loc[:, ~data.columns.duplicated()]
+    ctrl = data[list(controls)].to_numpy()
+    rx = _residual_ranks(data[exposure].to_numpy(), ctrl)
+    ry = _residual_ranks(data[response].to_numpy(), ctrl)
+    r = float(np.corrcoef(rx, ry)[0, 1])
+    slope = (rx @ ry) / (rx @ rx)
+    moran, moran_p = moran_test(ry - slope * rx, data.latitude, data.longitude)
+    n_eff = effective_n(rx, ry, data.latitude, data.longitude)
+    t = r * np.sqrt(max(n_eff - 2, 1e-9) / (1 - r**2))
+    p = float(2 * student_t.sf(abs(t), max(n_eff - 2, 1e-9)))
+    return {"n_efetivo": n_eff, "p_n_efetivo": p, "moran_residuos": moran,
+            "moran_p": moran_p}
+
+
+def adjust(p, method: str) -> np.ndarray:
+    """p ajustado para comparações múltiplas ("holm" ou "fdr_bh")."""
+    return multipletests(np.asarray(p, float), method=method)[1]

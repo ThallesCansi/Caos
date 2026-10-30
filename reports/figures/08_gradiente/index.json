@@ -1,12 +1,21 @@
 [
   {
+    "name": "correlograma",
+    "region": null,
+    "caption": "Figura 8. Correlograma (I de Moran por classe de distância de 0,25°) dos resíduos dos postos, depois de retirados a latitude, a água e a altitude, da perda antecedente e do z do determinismo da temperatura e da entropia de permutação do VPD, nas células elegíveis. Linha pontilhada: 1°, o tamanho dos blocos do bootstrap (D-028).",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/correlograma.png",
+    "pdf": "reports/figures/08_gradiente/correlograma.pdf",
+    "commit": "96ec2f2+modificado"
+  },
+  {
     "name": "dispersao",
     "region": null,
     "caption": "Figura 2. Perturbação antecedente e z do descritor, por célula, antes (esquerda) e depois (direita) de retirar dos postos a parte explicada pela latitude, pela fração de água e pela altitude. Cor: latitude. Na versão impressa, complexidade estatística do VPD, Xingu.",
     "overleaf": true,
     "png": "reports/figures/08_gradiente/dispersao.png",
     "pdf": "reports/figures/08_gradiente/dispersao.pdf",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "longitudinal",
@@ -15,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/longitudinal.png",
     "pdf": "reports/figures/08_gradiente/longitudinal.pdf",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "modelos",
@@ -24,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modelos.png",
     "pdf": "reports/figures/08_gradiente/modelos.pdf",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "modis",
@@ -33,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modis.png",
     "pdf": "reports/figures/08_gradiente/modis.pdf",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "outras_exposicoes",
@@ -42,7 +51,16 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/outras_exposicoes.png",
     "pdf": "reports/figures/08_gradiente/outras_exposicoes.pdf",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
+  },
+  {
+    "name": "passagem",
+    "region": null,
+    "caption": "Figura 7. Comparativo complementar (D-027). Temperatura da superfície na estação seca pelo MODIS (diurna) e, no ERA5, temperatura de pele e do ar a 2 m interpoladas para as 10h30 solares (passagem do Terra), em todos os dias e só nos dias com cobertura de nuvens abaixo de 0,3, por décimo das células elegíveis. Esquerda: média de 2001 a 2024 contra a perda antecedente, como anomalia em relação à média da bacia. Direita: mudança de 2001–2012 para 2013–2024 contra a perda de floresta de 2001 a 2012. Hastes: IC 95%.",
+    "overleaf": true,
+    "png": "reports/figures/08_gradiente/passagem.png",
+    "pdf": "reports/figures/08_gradiente/passagem.pdf",
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "paisagem",
@@ -51,7 +69,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/tapajos/paisagem.png",
     "pdf": "reports/figures/08_gradiente/tapajos/paisagem.pdf",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "paisagem",
@@ -60,6 +78,6 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/xingu/paisagem.png",
     "pdf": "reports/figures/08_gradiente/xingu/paisagem.pdf",
-    "commit": "98ce4f6+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

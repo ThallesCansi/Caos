@@ -633,9 +633,9 @@ def _(ews_region, ews_variable):
         mo.md(r"""
         Os dois indicadores contam histórias diferentes. A variância cresce de modo quase
         generalizado, e de forma significativa em boa parte das células, mais no Tapajós do
-        que no Xingu. A tendência da autocorrelação, ao contrário, muda de sinal no espaço:
-        tende a subir no norte das bacias e a cair no sul, mas em nenhuma região ela se
-        distingue das substitutas, que, com janelas móveis tão longas, também produzem
+        que no Xingu. A tendência da autocorrelação, ao contrário, cai em quase todo o Xingu
+        e, no Tapajós, muda de sinal no espaço, subindo no norte e caindo no sul (Tabela
+        A2); em nenhuma região ela se distingue das substitutas, que, com janelas móveis tão longas, também produzem
         tendências fortes por acaso. Isso não é o padrão do *critical slowing down*, que exige
         variância e memória subindo juntas e de forma consistente: uma variância maior sem
         aumento claro da memória é o que se espera de perturbações externas mais fortes, como
@@ -748,6 +748,133 @@ def _():
 
 
 @app.function(hide_code=True)
+@mo.cache
+def delay_table():
+    """Grade de atrasos (F2a, D-027) ao lado do lote, e o primeiro mínimo da AMI."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear import delays as D
+
+    rows, ami = [], []
+    for slug in SLUGS:
+        cfg = load_region(slug)
+        rows.append(D.compare(cfg, SPEC, G.cell_table(cfg, SPEC)).assign(region=slug))
+        raw = pd.read_parquet(D.output_dir(cfg, SPEC) / "atrasos.parquet")
+        ami.append(raw.drop_duplicates(["cell_id", "variable"])[
+            ["cell_id", "variable", "ami_minimo"]].assign(region=slug))
+    return pd.concat(rows, ignore_index=True), pd.concat(ami, ignore_index=True)
+
+
+@app.function(hide_code=True)
+def stabilizes(z: pd.Series) -> str:
+    """Menor ponto da grade a partir do qual a mediana do z muda menos de 10% (D-027)."""
+    change = (z.diff().abs() / z.shift().abs()).iloc[1:]
+    for k in range(len(change)):
+        if (change.iloc[k:] < 0.10).all():
+            return str(z.index[k])
+    return "não"
+
+
+@app.function(hide_code=True)
+def delay_rows(grid: dict, descriptors: list[str]) -> pd.DataFrame:
+    res, _ = delay_table()
+    rows = []
+    for (slug, var, desc), g in res.groupby(["region", "variable", "descriptor"], sort=False):
+        if desc not in descriptors:
+            continue
+        g = g.set_index("variant")
+        base = g.loc["lote original"]
+        row = {"Bacia": load_region(slug)["name"].replace("Bacia do Rio ", ""),
+               "Variável": R.VARIABLES[var], "Descritor": R.NAMES[desc]}
+        z = pd.Series({label: g.loc[variant, "z_median"] for label, variant in grid.items()
+                       if variant in g.index and label != "AMI"})
+        resists = True
+        for label, variant in grid.items():
+            if variant not in g.index:
+                continue
+            v = g.loc[variant]
+            row[label] = f"{v.rho_parcial:+.2f} ({v.rejects:.0%})"
+            same_sign = np.sign(v.rho_parcial) == np.sign(base.rho_parcial)
+            resists &= bool(same_sign and v.ic_inf <= base.rho_parcial <= v.ic_sup)
+        row["Resiste"] = "sim" if resists else "não"
+        row["Estabiliza em"] = stabilizes(z)
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _tau = delay_rows({"τ = 1": "τ = 1", "τ = 2": "τ = 2", "τ = 3": "τ = 3", "τ = 5": "τ = 5",
+                       "τ = 7": "τ = 7", "AMI": "τ = mínimo da AMI"},
+                      ["rqa_det", "prediction"])
+    _lag = delay_rows({"L = 1": "atraso ordinal 1", "L = 2": "atraso ordinal 2",
+                       "L = 4": "atraso ordinal 4", "L = 7": "atraso ordinal 7"},
+                      ["pe_entropy", "pe_complexity"])
+    _ami = delay_table()[1].groupby(["region", "variable"]).ami_minimo.median()
+    mo.vstack([
+        mo.md(r"""
+        ### Uma grade de atrasos (comparativo)
+
+        A Tabela 2 testou um só atraso alternativo. Como o atraso é a escolha mais
+        discutível do lote, fizemos depois uma grade mais ampla, fixada antes do cálculo
+        (D-027), nas mesmas células: o atraso de imersão $\tau$ de 1, 2, 3, 5 e 7 dias, com a
+        dimensão $m$ escolhida de novo pelos falsos vizinhos em cada $\tau$, e também no
+        primeiro mínimo da informação mútua, sem o critério de 1/e que a regra do
+        pré-registro usa; e o atraso dos padrões ordinais $L$ de 1, 2, 4 e 7 dias, isto é,
+        padrões de cinco valores separados por $L$ dias. As substitutas são as mesmas do
+        lote, e $\tau = 1$ e $L = 1$ reproduzem o lote exatamente.
+        """),
+        mo.callout(mo.md(nb.pt(
+            "Primeiro mínimo da informação mútua, mediana das células da subamostra: " +
+            "; ".join(f"{load_region(s)['name'].replace('Bacia do Rio ', '')}, "
+                      f"{_ami[(s, 't2m')]:.0f} dias na temperatura e "
+                      f"{_ami[(s, 'vpd')]:.0f} no VPD" for s in SLUGS) + ".")), kind="info"),
+        mo.md(r"""
+        O mínimo da informação mútua cai perto de 10 a 12 dias, muito longe do $\tau = 1$
+        que a regra escolheu: a informação mútua da anomalia diária cai abaixo de 1/e do seu
+        valor inicial já no primeiro dia, e o critério de 1/e prevalece. As Tabelas 3 e 4
+        mostram o que acontece com os descritores em cada ponto da grade. Em cada célula,
+        a correlação parcial com a perda antecedente e, entre parênteses, a fração de
+        células que rejeitam a hipótese linear. A coluna "Resiste" segue a regra fixada:
+        sim, se em todos os pontos da grade o sinal é o do lote e o intervalo contém o
+        valor do lote. A última coluna dá o ponto da grade a partir do qual a mediana do
+        $z$ muda menos de 10% entre pontos vizinhos.
+        """),
+        book.table(_tau, "atrasos_tau",
+                   "Tabela 3. Comparativo (D-027). Determinismo (RQA) e erro de previsão com o "
+                   "atraso de imersão τ de 1 a 7 dias e no primeiro mínimo da informação mútua "
+                   "(AMI): correlação parcial com a perda antecedente e, entre parênteses, a "
+                   "fração de células com p ≤ 0,05, na subamostra de D-024, 2001–2024.",
+                   selection=None),
+        book.table(_lag, "atrasos_ordinais",
+                   "Tabela 4. Comparativo (D-027). Entropia de permutação e complexidade "
+                   "estatística com o atraso ordinal L de 1 a 7 dias: correlação parcial com a "
+                   "perda antecedente e, entre parênteses, a fração de células com p ≤ 0,05, "
+                   "na subamostra de D-024, 2001–2024.", selection=None),
+        mo.md(r"""
+        O determinismo rejeita a hipótese linear em praticamente todas as células com
+        qualquer $\tau$, e o erro de previsão em nenhuma: a leitura do lote sobre a
+        natureza das séries não depende do atraso. A associação do determinismo da
+        temperatura com a perda antecedente também mantém o sinal em toda a grade. No
+        Tapajós ela resiste pela regra fixada, entre −0,34 e −0,42. No Xingu ela enfraquece
+        quando $\tau$ cresce, de −0,54 para perto de −0,25, e deixa de conter o valor do
+        lote: o tamanho da associação do Xingu depende do atraso, o sinal não.
+
+        Os padrões ordinais contam outra história. Com $L$ de 2 ou 4 dias, a fração de
+        células em que o VPD rejeita a hipótese linear cai de perto de 90% para entre 30% e
+        50%, e o mesmo acontece com a temperatura do Xingu; a do Tapajós, que já rejeitava
+        em só metade das células, quase não muda. A associação do VPD com a perda
+        antecedente no Xingu diminui e some em $L = 7$; no Tapajós, menor desde o início,
+        ela mantém o sinal e cabe nos intervalos em toda a grade. A estrutura que os
+        padrões ordinais detectam, e a sua diferença entre células, é uma propriedade da
+        sequência de um dia para o outro, e não de escalas de uma semana. Isso não
+        contradiz o resultado principal, que foi fixado com $L = 1$, mas delimita o que ele
+        diz: a marca está no encadeamento diário do tempo.
+        """),
+    ])
+    return
+
+
+@app.function(hide_code=True)
 def lyapunov_table():
     rows = []
     for slug in SLUGS:
@@ -831,6 +958,118 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def realistic_table():
+    """Fração de células com p ≤ 0,05 ao lado do limite da nula realista mais permissiva."""
+    from amazon_chaos.nonlinear import estimators as E
+    from amazon_chaos.nonlinear import realistic as RL
+    from amazon_chaos.nonlinear import smap as SM
+
+    limit = RL.null_rates(SPEC).groupby("descriptor").ci_high.max()
+    alpha = SPEC["surrogates"]["alpha"] + R.TOLERANCE
+    rows = []
+    for slug in SLUGS:
+        cfg, t, _, _ = region_data(slug)
+        t = t[(t.kind == "teste") & (t.window == "2001_2024")]
+        frac = {(v, d): float((g.pvalue <= alpha).mean())
+                for (v, d), g in t.groupby(["variable", "descriptor"])}
+        sub = pd.read_parquet(E.output_dir(cfg, SPEC) / "subamostra.parquet")
+        frac |= {(v, d): float((g.pvalue <= alpha).mean())
+                 for (v, d), g in sub.groupby(["variable", "descriptor"])}
+        sm = SM.load(cfg, SPEC)
+        frac |= {(v, "smap"): float((g.pvalue <= alpha).mean())
+                 for v, g in sm[sm.horizon == 1].groupby("variable")}
+        for (var, desc), value in frac.items():
+            rows.append({"region": slug, "variable": var, "descriptor": desc,
+                         "cells": value, "limit": float(limit[desc]),
+                         "beyond": value > limit[desc]})
+    return pd.DataFrame(rows)
+
+
+@app.function(hide_code=True)
+def smap_summary(slug):
+    """Ganho mediano do S-map (1 dia) nas duas variáveis, como texto."""
+    from amazon_chaos.nonlinear import smap as SM
+
+    t = SM.load(load_region(slug), SPEC)
+    g = t[t.horizon == 1].groupby("variable").gain.median()
+    return (f"{100 * g['t2m']:.1f}% do erro na temperatura e {100 * g['vpd']:.1f}% no "
+            "déficit de pressão de vapor").replace(".", ",")
+
+
+@app.cell(hide_code=True)
+def _():
+    _r = realistic_table()
+    _names = {**R.NAMES, "wolf": "Lyapunov (Wolf)*", "kantz": "Lyapunov (Kantz)*",
+              "cao_de2": "Cao · D_E2*", "smap": "S-map (ganho, 1 dia)"}
+    _order = ["pe_entropy", "pe_complexity", "prediction", "rqa_det", "rqa_lam", "d2",
+              "asymmetry", "lyapunov", "wolf", "kantz", "cao_de2", "smap"]
+    _rows = []
+    for _d in _order:
+        _g = _r[_r.descriptor == _d]
+        _row = {"Descritor": _names[_d], "Nula mais permissiva": f"{100 * _g.limit.iloc[0]:.1f}%".replace(".", ",")}
+        for _, _x in _g.iterrows():
+            _col = (f"{load_region(_x.region)['name'].replace('Bacia do Rio ', '')} · "
+                    f"{R.VARIABLES[_x.variable]}")
+            _row[_col] = f"{100 * _x.cells:.0f}%" + (" ▲" if _x.beyond else "")
+        _rows.append(_row)
+    _sm = {s: smap_summary(s) for s in SLUGS}
+    mo.vstack([
+        mo.md(r"""
+        ## 🧱 A natureza à luz de nulas mais exigentes (comparativo)
+
+        O capítulo 5 mostrou que processos estocásticos sem caos, mas com a memória variando
+        ao longo do ano ou com variância condicional, fazem vários descritores rejeitar a
+        hipótese das substitutas (D-027). A comparação com os 5% esperados por acaso,
+        portanto, superestima o que as células mostram. A regra fixada antes do cálculo é
+        comparar a fração de células que rejeitam com o limite superior do intervalo de 95%
+        da nula mais permissiva para cada descritor: só acima dele a rejeição nas células se
+        distingue de um clima estocástico com essas propriedades. A Tabela 5 faz essa
+        comparação e acrescenta três estimadores calculados na subamostra de cerca de 60
+        células por bacia (marcados com asterisco) e o ganho do S-map em todas as células.
+        """),
+        book.table(pd.DataFrame(_rows), "natureza_nulas_realistas",
+                   "Tabela 5. Comparativo (D-027). Fração das células com p ≤ 0,05 contra as "
+                   "substitutas em 2001–2024 e limite superior do IC 95% da taxa de rejeição na "
+                   "nula realista mais permissiva (capítulo 5). ▲: acima do limite. *: na "
+                   "subamostra de D-024. S-map: teste de Diebold–Mariano do ganho sobre a "
+                   "previsão linear, horizonte de 1 dia.", selection=None),
+        mo.md(rf"""
+        A tabela separa os descritores em dois grupos. O determinismo e a laminaridade da
+        recorrência e os expoentes de Lyapunov rejeitam nas células tanto quanto nas nulas
+        realistas, ou só uma fração de ponto acima, como a laminaridade, o Kantz e o Wolf
+        do VPD: sozinhos, não dizem nada sobre caos nem sobre não linearidade, porque um
+        AR(1) com memória sazonal ou com variância condicional faz o mesmo. A dimensão de
+        correlação, a assimetria temporal e os padrões ordinais do VPD, ao contrário,
+        rejeitam em mais células do que qualquer nula, e no Xingu também os padrões
+        ordinais da temperatura, por pouco. Há uma ressalva para os padrões ordinais: a nula
+        de memória sazonal ajustada ao próprio VPD rejeita em 90% a 100% das suas séries, e o
+        limite da tabela vem da média das quatro bacias e variáveis.
+
+        O teste de Cao responde à pergunta que as substitutas não respondem. Nas células, o
+        afastamento $D_{{E2}}$ tem mediana de cerca de 0,02, o mesmo das suas substitutas e das
+        nulas estocásticas, contra 0,08 a 0,32 nos sistemas caóticos do portão; a dimensão
+        não satura antes de 8 ou 9. Ele rejeita em poucas células, no Tapajós ligeiramente
+        acima da nula mais permissiva, mas com a mesma ordem de grandeza das nulas. Os
+        valores futuros, portanto, quase não dependem do passado reconstruído além do que a
+        estrutura linear explica: é a assinatura de um processo estocástico. O S-map conta a
+        mesma história por outro caminho. A previsão local supera a linear em muitas
+        células, mais do que em qualquer nula, mas o ganho é minúsculo: {_sm['xingu']} no
+        Xingu e {_sm['tapajos']} no Tapajós, contra 37% a 57% nos sistemas caóticos. Há não
+        linearidade dependente do estado, mas fraca.
+        """),
+        mo.callout(mo.md(
+            "As nulas mais exigentes reforçam a leitura do capítulo, em vez de mudá-la: o "
+            "clima diário das bacias tem estrutura não linear, fraca e detectável em alguns "
+            "descritores, mas não a dependência determinística de um caos de baixa dimensão. "
+            "O determinismo da recorrência, que rejeita em todas as células, não serve de "
+            "evidência isolada de nada além do afastamento da hipótese linear estacionária."),
+            kind="warn"),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
@@ -843,7 +1082,10 @@ def _():
     previsibilidade de curto prazo que um caos de baixa dimensão permitiria, o expoente de
     Lyapunov não se distingue de forma confiável das substitutas, e a dimensão de correlação
     não indica um atrator. O retrato mais honesto é o de um sistema não linear de alta
-    dimensão, sob forçamento externo, e não o de um atrator caótico simples.
+    dimensão, sob forçamento externo, e não o de um atrator caótico simples. As nulas mais
+    exigentes do capítulo 5 e o teste de Cao reforçam esse retrato: parte das rejeições,
+    como a do determinismo, é compatível com um clima estocástico de memória sazonal, e os
+    valores futuros quase não dependem do passado reconstruído.
 
     Três cuidados acompanham esse retrato. A geografia organiza fortemente os descritores,
     em particular a complexidade da temperatura, de sul para norte; a reconstrução usou
@@ -854,6 +1096,49 @@ def _():
     desmatamento e fogo têm descritores diferentes das preservadas, ou mudaram de modo
     diferente entre as duas décadas?
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    _bh, _ews = [], []
+    for _slug in SLUGS:
+        _cfg, _t, _g, _ = region_data(_slug)
+        _name = _cfg["name"].replace("Bacia do Rio ", "")
+        _s = R.summary(_t)
+        for _, _r in _s.iterrows():
+            _bh.append({"Bacia": _name, "Janela": R.WINDOWS[_r.window],
+                        "Descritor": R.NAMES[_r.descriptor],
+                        "Variável": R.VARIABLES[_r.variable],
+                        "Rejeitam (BH)": f"{100 * _r.rejeitam:.0f}%",
+                        "BH por descritor": f"{100 * _r.rejeitam_por_descritor:.0f}%",
+                        "z mediano": round(_r.z_mediano, 1)})
+        _e = _g[_g.kind == "ews"]
+        for (_var, _ind), _p in _e.groupby(["variable", "descriptor"]):
+            _ews.append({"Bacia": _name, "Variável": R.VARIABLES[_var],
+                         "Indicador": R.NAMES[_ind], "Células": len(_p),
+                         "τ de Kendall mediano": round(float(_p.observed.median()), 2),
+                         "τ > 0": f"{100 * (_p.observed > 0).mean():.0f}%",
+                         "p ≤ 0,05": f"{100 * (_p.pvalue <= 0.05 + R.TOLERANCE).mean():.0f}%"})
+    mo.vstack([
+        mo.md(r"""
+        ## 📎 Tabelas de apoio
+
+        Duas tabelas registram em números o que o capítulo mostra em figuras ou só para
+        uma escolha de cada vez: a Tabela A1 repete a Tabela 1 nas três janelas, e a Tabela
+        A2 resume os sinais precoces da Figura 6 nas duas variáveis e nas duas bacias.
+        """),
+        book.table(pd.DataFrame(_bh), "rejeicao_bh_janelas",
+                   "Tabela A1. Fração das células que rejeitam a hipótese linear depois da "
+                   "correção de Benjamini–Hochberg (por família, como no pré-registro, e por "
+                   "descritor) e z mediano, por bacia, janela, descritor e variável.",
+                   selection=None),
+        book.table(pd.DataFrame(_ews), "ews_resumo",
+                   "Tabela A2. Sinais precoces: τ de Kendall mediano da tendência da variância "
+                   "e da autocorrelação de um passo em janelas móveis de 12 anos, fração das "
+                   "células com τ positivo e com p ≤ 0,05 contra 39 substitutas.",
+                   selection=None),
+    ])
     return
 
 

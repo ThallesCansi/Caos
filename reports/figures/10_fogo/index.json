@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/10_fogo/meses.png",
     "pdf": "reports/figures/10_fogo/meses.pdf",
-    "commit": "a620a3a+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "percentis",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "png": "reports/figures/10_fogo/percentis.png",
     "pdf": "reports/figures/10_fogo/percentis.pdf",
-    "commit": "a620a3a+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

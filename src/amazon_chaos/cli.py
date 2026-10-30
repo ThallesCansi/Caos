@@ -1,12 +1,14 @@
 """CLI `amazon-chaos`: toda aquisição e todo processamento pesado passam por aqui.
 
     amazon-chaos region list | prepare <região>
-    amazon-chaos era5 plan | download | edh | process | summarize <região> ...
+    amazon-chaos era5 plan | download | edh | process | static | summarize <região> ...
+    amazon-chaos era5 passage | overpass <região>
     amazon-chaos disturbance fetch | build <região>
     amazon-chaos descriptors run | basin | precip | sensitivity <região>
+    amazon-chaos descriptors delays | extremes | estimators | smap | multivariate | dither <região>
     amazon-chaos modis fetch | build <região>
     amazon-chaos chirps fetch | build <região>
-    amazon-chaos gate run [--quick]
+    amazon-chaos gate run | realistic [--quick]
     amazon-chaos manifest <pasta>
     amazon-chaos notify "mensagem"
 
@@ -186,6 +188,45 @@ def era5_static(region: Region) -> None:
     typer.echo(target)
 
 
+@era5_app.command("passage")
+def era5_passage(
+    region: Region,
+    first: int = 2001,
+    last: int = 2024,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """skt, t2m e tcc às 13–15 UTC na estação seca (passagem do MODIS Terra; F2e, D-027)."""
+    from amazon_chaos.io.era5_edh import passage_fields
+    from amazon_chaos.regions import processed_dir
+
+    cfg = load_region(region)
+    files = passage_fields(cfg, processed_dir(cfg) / "era5_passagem", (first, last),
+                           report=reporter(notify))
+    typer.echo(f"{len(files)} anos em {files[0].parent}")
+
+
+@era5_app.command("overpass")
+def era5_overpass(region: Region) -> None:
+    """skt e t2m às 10h30 solares, médias da estação seca por célula (F2e, D-027)."""
+    from amazon_chaos.features import lst
+    from amazon_chaos.features.disturbance import out_dir
+    from amazon_chaos.provenance import sha256_file
+    from amazon_chaos.regions import processed_dir
+
+    cfg = load_region(region)
+    folder = processed_dir(cfg) / "era5_passagem"
+    table = lst.era5_overpass(cfg, folder)
+    target = out_dir(cfg) / "era5_passagem.parquet"
+    table.to_parquet(target)
+    target.with_suffix(".json").write_text(json.dumps({
+        "rules": {"solar_hour": lst.SOLAR_HOUR, "clear_sky_tcc": lst.CLEAR_SKY,
+                  "dry_months": list(lst.DRY_MONTHS), "halves": lst.HALVES},
+        "input_manifest_sha256": sha256_file(folder / "manifest.json"),
+        "output_sha256": sha256_file(target),
+    }, indent=2), encoding="utf-8")
+    typer.echo(f"{table.era5_skt_1030_seca.notna().sum()} células → {target}")
+
+
 @era5_app.command("summarize")
 def era5_summarize(region: Region, first: int = 1990, last: int = 2024) -> None:
     """Resumo regional (série ponderada, mensais e extremos por célula) lido pelos cadernos."""
@@ -290,6 +331,102 @@ def descriptors_sensitivity(
                    report=reporter(notify)))
 
 
+@descriptors_app.command("delays")
+def descriptors_delays(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Grade de τ e de atrasos ordinais na subamostra de D-024 (F2a, D-027)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.delays import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                   report=reporter(notify)))
+
+
+@descriptors_app.command("estimators")
+def descriptors_estimators(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Wolf, Kantz e Cao na série da bacia (199 IAAFT) e na subamostra (F2d, F2h; D-027)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.estimators import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                   report=reporter(notify)))
+
+
+@descriptors_app.command("multivariate")
+def descriptors_multivariate(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Temperatura + umidade específica contra substitutas multivariadas (F2c, D-027)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.multivariate import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                   report=reporter(notify)))
+
+
+@descriptors_app.command("dither")
+def descriptors_dither(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Chuva com dither em cada substituta e erro espectral do IAAFT (F2i, D-027)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.precip_dither import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                   report=reporter(notify)))
+
+
+@descriptors_app.command("smap")
+def descriptors_smap(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    limit: Annotated[int | None, typer.Option(help="só as primeiras N células (teste)")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """S-map (ganho sobre o AR linear) em todas as células (F2g, D-027)."""
+    from amazon_chaos.nonlinear.smap import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    typer.echo(run(load_region(region), load_spec(), workers=workers,
+                   report=reporter(notify), limit=limit))
+
+
+@descriptors_app.command("extremes")
+def descriptors_extremes(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    limit: Annotated[int | None, typer.Option(help="só as primeiras N células (teste)")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Mínima, máxima e amplitude térmica: ordinais em todas as células (F2b, D-027)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.extremes import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                   report=reporter(notify), limit=limit))
+
+
 # ── MODIS ───────────────────────────────────────────────────────────────────
 
 
@@ -377,6 +514,20 @@ def gate_run(
     report(f"🧪 Gate F4 iniciado (pré-registro v{spec['version']}, {spec['status']})")
     out = run_gate(spec, workers=workers, quick=quick, progress=typer.echo)
     report(f"✅ Gate F4 concluído: {out}\nNa máquina local: make pull-gate")
+
+
+@gate_app.command("realistic")
+def gate_realistic(
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos os núcleos")] = None,
+    quick: Annotated[bool, typer.Option(help="versão mínima, só para testar o código")] = False,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Nulas realistas e Wolf, Kantz, Cao e S-map nos controles (F2f, F2d, F2g, F2h; D-027)."""
+    from amazon_chaos.nonlinear.realistic import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    out = run(load_spec(), workers=workers, report=reporter(notify), quick=quick)
+    typer.echo(out)
 
 
 # ── utilidades ──────────────────────────────────────────────────────────────

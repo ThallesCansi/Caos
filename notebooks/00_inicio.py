@@ -89,6 +89,10 @@ def _():
       C --> D
       D --> G[🌳 Perturbação<br/>e dinâmica]
       P --> G
+      G --> CH[🌧️ Chuva<br/>reanálise e<br/>observação]
+      P --> F[🔥 O tempo<br/>antes do fogo]
+      G --> T[🗺️ Território<br/>áreas protegidas]
+      F --> T
     """)
     return
 
@@ -113,10 +117,14 @@ def _():
     tendências do período; o da perturbação mede, célula por célula, o desmatamento e o fogo
     com quatro fontes independentes e compara as fontes entre si.
 
-    Os dois caminhos se encontram nos dois últimos capítulos. No dos descritores, os métodos
-    validados são aplicados às 1.541 células, e vemos que tipo de estrutura as séries têm e
-    como ela se distribui no espaço. No último, comparamos essa estrutura com a perturbação
-    da floresta e respondemos à pergunta central, na medida em que os dados permitem.
+    Os dois caminhos se encontram no capítulo dos descritores, em que os métodos validados
+    são aplicados às 1.541 células, e no da perturbação e dinâmica, em que essa estrutura é
+    comparada com o desmatamento e o fogo de cada célula. Três capítulos completam a
+    resposta. O da chuva repete a análise numa chuva baseada em observações, para saber se
+    o que a reanálise não mostra aparece em outro registro; o do fogo pergunta que tempo
+    antecede o início dos incêndios em paisagens preservadas e convertidas; e o do
+    território lê os mesmos números à luz das Terras Indígenas e das Unidades de
+    Conservação, a ponte para a análise socioespacial do trabalho.
     """)
     return
 
@@ -179,39 +187,65 @@ def _():
         mo.md(r"""
         ## 🔑 O que encontramos, em uma página
 
-        As séries diárias de temperatura e de déficit de pressão de vapor das duas bacias
-        têm estrutura que um processo linear não explica: recorrências mais organizadas,
-        padrões ordinais menos uniformes e uma assimetria entre subida e descida que as
-        substitutas não reproduzem. Essa estrutura, porém, não é a de um caos de baixa
-        dimensão: um previsor não linear não acerta o dia seguinte melhor nas séries reais
-        do que nas substitutas, e o expoente de Lyapunov não passou na validação como
-        evidência confiável. O clima diário amazônico, visto por esses métodos, é um
-        processo não linear e ruidoso, e não um sistema caótico simples escondido no
-        ruído.
+        A pergunta tem três partes, e os dados respondem a cada uma com um grau diferente de
+        firmeza. A primeira é sobre a natureza da dinâmica. As séries diárias de temperatura
+        e de déficit de pressão de vapor das duas bacias se afastam de um processo linear:
+        recorrências mais organizadas, padrões ordinais menos uniformes e uma assimetria
+        entre subida e descida que as substitutas não reproduzem. Mas um portão mais
+        exigente, com processos estocásticos sem caos e com memória sazonal ou variância
+        condicional, mostra que parte dessas rejeições não distingue o clima de um processo
+        aleatório com essas propriedades; só a dimensão de correlação, a assimetria e os
+        padrões ordinais do VPD vão além delas. O teste de Cao, o único que separa caos de
+        ruído nesse portão, mostra que o valor seguinte quase não depende do passado
+        reconstruído, e a previsão não linear não supera a linear de modo apreciável. O
+        clima diário dessas bacias é um processo estocástico com não linearidade fraca, e não
+        um caos de baixa dimensão escondido no ruído. Os sinais precoces de transição também
+        não aparecem: a variância cresce, mas a memória não cresce junto.
 
-        A estrutura varia no espaço, e boa parte dessa variação acompanha a latitude: o sul,
-        mais seco e mais sazonal, é diferente do norte. Entre células comparáveis em
-        latitude, água e relevo, as que tinham mais floresta convertida até 2000 têm uma
-        dinâmica diária menos estruturada, nas duas bacias. Mas essa diferença passa, em boa
-        parte, pelo mapa de vegetação que o próprio ERA5 usa, que é fixo e data do início da
-        década de 1990; e as células que mais perderam floresta depois de 2000 não mudaram
-        de dinâmica mais que as outras.
+        A segunda parte é a relação com a perturbação. Entre células comparáveis em latitude,
+        água e relevo, as que tinham mais floresta convertida até 2000 têm padrões ordinais
+        do VPD mais próximos do aleatório e menos determinismo na temperatura, nas duas
+        bacias; no Xingu, a associação também aparece em outros descritores, e no Tapajós
+        os padrões ordinais da temperatura não acompanham a perturbação. São associações
+        moderadas: descontada a semelhança entre células vizinhas, só esses pares que se
+        repetem nas duas bacias ficam de pé, e boa parte da diferença passa pelo mapa de
+        vegetação fixo que o próprio ERA5 usa. Uma exposição-placebo, o desmatamento que
+        ainda não tinha acontecido, não reproduz essas associações. E as células que mais
+        perderam floresta depois de 2000 não mudaram de dinâmica mais que as outras.
 
-        A temperatura da superfície medida por satélite explica por quê. Ela mostra as células
-        com mais floresta convertida de 6 a 7 °C mais quentes que as preservadas, de dia, na
-        estação seca, e as
-        células que mais perderam floresta entre 2001 e 2012 esquentando quatro a cinco vezes
-        mais que as outras. O ERA5 não registra nenhuma das duas coisas. O desmatamento muda,
-        e muito, a superfície; a reanálise é que não acompanha essa mudança.
+        A terceira parte é sobre o que é preciso para ver uma marca, e aqui a resposta é a
+        mais firme. A temperatura da superfície medida por satélite mostra as células com
+        mais floresta convertida de 6 a 7 °C mais quentes que as preservadas, de dia, na
+        estação seca, e as que mais perderam floresta entre 2001 e 2012 esquentando quatro a
+        cinco vezes mais que as outras. O ERA5 não registra esse aquecimento ao longo do
+        tempo, nem na temperatura do ar nem na da própria superfície no horário do satélite,
+        e entre células registra só uma fração dele. Na chuva, a série baseada em observações
+        mostra, no Xingu, uma organização diária diferente nas células convertidas que a
+        chuva da reanálise não reproduz. O desmatamento muda a superfície e, ao que tudo
+        indica, o tempo local; a reanálise é que não acompanha essa mudança.
+
+        Os dois capítulos finais olham para o território. Na estação seca, o fogo das áreas
+        preservadas começa com tempo anormalmente seco, e o das convertidas com o tempo de
+        um dia qualquer, como se esperaria de queimas agendadas pelo uso da terra. E o
+        gradiente de perturbação que os capítulos quantitativos mediram é, no mapa, em boa
+        parte a fronteira entre as Terras Indígenas e Unidades de Conservação e a terra
+        aberta à conversão.
         """),
         mo.callout(mo.md(
-            "Os dados mostram que a dinâmica climática diária da Amazônia é não linear e que "
-            "essa não linearidade acompanha a geografia e a história de uso da terra "
-            "registrada no modelo, e que o desmatamento aquece fortemente a superfície. Eles "
-            "não permitem dizer, com uma reanálise de vegetação fixa, se o desmatamento "
-            "recente alterou a dinâmica diária do clima, nem falar em caos induzido pelo "
-            "desmatamento."),
+            "Os dados mostram que o clima diário da Amazônia é estocástico, com não "
+            "linearidade fraca, sem caos de baixa dimensão; que essa dinâmica se associa "
+            "moderadamente à conversão da floresta, em boa parte pelo que o próprio modelo "
+            "registra; e que o desmatamento aquece fortemente a superfície, algo que a "
+            "reanálise não acompanha. Eles não permitem dizer, com uma reanálise de "
+            "vegetação fixa, se o desmatamento recente alterou a dinâmica diária do clima, "
+            "nem falar em caos induzido pelo desmatamento."),
             kind="success"),
+        mo.callout(mo.md(
+            "O resultado principal é o do pré-registro, do portão congelado e do lote "
+            "calculado com eles. As análises acrescentadas depois da revisão crítica do "
+            "trabalho, como as nulas realistas, o teste de Cao, o S-map e a temperatura de "
+            "pele do ERA5, aparecem nos capítulos como comparativos, ao lado do resultado "
+            "principal, e foram fixadas antes de calculadas."), kind="warn"),
     ])
     return
 
@@ -272,7 +306,8 @@ def _():
             Trabalho de Conclusão de Curso de Caio Ruas e Thalles Cansi, Ilum Escola de
             Ciência (CNPEM), 2026, com orientação de Vinicius Wasques. Thalles responde pela
             parte computacional, que estes cadernos documentam; Caio, pela análise
-            socioespacial; a interpretação é da dupla.
+            socioespacial; a interpretação é da dupla. Rafael Anis Shaikhzadeh Santos e
+            Julia Guedes Almeida dos Santos colaboraram na etapa do relatório parcial.
             """),
     })
     return

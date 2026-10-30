@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/09_chuva/associacao.png",
     "pdf": "reports/figures/09_chuva/associacao.pdf",
-    "commit": "3885372+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "mapas",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/09_chuva/mapas.png",
     "pdf": "reports/figures/09_chuva/mapas.pdf",
-    "commit": "3885372+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "z",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/09_chuva/z.png",
     "pdf": "reports/figures/09_chuva/z.pdf",
-    "commit": "3885372+modificado"
+    "commit": "96ec2f2+modificado"
   },
   {
     "name": "dias",
@@ -33,6 +33,6 @@
     "overleaf": true,
     "png": "reports/figures/09_chuva/xingu/dias.png",
     "pdf": "reports/figures/09_chuva/xingu/dias.pdf",
-    "commit": "3885372+modificado"
+    "commit": "96ec2f2+modificado"
   }
 ]

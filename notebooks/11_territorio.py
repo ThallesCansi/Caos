@@ -74,8 +74,9 @@ def _():
     Os capítulos anteriores trataram a perturbação da floresta como um número por célula, a
     fração desmatada ou queimada. Mas a perturbação não se distribui ao acaso. Ela segue as
     estradas, o preço da soja e do gado, a posse da terra e, sobretudo, os limites que a
-    sociedade traçou no mapa. Nas duas bacias, quase metade da área do Xingu e um terço da do
-    Tapajós estão em Terras Indígenas ou em Unidades de Conservação federais, e esses limites
+    sociedade traçou no mapa. Mais da metade da área do Xingu (53%) e pouco mais de um terço
+    da do Tapajós (35%) estão em Terras Indígenas ou em Unidades de Conservação federais
+    (Tabela 1 do capítulo 2), e esses limites
     aparecem nitidamente em qualquer mapa de desmatamento.
 
     Este capítulo é uma ponte entre a parte quantitativa do trabalho e a leitura
