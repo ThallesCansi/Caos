@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caos na floresta–atmosfera amazônica</title>
+<meta name="description" content="Cadernos do TCC: dinâmica não linear do clima diário nas bacias do Xingu e do Tapajós.">
+<meta property="og:image" content="capas/00_inicio.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root { --verde: #1f3b2d; --folha: #8fbf9f; --creme: #f4f1e8; --tinta: #263238;
+         --fundo: #fbfaf6; --cartao: #ffffff; --borda: #e4e2da; --suave: #5b6770; }
+@media (prefers-color-scheme: dark) {
+  :root { --fundo: #141a17; --cartao: #1c2420; --borda: #2c3631; --tinta: #e8e6df;
+           --suave: #a9b3ad; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--tinta);
+        font: 16px/1.6 Inter, system-ui, sans-serif; }
+header { background: var(--verde); color: var(--creme); padding: 56px 16px 48px; }
+.largura { max-width: 1120px; margin: 0 auto; }
+header p.sobre { color: var(--folha); font-weight: 600; letter-spacing: .02em; margin: 0 0 12px; }
+h1 { font: 600 clamp(28px, 4.4vw, 44px)/1.15 "Source Serif 4", Georgia, serif; margin: 0 0 16px; }
+header p.texto { max-width: 760px; margin: 0 0 24px; color: #dcd9cf; }
+header nav a { color: var(--creme); margin-right: 20px; font-weight: 600; }
+main { padding: 40px 16px 64px; }
+.grade { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 14px;
+          overflow: hidden; display: flex; flex-direction: column; }
+.cartao img { width: 100%; aspect-ratio: 1200 / 630; object-fit: cover; display: block; }
+.corpo { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.corpo h2 { font: 600 19px/1.3 "Source Serif 4", Georgia, serif; margin: 0; }
+.corpo p { margin: 0; color: var(--suave); font-size: 15px; }
+.acoes { margin-top: auto; padding-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+.acoes a { text-decoration: none; font-weight: 600; font-size: 14px; padding: 8px 14px;
+           border-radius: 8px; }
+.ler { background: var(--verde); color: var(--creme); }
+.rodar { border: 1px solid var(--verde); color: var(--tinta); }
+@media (prefers-color-scheme: dark) { .rodar { border-color: var(--folha); } }
+footer { border-top: 1px solid var(--borda); padding: 28px 16px; color: var(--suave);
+         font-size: 14px; }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+<header><div class="largura">
+<p class="sobre">TCC · Ilum Escola de Ciência (CNPEM) · 2026</p>
+<h1>Caos na floresta–atmosfera amazônica</h1>
+<p class="texto">Os cadernos do trabalho de Caio Ruas e Thalles Cansi, com orientação de
+Vinicius Wasques: a dinâmica não linear do clima diário em 1.541 células das bacias do
+Xingu e do Tapajós, comparada com o desmatamento e o fogo. Cada capítulo pode ser lido
+aqui, com todas as figuras, ou aberto no molab para mexer nos controles e no código.</p>
+<nav><a href="https://github.com/ThallesCansi/Caos">Código no GitHub</a><a href="dados/caos-dados.zip">Pacote de dados (59 MB)</a></nav>
+</div></header>
+<main><div class="largura grade">
+<article class="cartao">
+<a href="capitulos/00_inicio.html"><img src="capas/00_inicio.png" alt="Capa do capítulo 00" loading="lazy"></a>
+<div class="corpo">
+<h2>00 · Apresentação</h2>
+<p>A pergunta, o percurso e o que encontramos</p>
+<div class="acoes"><a class="ler" href="capitulos/00_inicio.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/00_inicio.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/01_laboratorio.html"><img src="capas/01_laboratorio.png" alt="Capa do capítulo 01" loading="lazy"></a>
+<div class="corpo">
+<h2>01 · Laboratório de sistemas dinâmicos</h2>
+<p>Equilíbrios, bifurcações e caos em modelos conhecidos</p>
+<div class="acoes"><a class="ler" href="capitulos/01_laboratorio.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/01_laboratorio.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/02_regioes.html"><img src="capas/02_regioes.png" alt="Capa do capítulo 02" loading="lazy"></a>
+<div class="corpo">
+<h2>02 · As bacias do Xingu e do Tapajós</h2>
+<p>O recorte, a grade e as células</p>
+<div class="acoes"><a class="ler" href="capitulos/02_regioes.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/02_regioes.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/03_clima.html"><img src="capas/03_clima.png" alt="Capa do capítulo 03" loading="lazy"></a>
+<div class="corpo">
+<h2>03 · O clima de 1990 a 2024</h2>
+<p>Ritmo do ano, geografia e tendências</p>
+<div class="acoes"><a class="ler" href="capitulos/03_clima.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/03_clima.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/04_perturbacao.html"><img src="capas/04_perturbacao.png" alt="Capa do capítulo 04" loading="lazy"></a>
+<div class="corpo">
+<h2>04 · Desmatamento e fogo, célula por célula</h2>
+<p>Quatro fontes e o que elas medem</p>
+<div class="acoes"><a class="ler" href="capitulos/04_perturbacao.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/04_perturbacao.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/05_validacao_metodos.html"><img src="capas/05_validacao_metodos.png" alt="Capa do capítulo 05" loading="lazy"></a>
+<div class="corpo">
+<h2>05 · Os métodos diante de casos conhecidos</h2>
+<p>O portão dos descritores</p>
+<div class="acoes"><a class="ler" href="capitulos/05_validacao_metodos.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/05_validacao_metodos.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/06_surrogates.html"><img src="capas/06_surrogates.png" alt="Capa do capítulo 06" loading="lazy"></a>
+<div class="corpo">
+<h2>06 · Séries substitutas</h2>
+<p>O clima sem não linearidade</p>
+<div class="acoes"><a class="ler" href="capitulos/06_surrogates.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/06_surrogates.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/07_descritores.html"><img src="capas/07_descritores.png" alt="Capa do capítulo 07" loading="lazy"></a>
+<div class="corpo">
+<h2>07 · Descritores não lineares</h2>
+<p>1.541 células, oito descritores</p>
+<div class="acoes"><a class="ler" href="capitulos/07_descritores.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/07_descritores.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/08_gradiente.html"><img src="capas/08_gradiente.png" alt="Capa do capítulo 08" loading="lazy"></a>
+<div class="corpo">
+<h2>08 · Perturbação e dinâmica</h2>
+<p>O que o ERA5 vê e o que o satélite vê</p>
+<div class="acoes"><a class="ler" href="capitulos/08_gradiente.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/08_gradiente.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/09_chuva.html"><img src="capas/09_chuva.png" alt="Capa do capítulo 09" loading="lazy"></a>
+<div class="corpo">
+<h2>09 · A chuva vista de duas formas</h2>
+<p>O ERA5 e o CHIRPS diante da perturbação da floresta</p>
+<div class="acoes"><a class="ler" href="capitulos/09_chuva.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/09_chuva.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/10_fogo.html"><img src="capas/10_fogo.png" alt="Capa do capítulo 10" loading="lazy"></a>
+<div class="corpo">
+<h2>10 · O tempo antes do fogo</h2>
+<p>Quando o fogo segue o tempo seco e quando segue o calendário</p>
+<div class="acoes"><a class="ler" href="capitulos/10_fogo.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/10_fogo.py">Abrir no molab</a></div>
+</div>
+</article>
+<article class="cartao">
+<a href="capitulos/11_territorio.html"><img src="capas/11_territorio.png" alt="Capa do capítulo 11" loading="lazy"></a>
+<div class="corpo">
+<h2>11 · O território</h2>
+<p>Terras Indígenas e Unidades de Conservação diante do clima e do fogo</p>
+<div class="acoes"><a class="ler" href="capitulos/11_territorio.html">Ler o capítulo</a>
+<a class="rodar" href="https://molab.marimo.io/github/ThallesCansi/Caos/blob/main/notebooks/11_territorio.py">Abrir no molab</a></div>
+</div>
+</article>
+</div></main>
+<footer><div class="largura">
+Dados: ERA5 (Copernicus Climate Change Service, ECMWF), PRODES, DETER e BDQueimadas (INPE),
+MapBiomas (coleções 11 e Fogo 5), MOD11A2 (NASA LP DAAC), BHB250 (IBGE/ANA), FUNAI e ICMBio.
+Na versão de leitura, os controles mostram a escolha inicial; no molab, eles funcionam.
+</div></footer>
+</body>
+</html>
