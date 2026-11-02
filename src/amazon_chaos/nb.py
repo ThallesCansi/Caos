@@ -38,7 +38,10 @@ def _git_commit() -> str:
     try:
         out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
                              text=True, check=True)
-        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
+        # as saídas dos cadernos (reports/) não contam: `make notebooks` apaga os índices
+        # antes de rodar, e com elas o carimbo nunca sairia limpo
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--",
+                                ".", ":(exclude)reports"],
                                capture_output=True, text=True, check=True).stdout.strip()
         return out.stdout.strip() + ("+modificado" if dirty else "")
     except (OSError, subprocess.CalledProcessError):

@@ -1,4 +1,5 @@
 import json
+import subprocess
 
 import matplotlib
 
@@ -33,3 +34,20 @@ def test_figure_and_table_are_saved_indexed_and_exported(tmp_path, monkeypatch):
     copied = nb.export_overleaf(tmp_path)
     assert [p.name for p in copied] == ["fig_99_teste_xingu_linha.pdf"]  # tabela fora
     assert "Uma reta" in (tmp_path / "reports/overleaf/INDICE.md").read_text()
+
+def _git(path, *args):
+    subprocess.run(["git", *args], cwd=path, check=True, capture_output=True)
+
+
+def test_stamp_ignores_notebook_outputs(tmp_path, monkeypatch):
+    _git(tmp_path, "init", "-q")
+    (tmp_path / "reports").mkdir()
+    (tmp_path / "reports" / "index.json").write_text("{}")
+    (tmp_path / "codigo.py").write_text("x = 1\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "c")
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "reports" / "index.json").unlink()   # como faz `make notebooks`
+    assert not nb._git_commit().endswith("+modificado")
+    (tmp_path / "codigo.py").write_text("x = 2\n")
+    assert nb._git_commit().endswith("+modificado")
