@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/atrasos_ordinais.csv",
     "tex": "reports/tables/07_descritores/atrasos_ordinais.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "atrasos_tau",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/atrasos_tau.csv",
     "tex": "reports/tables/07_descritores/atrasos_tau.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "ews_resumo",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/ews_resumo.csv",
     "tex": "reports/tables/07_descritores/ews_resumo.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "natureza_nulas_realistas",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/natureza_nulas_realistas.csv",
     "tex": "reports/tables/07_descritores/natureza_nulas_realistas.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "rejeicao_bh",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/rejeicao_bh.csv",
     "tex": "reports/tables/07_descritores/rejeicao_bh.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "rejeicao_bh_janelas",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/rejeicao_bh_janelas.csv",
     "tex": "reports/tables/07_descritores/rejeicao_bh_janelas.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "sensibilidade_lote",
@@ -60,6 +60,6 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/sensibilidade_lote.csv",
     "tex": "reports/tables/07_descritores/sensibilidade_lote.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   }
 ]

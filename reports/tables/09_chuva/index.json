@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/09_chuva/associacao.csv",
     "tex": "reports/tables/09_chuva/associacao.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "dither",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/09_chuva/dither.csv",
     "tex": "reports/tables/09_chuva/dither.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "ocorrencia",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "csv": "reports/tables/09_chuva/ocorrencia.csv",
     "tex": "reports/tables/09_chuva/ocorrencia.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "rejeicao",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "csv": "reports/tables/09_chuva/rejeicao.csv",
     "tex": "reports/tables/09_chuva/rejeicao.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "secura",
@@ -42,6 +42,6 @@
     "overleaf": true,
     "csv": "reports/tables/09_chuva/secura.csv",
     "tex": "reports/tables/09_chuva/secura.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   }
 ]

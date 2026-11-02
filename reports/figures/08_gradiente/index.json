@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/correlograma.png",
     "pdf": "reports/figures/08_gradiente/correlograma.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "dispersao",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/dispersao.png",
     "pdf": "reports/figures/08_gradiente/dispersao.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "longitudinal",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/longitudinal.png",
     "pdf": "reports/figures/08_gradiente/longitudinal.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "modelos",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modelos.png",
     "pdf": "reports/figures/08_gradiente/modelos.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "modis",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modis.png",
     "pdf": "reports/figures/08_gradiente/modis.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "outras_exposicoes",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/outras_exposicoes.png",
     "pdf": "reports/figures/08_gradiente/outras_exposicoes.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "passagem",
@@ -60,7 +60,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/passagem.png",
     "pdf": "reports/figures/08_gradiente/passagem.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "paisagem",
@@ -69,7 +69,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/tapajos/paisagem.png",
     "pdf": "reports/figures/08_gradiente/tapajos/paisagem.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "paisagem",
@@ -78,6 +78,6 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/xingu/paisagem.png",
     "pdf": "reports/figures/08_gradiente/xingu/paisagem.pdf",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   }
 ]

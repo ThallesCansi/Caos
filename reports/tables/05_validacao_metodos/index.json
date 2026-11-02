@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/ews_calibracao.csv",
     "tex": "reports/tables/05_validacao_metodos/ews_calibracao.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "portao_realista",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/portao_realista.csv",
     "tex": "reports/tables/05_validacao_metodos/portao_realista.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   },
   {
     "name": "veredito",
@@ -24,6 +24,6 @@
     "overleaf": true,
     "csv": "reports/tables/05_validacao_metodos/veredito.csv",
     "tex": "reports/tables/05_validacao_metodos/veredito.tex",
-    "commit": "180e485+modificado"
+    "commit": "17cbbf4+modificado"
   }
 ]
