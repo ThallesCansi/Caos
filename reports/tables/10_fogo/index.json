@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/10_fogo/contraste.csv",
     "tex": "reports/tables/10_fogo/contraste.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "resumo",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "csv": "reports/tables/10_fogo/resumo.csv",
     "tex": "reports/tables/10_fogo/resumo.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   }
 ]

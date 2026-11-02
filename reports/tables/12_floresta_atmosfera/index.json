@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/ccm.csv",
     "tex": "reports/tables/12_floresta_atmosfera/ccm.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "janelas",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/janelas.csv",
     "tex": "reports/tables/12_floresta_atmosfera/janelas.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "painel",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/painel.csv",
     "tex": "reports/tables/12_floresta_atmosfera/painel.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "perda",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/perda.csv",
     "tex": "reports/tables/12_floresta_atmosfera/perda.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "portao",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/portao.csv",
     "tex": "reports/tables/12_floresta_atmosfera/portao.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "rejeicao",
@@ -51,6 +51,6 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/rejeicao.csv",
     "tex": "reports/tables/12_floresta_atmosfera/rejeicao.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   }
 ]

@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/11_territorio/latitude.png",
     "pdf": "reports/figures/11_territorio/latitude.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "mapas",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "png": "reports/figures/11_territorio/mapas.png",
     "pdf": "reports/figures/11_territorio/mapas.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   }
 ]

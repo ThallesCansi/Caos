@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/estacionariedade.csv",
     "tex": "reports/tables/06_surrogates/estacionariedade.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "estimadores_bacia",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/estimadores_bacia.csv",
     "tex": "reports/tables/06_surrogates/estimadores_bacia.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "kantz_raios",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/kantz_raios.csv",
     "tex": "reports/tables/06_surrogates/kantz_raios.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "multivariado_bacia",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/multivariado_bacia.csv",
     "tex": "reports/tables/06_surrogates/multivariado_bacia.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "resultado_bacias",
@@ -42,6 +42,6 @@
     "overleaf": true,
     "csv": "reports/tables/06_surrogates/resultado_bacias.csv",
     "tex": "reports/tables/06_surrogates/resultado_bacias.tex",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   }
 ]

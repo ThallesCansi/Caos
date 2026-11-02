@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/delta.png",
     "pdf": "reports/figures/12_floresta_atmosfera/delta.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "descritores",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/descritores.png",
     "pdf": "reports/figures/12_floresta_atmosfera/descritores.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "previsao",
@@ -24,6 +24,6 @@
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/previsao.png",
     "pdf": "reports/figures/12_floresta_atmosfera/previsao.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   }
 ]

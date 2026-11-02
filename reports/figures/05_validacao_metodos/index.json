@@ -6,7 +6,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/controles.png",
     "pdf": "reports/figures/05_validacao_metodos/controles.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "diagnosticos",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/diagnosticos.png",
     "pdf": "reports/figures/05_validacao_metodos/diagnosticos.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "padronizacao",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/padronizacao.png",
     "pdf": "reports/figures/05_validacao_metodos/padronizacao.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "portao_realista",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/portao_realista.png",
     "pdf": "reports/figures/05_validacao_metodos/portao_realista.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   },
   {
     "name": "taxas_rejeicao",
@@ -42,6 +42,6 @@
     "overleaf": true,
     "png": "reports/figures/05_validacao_metodos/taxas_rejeicao.png",
     "pdf": "reports/figures/05_validacao_metodos/taxas_rejeicao.pdf",
-    "commit": "17cbbf4+modificado"
+    "commit": "040f1f9"
   }
 ]
