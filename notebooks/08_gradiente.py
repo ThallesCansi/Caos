@@ -319,8 +319,14 @@ def preregistered():
         G.spatial_inference(cells(row.bacia)[cells(row.bacia).elegivel], "perda_antecedente",
                             f"z_{row.variavel}_{row.descritor}")
         for row in pre.itertuples()]).drop(columns="moran_residuos")
-    pre = pd.concat([pre, spatial], axis=1)
+    blocks = pd.DataFrame([
+        G.block_sensitivity(cells(row.bacia)[cells(row.bacia).elegivel], "perda_antecedente",
+                            f"z_{row.variavel}_{row.descritor}", sizes=(2.0, 2.5))
+        for row in pre.itertuples()])
+    pre = pd.concat([pre, spatial, blocks], axis=1)
     pre["p_holm"] = G.adjust(pre.p_blocos, "holm")
+    pre["p_holm_2"] = G.adjust(pre.p_blocos_2, "holm")
+    pre["p_holm_2.5"] = G.adjust(pre["p_blocos_2.5"], "holm")
     pre["p_bh"] = G.adjust(pre.p_blocos, "fdr_bh")
     pre["p_n_efetivo_holm"] = G.adjust(pre.p_n_efetivo, "holm")
     return pre
@@ -335,15 +341,17 @@ def _():
     _pre["IC 95%"] = [f"[{a:+.2f}; {b:+.2f}]" for a, b in zip(_pre.ic_inf, _pre.ic_sup,
                                                              strict=True)]
     _tab = _pre[["Bacia", "Descritor", "Variável", "celulas", "rho_bruto", "rho_parcial",
-                 "IC 95%", "p_holm", "p_bh", "moran_residuos", "n_efetivo",
-                 "p_n_efetivo"]].rename(columns={
+                 "IC 95%", "p_holm", "p_bh", "p_holm_2", "p_holm_2.5", "moran_residuos",
+                 "n_efetivo", "p_n_efetivo"]].rename(columns={
         "celulas": "Células", "rho_bruto": "ρ bruto", "rho_parcial": "ρ parcial",
-        "p_holm": "p Holm", "p_bh": "p BH", "moran_residuos": "Moran dos resíduos",
+        "p_holm": "p Holm", "p_bh": "p BH", "p_holm_2": "p Holm (2°)",
+        "p_holm_2.5": "p Holm (2,5°)", "moran_residuos": "Moran dos resíduos",
         "n_efetivo": "n efetivo", "p_n_efetivo": "p (n efetivo)"}).round(
         {"ρ bruto": 2, "ρ parcial": 2, "Moran dos resíduos": 2, "n efetivo": 0,
-         "p Holm": 3, "p BH": 3, "p (n efetivo)": 3})
+         "p Holm": 3, "p BH": 3, "p Holm (2°)": 3, "p Holm (2,5°)": 3, "p (n efetivo)": 3})
     _tab["n efetivo"] = _tab["n efetivo"].astype(int)
     _n_holm = int((_pre.p_holm < 0.05).sum())
+    _n_holm_25 = int((_pre["p_holm_2.5"] < 0.05).sum())
     _n_eff = int((_pre.p_n_efetivo < 0.05).sum())
     mo.vstack([
         mo.md(r"""
@@ -366,37 +374,45 @@ def _():
                    "antecedente de floresta e z dos descritores primários, bruta e parcial "
                    "(controles: latitude, água e altitude), com IC 95% por bootstrap em blocos "
                    "de 1°, p-valor da mesma reamostragem corrigido por Holm e por "
-                   "Benjamini–Hochberg sobre os 16 testes, I de Moran dos resíduos, n efetivo "
-                   "de Clifford et al. e p-valor com esse n, sem correção (D-028).",
+                   "Benjamini–Hochberg sobre os 16 testes, p de Holm com blocos de 2° e de "
+                   "2,5°, I de Moran dos resíduos, n efetivo de Clifford et al. e p-valor com "
+                   "esse n e n′ − 5 graus de liberdade, sem correção (D-028, D-030).",
                    selection=None),
         mo.md(rf"""
-        Nas duas bacias, a perturbação antecedente se associa a uma dinâmica menos
-        estruturada. Quanto maior a perda até 2000, maior a entropia de permutação e menor a
-        complexidade do VPD, e menor o determinismo da temperatura, com intervalos que não
-        incluem zero. No Xingu, a associação também aparece no erro de previsão e no
-        determinismo do VPD e nos padrões ordinais da temperatura; no Tapajós, nem os padrões
+        Nas duas bacias, a perturbação antecedente se associa a uma dinâmica diária
+        diferente. Quanto maior a perda até 2000, maior a entropia de permutação e menor a
+        complexidade do VPD, e menor o DET da temperatura, isto é, recorrências mais curtas,
+        com intervalos que não incluem zero. O nome "determinismo" do DET vem da análise de
+        recorrência, mas o capítulo 5 mostrou que nulas estocásticas com memória sazonal o
+        reproduzem; aqui ele mede só a duração das recorrências. No Xingu, a associação
+        também aparece no erro de previsão e no
+        DET do VPD e nos padrões ordinais da temperatura; no Tapajós, nem os padrões
         ordinais nem o erro de previsão da temperatura mostram associação. Os valores
         parciais que se destacam ficam entre 0,2 e 0,46 em módulo: associações moderadas,
         bem menores que as brutas, que passavam de 0,6.
 
         Dos 16 testes, {_n_holm} continuam abaixo de 0,05 depois da correção de Holm, a mais
-        exigente: o par ordinal do VPD e o determinismo da temperatura nas duas bacias e,
-        no Xingu, também o determinismo e a previsão do VPD e a previsão da temperatura.
+        exigente: o par ordinal do VPD e o DET da temperatura nas duas bacias e,
+        no Xingu, também o DET e a previsão do VPD e a previsão da temperatura.
 
-        O índice de Moran dos resíduos, entre 0,4 e 0,75, mostra que a variação não explicada
+        O índice de Moran dos resíduos, entre 0,39 e 0,76, mostra que a variação não explicada
         continua organizada no espaço; nenhuma das 999 permutações dos resíduos entre as
         células chega perto dele. Isso tem duas consequências. A primeira é estatística:
         células vizinhas valem menos que células independentes, e os blocos de 1° só
         corrigem parte disso. Uma forma direta de medir quanto se perde é o tamanho efetivo
         da amostra de Clifford, Richardson e Hémon [9], que desconta da correlação a parte
         explicável por as duas grandezas variarem devagar no espaço. Ele cai de cerca de 650
-        células para 22 a 55 no Xingu e 94 a 213 no Tapajós, e com esse n {_n_eff} dos 16
-        testes ficam abaixo de 0,05: os mesmos pares que se repetem nas duas bacias, o
-        determinismo da temperatura e a entropia e a complexidade do VPD, e a previsão do VPD
-        no Xingu. Com a correção de Holm por cima, só o determinismo da temperatura no
-        Tapajós resiste. A leitura que adotamos, a de só considerar sólidos os efeitos que se
-        repetem nas duas bacias, é a que sobrevive a essa conta conservadora, e mesmo esses
-        efeitos são evidência moderada, e não forte. A segunda consequência é substantiva:
+        células para 22 a 55 no Xingu e 94 a 213 no Tapajós, e com esse n, descontados
+        também os três controles nos graus de liberdade, {_n_eff} dos 16 testes ficam abaixo
+        de 0,05: os pares que se repetem nas duas bacias, o DET da temperatura e a entropia
+        e a complexidade do VPD, e a previsão do VPD no Xingu. Com a correção de Holm por
+        cima, só o DET da temperatura no Tapajós resiste. Blocos maiores, de 2° e 2,5°, do
+        tamanho do alcance da autocorrelação (Figura 8), ficam no meio do caminho: com Holm,
+        {_n_holm_25} dos 16 resistem, o DET da temperatura nas duas bacias e o par ordinal e
+        a previsão do VPD no Xingu. A leitura honesta é, portanto, gradual. Os efeitos que se
+        repetem nas duas bacias resistem aos blocos de 1°; com blocos maiores ou com o n
+        efetivo, só uma parte deles resiste, e a evidência confirmatória mais firme se
+        reduz ao DET da temperatura. São evidência moderada, e não forte. A segunda consequência é substantiva:
         existe estrutura espacial que nem a perturbação nem os controles capturam, e é nela
         que podem estar os confundidores restantes. A seção final do capítulo volta a esse
         ponto.
@@ -418,17 +434,17 @@ def _():
         Os pontos escuros repetem a Tabela 1. Os vermelhos trocam a exposição pela fração de
         agropecuária em 2000, que mede só a conversão feita pelas pessoas, e controlam a
         vegetação natural não florestal. Nas associações do VPD, nas duas bacias, e no
-        determinismo da temperatura no Tapajós, quase nada muda: essas associações não são
+        DET da temperatura no Tapajós, quase nada muda: essas associações não são
         um artefato do Cerrado natural e acompanham a conversão de fato. No Xingu, as
         associações da temperatura enfraquecem, sinal de que parte delas vinha do contraste
         entre floresta e vegetação natural aberta, e não do desmatamento.
 
         Os pontos verdes acrescentam aos controles a vegetação alta fixa do ERA5, e aqui a
         figura muda. No Tapajós, a associação da entropia e da complexidade do VPD praticamente
-        desaparece, e a do determinismo da temperatura cai à metade; no Xingu, o erro de
-        previsão da temperatura vai para perto de zero, o determinismo das duas variáveis
-        encolhe, e só as associações dos padrões ordinais resistem, com as do VPD
-        menores. Em outras palavras, uma parte
+        desaparece, e a do DET da temperatura cai à metade; no Xingu, o erro de
+        previsão da temperatura vai para perto de zero e o DET do VPD encolhe, mas resistem
+        os padrões ordinais, com os do VPD menores, o DET da temperatura e a previsão do
+        VPD. Em outras palavras, uma parte
         importante da diferença entre células convertidas e preservadas, tal como o ERA5 a
         registra, passa pelo mapa de vegetação que o próprio modelo usa. O modelo calcula uma
         evaporação, um aquecimento da superfície e uma rugosidade diferentes para um ponto de
@@ -500,7 +516,7 @@ def _():
         nas duas bacias. No Xingu, a frequência de fogo desde 1985 e o desmatamento segundo o
         PRODES repetem, menores, as associações da exposição principal com o VPD. No
         Tapajós, ao contrário, o PRODES e a perda recente aparecem com o sinal oposto no
-        determinismo e no erro de previsão do VPD, ainda que fracos.
+        DET e no erro de previsão do VPD, ainda que fracos.
 
         Essas observações são coerentes com o que a Figura 1 mostrou: o que se desmatou
         depois de 2000 não está no mapa de vegetação do ERA5, e por isso a perturbação recente
@@ -588,11 +604,11 @@ def _():
         as associações que excluíam o zero continuam a excluí-lo, com uma ressalva no Xingu:
         a entropia e o erro de previsão da temperatura passam a tocar o zero, e a
         complexidade da temperatura já o tocava. As associações do VPD nas duas bacias e a do
-        determinismo da temperatura não dependem do tamanho do bloco.
+        DET da temperatura não dependem do tamanho do bloco.
 
         A segunda pergunta traz a novidade da tabela. Quando a resposta é o valor observado
         do descritor, as associações dos padrões ordinais desaparecem e, no Tapajós, chegam a
-        trocar de sinal, e a do determinismo encolhe. Para entender por quê, separamos o
+        trocar de sinal, e a do DET encolhe. Para entender por quê, separamos o
         $z$ nas suas duas partes: a média das substitutas, que é o valor que o descritor teria
         se a série fosse só a sua parte linear, com o mesmo espectro e a mesma distribuição,
         e o excesso do observado sobre essa média, que é a parte que só a não linearidade
@@ -618,7 +634,7 @@ def _():
         maioria das células ela é quase nula, e a correlação com a perda antecedente fica em
         0,56 no Xingu e 0,36 no Tapajós. Com ela, as associações do VPD no Xingu se repetem
         no mesmo sentido, com metade do tamanho, e as demais ficam compatíveis com zero; no
-        Tapajós, o determinismo do VPD aparece com o sinal oposto ao da Tabela 1, sem
+        Tapajós, o DET do VPD aparece com o sinal oposto ao da Tabela 1, sem
         paralelo na outra bacia.
 
         A quarta pergunta tem a resposta mais limpa. Ficando só com as células em que quase
@@ -714,7 +730,7 @@ def _(lon_descriptor, lon_region, lon_variable):
         Antes de ler a figura, um detalhe de método que ela torna visível. A dimensão de
         imersão $m$ é escolhida pelo critério dos falsos vizinhos em cada década, como fixado
         no pré-registro, e em um quinto a um terço das células ela muda de uma década para a
-        outra. Descritores que dependem do espaço de fases, como o determinismo, saltam
+        outra. Descritores que dependem do espaço de fases, como o DET, saltam
         quando $m$ muda, e o salto é maior que a mudança climática que queremos medir: são as
         três faixas horizontais do painel da esquerda, coloridas pela mudança de $m$. Por
         isso mostramos, ao lado do resultado pré-registrado (pontos cheios), o mesmo cálculo
@@ -737,7 +753,7 @@ def _(lon_descriptor, lon_region, lon_variable):
         bacias e com ou sem as células em que $m$ mudou, incluem zero ou ficam colados a
         ele. As células que mais desmataram na primeira década não mudaram de
         dinâmica mais do que as outras. As mudanças vistas no capítulo anterior, como o
-        aumento do determinismo na maior parte das células, são comuns às
+        aumento do DET na maior parte das células, são comuns às
         células desmatadas e preservadas e combinam melhor com causas regionais, como a década
         mais quente e os El Niño de 2015–2016 e 2023–2024.
 
@@ -815,9 +831,9 @@ def _():
           for s in SLUGS}
     mo.vstack([
         mo.md(r"""
-        ## 🛰️ O que o satélite vê e o ERA5 não
+        ## 🛰️ O que o satélite vê e o ar do ERA5 não
 
-        Os resultados anteriores apontam para uma mesma explicação: o ERA5 não enxerga o
+        Os resultados anteriores apontam para uma mesma explicação: o ERA5 não acompanha o
         desmatamento que veio depois do seu mapa de vegetação. Até aqui, essa explicação se
         apoiava no próprio mapa do modelo. A temperatura da superfície medida pelo sensor
         MODIS, a bordo do satélite Terra, permite testá-la com uma observação independente
@@ -858,15 +874,15 @@ def _():
         parcial continua em 0,77 a 0,81, e o décimo mais convertido fica 5,6 °C mais quente
         que o menos convertido, nas duas bacias. É o efeito conhecido da troca de floresta
         por pasto: menos transpiração, menos energia gasta em evaporar água e mais energia
-        aquecendo o chão [5, 8]. O ERA5
-        não vê nada disso; a sua temperatura máxima do ar fica praticamente igual em todos os
-        décimos e, no Tapajós, chega a ser mais fresca nas células com mais perda
+        aquecendo o chão [5, 8]. A
+        temperatura máxima do ar no ERA5 não vê nada disso: ela fica praticamente igual em
+        todos os décimos e, no Tapajós, chega a ser mais fresca nas células com mais perda
         antecedente, as do
         planalto do sul. À direita, a diferença é ainda mais instrutiva. Nas células que não
         perderam floresta, o MODIS mostra um aquecimento de poucos décimos de grau entre as
         décadas, e o ERA5, um pouco mais, de meio grau a um grau: é o aquecimento regional.
-        Nas que mais perderam, o MODIS mostra cerca de 1,5 °C, quatro a cinco vezes o das
-        preservadas; o ERA5 mostra o mesmo aquecimento regional de todas as outras. A Tabela
+        Nas que mais perderam, o MODIS mostra cerca de 1,5 °C, de 1,3 a 1,4 °C a mais que
+        nas preservadas; o ERA5 mostra o mesmo aquecimento regional de todas as outras. A Tabela
         3 dá as correlações parciais, com os mesmos controles e a mesma inferência por
         blocos das seções anteriores.
         """),
@@ -879,9 +895,11 @@ def _():
         mo.callout(mo.md(
             "A observação por satélite evidencia, de forma independente, a limitação central "
             "do trabalho: o desmatamento aquece fortemente a superfície, entre lugares e ao "
-            "longo do tempo, e o ERA5 não registra esse aquecimento. O resultado nulo da "
-            "seção anterior não indica ausência de efeito do desmatamento; indica que a "
-            "ferramenta não o enxerga."), kind="success"),
+            "longo do tempo, e o ar do ERA5 não registra esse aquecimento. A superfície do "
+            "próprio ERA5 registra só uma fração do contraste entre lugares e nada da mudança "
+            "no tempo (subseção abaixo). O resultado nulo da seção anterior não indica "
+            "ausência de efeito do desmatamento; indica que a ferramenta mal o enxerga."),
+            kind="success"),
         mo.md(r"""
         Duas cautelas acompanham essa leitura. A temperatura da superfície e a do ar não são
         a mesma coisa, e a diferença entre floresta e pasto é sempre maior na primeira; ainda
@@ -1003,8 +1021,8 @@ def _():
         fontes; a diferença até diminui um pouco. A temperatura do ar no mesmo horário fica
         mais fresca nas células com mais perda, como a máxima diária, porque elas estão no sul
         mais alto das bacias. À direita, ao longo do tempo, nenhuma medida do ERA5 acompanha o
-        aquecimento de 1,3 a 1,4 °C que o MODIS vê nas células que mais perderam floresta
-        entre 2001 e 2012. No Xingu, o ERA5 mostra o mesmo aquecimento regional, de meio
+        aquecimento a mais, de 1,3 a 1,4 °C em relação às células sem perda, que o MODIS vê
+        nas que mais perderam floresta entre 2001 e 2012. No Xingu, o ERA5 mostra o mesmo aquecimento regional, de meio
         grau, em todos os décimos; no Tapajós, ele aquece mais as células sem perda, as do
         norte da bacia, perto de 1 °C, do que as que mais desmataram, perto de meio grau, o
         oposto do satélite.
@@ -1026,7 +1044,9 @@ def _():
         o modelo registra ali é o desmatamento anterior a 2000 que já estava no seu mapa de
         vegetação. No Tapajós ela resiste ao mesmo controle, o que sugere outra rota no
         modelo, como a umidade do solo mais baixa no planalto do sul. Ao longo do tempo,
-        nenhuma associação do ERA5 é positiva; no Tapajós, a da pele chega a ser negativa,
+        nenhuma associação do ERA5 é positiva com intervalo que exclua zero; a mais alta, a
+        do ar no Xingu, fica em +0,21 [−0,03; +0,40], e no Tapajós a da pele chega a ser
+        negativa,
         com as células que mais desmataram aquecendo um pouco menos que as outras na
         superfície do modelo.
         """),
@@ -1039,12 +1059,13 @@ def _():
                    "perturbado.",
                    selection=None),
         mo.callout(mo.md(
-            "A comparação com a mesma grandeza e o mesmo horário qualifica a Tabela 3 sem "
-            "mudar a sua leitura. Entre células, parte do contraste vinha da diferença de "
-            "grandeza: a superfície do ERA5 às 10h30 registra cerca de um quarto a um terço "
-            "do aquecimento que o satélite vê, e no Xingu só pelo mapa de vegetação fixo do "
-            "modelo. Ao longo do tempo, a cegueira se confirma: nenhuma grandeza do ERA5 "
-            "registra o aquecimento da superfície onde a floresta foi perdida depois de 2000."),
+            "A comparação com a mesma grandeza e o mesmo horário qualifica a Tabela 3. O ERA5 "
+            "não é cego, é míope. Entre células, a sua superfície às 10h30 registra cerca de "
+            "um terço do contraste que o satélite vê no Xingu (2,4 contra 6,7 °C), e só pelo "
+            "mapa de vegetação fixo do modelo, e cerca de um quinto no Tapajós (1,2 contra "
+            "6,4 °C). Ao longo do tempo, nenhuma grandeza do ERA5 registra o aquecimento da "
+            "superfície onde a floresta foi perdida depois de 2000. Isso explica por que o "
+            "contraste entre lugares aparece na reanálise e a mudança no tempo não."),
             kind="info"),
     ])
     return
@@ -1117,12 +1138,18 @@ def placebo_results():
         forest = e[e.floresta_frac_2000 >= 0.5 * e.fracao_terra]
         for var in R.VARIABLES:
             for d in PRIMARY:
-                for exposure, label in [("perda_antecedente", "perda antecedente"),
-                                        ("mb_perda_floresta_2013_2024",
-                                         "placebo: perda de 2013–2024")]:
+                placebo = "mb_perda_floresta_2013_2024"
+                for exposure, label, extra in [
+                        ("perda_antecedente", "perda antecedente", ()),
+                        (placebo, "placebo: perda de 2013–2024", ()),
+                        ("perda_antecedente", "perda antecedente, controlando o placebo",
+                         (placebo,)),
+                        (placebo, "placebo, controlando a perda antecedente",
+                         ("perda_antecedente",))]:
                     rows.append({"bacia": slug, "variavel": var, "descritor": d,
                                  "exposicao_rotulo": label,
-                                 **G.associate(forest, exposure, f"z12_{var}_{d}")})
+                                 **G.associate(forest, exposure, f"z12_{var}_{d}",
+                                               G.CONTROLS + extra)})
     return pd.DataFrame(rows)
 
 
@@ -1155,7 +1182,7 @@ def _():
         book.figure(plot_correlogram(), "correlograma",
                     "Figura 8. Correlograma (I de Moran por classe de distância de 0,25°) dos "
                     "resíduos dos postos, depois de retirados a latitude, a água e a altitude, "
-                    "da perda antecedente e do z do determinismo da temperatura e da entropia "
+                    "da perda antecedente e do z do DET da temperatura e da entropia "
                     "de permutação do VPD, nas células elegíveis. Linha pontilhada: 1°, o "
                     "tamanho dos blocos do bootstrap (D-028)."),
         mo.md(r"""
@@ -1166,8 +1193,8 @@ def _():
         Os blocos de 1° capturam a parte mais forte dessa semelhança, mas não toda, e
         células de blocos vizinhos ainda se parecem: é por isso que o tamanho efetivo da
         amostra cai tanto e que os intervalos da Tabela 1 devem ser lidos como um pouco
-        otimistas. A conclusão prática é a que já adotamos, só considerar os efeitos que
-        se repetem nas duas bacias, e com o devido cuidado.
+        otimistas. É por isso que a Tabela 1 traz também os p com blocos de 2° e 2,5°, do
+        tamanho desse alcance, e o p com o tamanho efetivo da amostra.
 
         A segunda checagem ataca a objeção mais séria a qualquer comparação entre lugares:
         o desmatamento não avança ao acaso, e sim onde o acesso, o relevo e o clima já o
@@ -1183,26 +1210,34 @@ def _():
                    "Spearman, com IC 95% por blocos de 1°, entre o z dos descritores primários "
                    "em 2001–2012 e a perda antecedente ou a perda de floresta de 2013 a 2024 "
                    f"(MapBiomas), nas células elegíveis com ao menos 50% de floresta em 2000 "
-                   f"({_n['xingu']} no Xingu, {_n['tapajos']} no Tapajós).", selection=None),
+                   f"({_n['xingu']} no Xingu, {_n['tapajos']} no Tapajós); nas duas últimas "
+                   "colunas, cada exposição com a outra entre os controles (D-030).",
+                   selection=None),
         mo.md(r"""
         No Xingu, o placebo não se associa a nada: todas as correlações ficam perto de zero,
         enquanto a perda antecedente, nas mesmas células, mantém as associações do VPD e do
-        determinismo da temperatura. Ali, a associação não é um retrato de onde o
-        desmatamento iria avançar. No Tapajós, a leitura é mais dividida. O placebo também
-        fica perto de zero no VPD e no determinismo da temperatura, os pares que se repetem
-        nas duas bacias, mas aparece nos padrões ordinais e na previsão da temperatura,
-        justamente onde a perda antecedente não mostra nada. As células do Tapajós que
-        seriam desmatadas depois de 2012 já tinham uma temperatura com dinâmica diferente
-        antes disso. Essa é a seleção
-        geográfica de que a objeção fala: ela existe, mas não explica os efeitos que o
-        trabalho destaca.
+        DET da temperatura. Ali, a associação não é um retrato de onde o desmatamento iria
+        avançar. No Tapajós, a leitura é mais dividida. O placebo também fica perto de zero
+        no VPD e no DET da temperatura, mas aparece nos padrões ordinais e na previsão da
+        temperatura. As células do Tapajós que seriam desmatadas depois de 2012 já tinham
+        uma temperatura com dinâmica diferente antes disso: é a seleção geográfica de que a
+        objeção fala. E ali o placebo informa pouco sobre os pares que o trabalho destaca,
+        porque, nessas 500 células, a própria perda antecedente quase não se associa ao DET
+        da temperatura na primeira década.
+
+        As duas perdas também andam juntas no mapa: onde a floresta já tinha sido aberta
+        até 2000, ela continuou a ser aberta depois. As duas últimas colunas separam uma da
+        outra, estimando cada exposição com a outra como controle. A perda antecedente
+        mantém as associações do par ordinal do VPD e a do DET da temperatura nas duas
+        bacias, esta mais forte no Xingu, e o placebo continua nulo no Xingu, salvo um efeito pequeno e
+        de sinal oposto no par ordinal do VPD, e presente na temperatura do Tapajós.
         """),
         mo.callout(mo.md(
             "As duas checagens tornam a conclusão mais modesta, não a invertem. A associação "
             "entre perda antecedente e dinâmica diária é moderada e, depois de descontada a "
-            "semelhança entre vizinhas, só se sustenta nos pares que se repetem nas duas "
-            "bacias; ela não é um retrato de onde o desmatamento viria a avançar, embora no "
-            "Tapajós essa seleção exista em outros descritores."), kind="info"),
+            "semelhança entre vizinhas, a evidência mais firme é a do DET da temperatura. No "
+            "Xingu, ela não é um retrato de onde o desmatamento viria a avançar; no Tapajós, "
+            "essa seleção existe na temperatura, e o placebo informa pouco."), kind="info"),
     ])
     return
 
@@ -1298,7 +1333,7 @@ def _():
         e no VPD a vários dias seja praticamente nulo na maioria das células. O $D_{E2}$ de Cao no VPD é menor
         nessas mesmas células, isto é, a dependência do passado reconstruído fica ainda mais
         perto da de um processo estocástico, o que combina com a entropia de permutação
-        maior da Tabela 1. E o determinismo da amplitude diária, como o da temperatura
+        maior da Tabela 1. E o DET da amplitude diária, como o da temperatura
         média, é menor onde a perda é maior. Nas extremas, a máxima repete a média, com
         associações nos padrões ordinais no Xingu e nenhuma no Tapajós, e a mínima não se
         associa a nada. Nenhum desses padrões é um sinal novo que a média escondesse; eles
@@ -1312,46 +1347,139 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def seasonal_results():
+    """Os 16 testes com e sem a memória e a variância sazonais como controles (G2a, D-030)."""
+    seasonal = ("phi_amplitude", "phi_media", "sd_razao", "ciclo_frac")
+    rows = []
+    for slug in SLUGS:
+        e = cells(slug)[cells(slug).elegivel]
+        for var in R.VARIABLES:
+            extra = tuple(f"{m}_{var}" for m in seasonal)
+            for d in PRIMARY:
+                for label, controls in [("pré-registrado", G.CONTROLS),
+                                        ("com a sazonalidade", G.CONTROLS + extra)]:
+                    rows.append({"bacia": slug, "variavel": var, "descritor": d,
+                                 "modelo": label,
+                                 **G.associate(e, "perda_antecedente", f"z_{var}_{d}",
+                                               controls)})
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _r = seasonal_results()
+    _r["ci"] = [f"{r:+.2f} [{a:+.2f}; {b:+.2f}]" for r, a, b in zip(
+        _r.rho_parcial, _r.ic_inf, _r.ic_sup, strict=True)]
+    _tab = _r.pivot_table(index=["bacia", "variavel", "descritor"], columns="modelo",
+                          values="ci", aggfunc="first", sort=False).reset_index()
+    _tab.insert(0, "Bacia", _tab.pop("bacia").map(
+        lambda x: load_region(x)["name"].replace("Bacia do Rio ", "")))
+    _tab.insert(1, "Variável", _tab.pop("variavel").map(R.VARIABLES))
+    _tab.insert(2, "Descritor", _tab.pop("descritor").map(R.NAMES))
+    _tab = _tab[["Bacia", "Variável", "Descritor", "pré-registrado", "com a sazonalidade"]]
+    _tab.columns.name = None
+    _amp = {s: cells(s)[cells(s).elegivel] for s in SLUGS}
+    _rho = {(s, v): _amp[s].perda_antecedente.corr(_amp[s][f"phi_amplitude_{v}"],
+                                                   method="spearman")
+            for s in SLUGS for v in R.VARIABLES}
+    mo.vstack([
+        mo.md(rf"""
+        ## 🗓️ A memória sazonal como explicação alternativa
+
+        O capítulo 7 mostrou que um AR(1) cuja memória de um dia para o outro muda ao longo
+        do ano já faz os padrões ordinais e a dimensão de correlação do VPD rejeitarem as
+        substitutas em quase todas as séries (D-029). Isso abre uma explicação alternativa
+        para a associação mais forte da Tabela 1. Se a força dessa memória sazonal varia de
+        célula para célula junto com a perda antecedente, o $z$ dos descritores pode estar
+        medindo a sazonalidade do lugar, e não uma dinâmica alterada pela conversão.
+
+        Medimos, em cada célula e para cada variável, a memória média e a amplitude da sua
+        variação ao longo do ano, a razão entre a maior e a menor variabilidade sazonal e a
+        fração da variância explicada pelo ciclo anual médio (D-030). A amplitude da
+        memória cai com a perda antecedente, com correlação entre
+        {min(_rho.values()):+.2f} e {max(_rho.values()):+.2f}: no sul convertido, a
+        persistência das anomalias muda menos ao longo do ano. E ela acompanha de perto o
+        $z$ ordinal, com correlações próximas de 0,9 em módulo. A Tabela 7 repete os 16
+        testes com as quatro medidas entre os controles.
+        """),
+        book.table(_tab, "sazonalidade",
+                   "Tabela 7. Exploratório (D-030). Correlação parcial entre a perda "
+                   "antecedente e o z dos descritores primários, com IC 95% por blocos de 1°, "
+                   "no modelo pré-registrado e com a memória e a variância sazonais da mesma "
+                   "variável (média e amplitude de φ ao longo do ano, razão dos desvios "
+                   "sazonais e fração do ciclo anual) entre os controles.", selection=None),
+        mo.md(r"""
+        Os padrões ordinais quase não resistem. No Tapajós, as associações do VPD vão a
+        zero, e no Xingu as da temperatura também; as do VPD do Xingu caem para cerca de
+        metade, com intervalos que tocam o zero. O DET, ao contrário, resiste: o da
+        temperatura nas duas bacias, embora menor, e o do VPD e a previsão do VPD no Xingu.
+
+        Há duas leituras para isso, e os dados não escolhem entre elas. Na primeira, a
+        sazonalidade é um confundidor: o sul das bacias tem um regime sazonal diferente por
+        razões que antecedem o desmatamento, e a associação ordinal reflete só isso. Na
+        segunda, ela é um mediador: a conversão da floresta muda a forma como as anomalias
+        persistem ao longo do ano, e é por esse caminho que ela chega aos padrões ordinais.
+        Controlar por um mediador apagaria um efeito real. O que se pode afirmar é mais
+        limitado e mais seguro: a associação ordinal é, em grande parte, uma diferença de
+        sazonalidade entre as células, e não uma mudança na ordem dia a dia que a
+        sazonalidade não explique; a do DET da temperatura não se reduz a isso.
+        """),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
     ## 🧭 O que os dados permitem dizer
 
     A pergunta do trabalho era se a perturbação da floresta se associa à dinâmica climática
-    diária. A resposta que os dados do ERA5 permitem dar tem três partes, e as três são
+    diária. A resposta que os dados do ERA5 permitem dar tem quatro partes, e todas são
     necessárias.
 
-    Primeiro, sim: entre células comparáveis em latitude, água e relevo, as que tinham mais
-    conversão da floresta até 2000 têm uma dinâmica diária menos estruturada, com padrões
-    ordinais do déficit de pressão de vapor mais próximos dos de um processo aleatório e
-    menos determinismo nas recorrências da temperatura. O padrão se repete nas duas bacias e,
-    no caso do déficit de pressão de vapor, não é efeito da vegetação natural do Cerrado: ele
-    acompanha a conversão da floresta para a agropecuária. É uma associação moderada:
-    descontada a semelhança entre células vizinhas, só os pares que se repetem nas duas
-    bacias ficam de pé, e a exposição-placebo mostra que ela não é apenas um retrato de
-    onde o desmatamento iria avançar.
+    Primeiro, sim, com ressalvas: entre células comparáveis em latitude, água e relevo, as
+    que tinham mais conversão da floresta até 2000 têm uma dinâmica diária diferente, com
+    padrões ordinais do déficit de pressão de vapor mais próximos dos de um processo
+    aleatório e recorrências mais curtas (DET menor) na temperatura. O padrão se repete nas
+    duas bacias e, no caso do déficit de pressão de vapor, não é efeito da vegetação
+    natural do Cerrado: ele acompanha a conversão da floresta para a agropecuária. É uma
+    associação moderada, e a sua força depende de como se desconta a semelhança entre
+    células vizinhas. Com os blocos de 1° do pré-registro, 9 dos 16 testes resistem à
+    correção de Holm; com blocos de 2,5°, 5; com o tamanho efetivo da amostra, só o DET da
+    temperatura no Tapajós. No Xingu, a exposição-placebo mostra que a associação não é um
+    retrato de onde o desmatamento iria avançar; no Tapajós, ela informa pouco.
 
-    Segundo, essa diferença passa em boa parte pelo mapa de vegetação que o próprio ERA5 usa.
-    Quando ele é levado em conta, a associação diminui ou desaparece. O contraste entre
-    células, portanto, é em grande medida o contraste que o modelo calcula entre superfícies
-    de floresta e de pasto, tal como estavam no início da década de 1990, e não uma
-    consequência observada do desmatamento que veio depois.
+    Segundo, a associação mais forte, a dos padrões ordinais, é em grande parte uma
+    diferença de sazonalidade. Nas células mais convertidas, a memória das anomalias muda
+    menos ao longo do ano, e é isso que os padrões ordinais registram; com a sazonalidade
+    entre os controles, eles quase não resistem, enquanto o DET da temperatura resiste.
+    Se a sazonalidade é um confundidor ou o caminho pelo qual a conversão age, os dados
+    não dizem.
 
-    Terceiro, o desmatamento ocorrido durante a janela de análise não deixou marca na
-    dinâmica das séries do ERA5: as células que mais perderam floresta entre 2001 e 2012 não
+    Terceiro, parte da diferença entre células passa pelo mapa de vegetação que o próprio
+    ERA5 usa, tal como estava no início da década de 1990. A temperatura de pele do modelo
+    mostra o mesmo: entre lugares, ela registra um terço do contraste que o satélite vê no
+    Xingu, só pelo mapa de vegetação, e um quinto no Tapajós.
+
+    Quarto, a perda de floresta durante a janela de análise não deixou marca na dinâmica
+    das séries do ERA5: as células que mais perderam floresta entre 2001 e 2012 não
     mudaram mais do que as outras. A temperatura da superfície observada pelo satélite MODIS
     mostra que isso não é ausência de efeito: as mesmas células ficaram muito mais quentes
-    que as preservadas, enquanto no ERA5 aqueceram igual a todas. Com uma reanálise de
-    vegetação fixa, portanto, não é possível responder se o desmatamento em curso altera a
-    dinâmica do clima; a resposta exigiria séries diárias que acompanhem a paisagem, como as
-    de estações meteorológicas ou de um modelo com vegetação dinâmica.
+    que as preservadas, enquanto no ERA5, no ar e na superfície, aqueceram igual a todas.
+    Com uma reanálise de vegetação fixa, portanto, não é possível responder se o
+    desmatamento em curso altera a dinâmica do clima; a resposta exigiria séries diárias que
+    acompanhem a paisagem, como as de estações meteorológicas ou de um modelo com vegetação
+    dinâmica.
 
     Nenhuma dessas partes autoriza falar em caos induzido pelo desmatamento ou em aproximação
-    de um ponto de não retorno. O que os dados mostram é mais modesto e mais firme: as séries
-    climáticas da Amazônia são não lineares, essa não linearidade varia com a geografia e com
-    a história de uso da terra registrada no próprio modelo, o desmatamento aquece
-    fortemente a superfície, como o satélite mostra, e a reanálise, sozinha, não consegue
-    acompanhar essas mudanças da paisagem.
+    de um ponto de não retorno. O que os dados mostram é mais modesto e mais firme: o clima
+    diário das bacias é um processo estocástico com memória sazonal e uma não linearidade
+    fraca, essa dinâmica varia com a geografia, com a sazonalidade e com a história de uso
+    da terra registrada no próprio modelo, o desmatamento aquece fortemente a superfície,
+    como o satélite mostra, e a reanálise vê só uma fração do contraste entre lugares e
+    nada da mudança no tempo.
     """)
     return
 

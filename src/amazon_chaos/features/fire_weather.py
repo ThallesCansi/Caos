@@ -208,27 +208,39 @@ def cell_thirds(cells: pd.DataFrame, column: str = "perda_antecedente") -> pd.Se
 
 def contrast(events: pd.DataFrame, by: list[str] | None = None, column: str = "terco",
              first: str = "preservada", second: str = "perturbada", n: int = 999,
-             seed: int = 20261023) -> pd.DataFrame:
+             seed: int = 20261023, blocks: str | None = None) -> pd.DataFrame:
     """Diferença do percentil médio entre dois grupos de células, com IC 95% por anos.
 
-    Os mesmos anos sorteados valem para os dois grupos, que dividem as mesmas secas.
+    Os mesmos anos sorteados valem para os dois grupos, que dividem as mesmas secas. Com
+    `blocks` (coluna com o bloco espacial de cada evento), a reamostragem é cruzada: anos e
+    blocos sorteados de forma independente, e cada evento entra com o produto das vezes que
+    o seu ano e o seu bloco saíram (G5), porque os terços também se agrupam no espaço.
     """
     rng = np.random.default_rng(seed)
     groups = events.groupby(by) if by else [((), events)]
     rows = []
     for key, part in groups:
         years = np.unique(part.ano)
-        pick = rng.integers(0, len(years), size=(n, len(years)))
+        labels = np.unique(part[blocks]) if blocks else np.array(["todos"])
+        pick_y = np.stack([np.bincount(rng.integers(0, len(years), len(years)),
+                                       minlength=len(years)) for _ in range(n)])
+        pick_b = (np.stack([np.bincount(rng.integers(0, len(labels), len(labels)),
+                                        minlength=len(labels)) for _ in range(n)])
+                  if blocks else np.ones((n, 1)))
         for name in MEASURES:
             col = f"{name}_percentil"
             stats = {}
             for label in (first, second):
                 sub = part[part[column] == label]
-                per_year = sub.groupby("ano")[col].agg(["sum", "count"]).reindex(
-                    years, fill_value=0)
-                sums, counts = per_year["sum"].to_numpy(), per_year["count"].to_numpy()
-                stats[label] = (sums.sum() / counts.sum(),
-                                sums[pick].sum(axis=1) / counts[pick].sum(axis=1))
+                b = sub[blocks] if blocks else pd.Series("todos", index=sub.index)
+                table = sub.groupby([sub.ano, b])[col].agg(["sum", "count"])
+                sums = table["sum"].unstack(fill_value=0).reindex(
+                    index=years, columns=labels, fill_value=0).to_numpy()
+                counts = table["count"].unstack(fill_value=0).reindex(
+                    index=years, columns=labels, fill_value=0).to_numpy()
+                boot = (np.einsum("ry,yb,rb->r", pick_y, sums, pick_b)
+                        / np.einsum("ry,yb,rb->r", pick_y, counts, pick_b))
+                stats[label] = (sums.sum() / counts.sum(), boot)
             diff = stats[first][1] - stats[second][1]
             key = key if isinstance(key, tuple) else (key,)
             lo, hi = np.nanquantile(diff, [0.025, 0.975])

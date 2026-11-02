@@ -1,0 +1,17 @@
+Bacia,Variável,Termo,Coeficiente [IC 95%],p
+Xingu,LAI,persistência (V),+0.226 [+0.171; +0.281],0.0
+Xingu,LAI,resposta à chuva de 96 dias (H),+0.028 [+0.000; +0.055],0.049
+Xingu,LAI,resposta ao VPD (D),-0.049 [-0.069; -0.029],0.0
+Xingu,LAI,nível depois da queima,-0.173 [-0.234; -0.112],0.0
+Xingu,NDMI,persistência (V),+0.151 [+0.100; +0.202],0.0
+Xingu,NDMI,resposta à chuva de 96 dias (H),+0.026 [-0.005; +0.057],0.102
+Xingu,NDMI,resposta ao VPD (D),-0.047 [-0.075; -0.019],0.001
+Xingu,NDMI,nível depois da queima,-0.201 [-0.266; -0.137],0.0
+Tapajós,LAI,persistência (V),+0.141 [+0.113; +0.169],0.0
+Tapajós,LAI,resposta à chuva de 96 dias (H),+0.048 [+0.019; +0.077],0.001
+Tapajós,LAI,resposta ao VPD (D),-0.021 [-0.044; +0.003],0.083
+Tapajós,LAI,nível depois da queima,-0.192 [-0.235; -0.149],0.0
+Tapajós,NDMI,persistência (V),+0.127 [+0.070; +0.185],0.0
+Tapajós,NDMI,resposta à chuva de 96 dias (H),+0.052 [+0.025; +0.080],0.0
+Tapajós,NDMI,resposta ao VPD (D),-0.013 [-0.033; +0.006],0.177
+Tapajós,NDMI,nível depois da queima,-0.236 [-0.298; -0.173],0.0

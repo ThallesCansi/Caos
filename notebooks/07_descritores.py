@@ -34,6 +34,8 @@ with app.setup(hide_code=True):
              "asymmetry", "lyapunov"]
     FAMILY_PT = {"primary": "primária", "secondary": "secundária", "exploratory": "exploratória"}
     SPEC_FAMILY = {d: f for f, ds in SPEC["families"].items() for d in ds}
+    REALISTIC_NAMES = {"ar1_doy": "AR(1), memória sazonal", "ar1_trend": "AR(1) com tendência",
+                       "setar": "SETAR, dois regimes", "ar1_garch": "AR(1)-GARCH"}
 
 
 @app.function(hide_code=True)
@@ -860,9 +862,10 @@ def _():
         lote: o tamanho da associação do Xingu depende do atraso, o sinal não.
 
         Os padrões ordinais contam outra história. Com $L$ de 2 ou 4 dias, a fração de
-        células em que o VPD rejeita a hipótese linear cai de perto de 90% para entre 30% e
-        50%, e o mesmo acontece com a temperatura do Xingu; a do Tapajós, que já rejeitava
-        em só metade das células, quase não muda. A associação do VPD com a perda
+        células em que o VPD rejeita a hipótese linear cai de perto de 90% para entre 27% e
+        52%; na temperatura do Xingu, ela cai pouco com $L = 2$, para 67%, e só com $L = 4$
+        chega a 32%; a do Tapajós, que já rejeitava em só metade das células, quase não
+        muda. A associação do VPD com a perda
         antecedente no Xingu diminui e some em $L = 7$; no Tapajós, menor desde o início,
         ela mantém o sinal e cabe nos intervalos em toda a grade. A estrutura que os
         padrões ordinais detectam, e a sua diferença entre células, é uma propriedade da
@@ -961,30 +964,20 @@ def _():
 @app.function(hide_code=True)
 @mo.cache
 def realistic_table():
-    """Fração de células com p ≤ 0,05 ao lado do limite da nula realista mais permissiva."""
-    from amazon_chaos.nonlinear import estimators as E
+    """Fração de células contra a nula mais permissiva da mesma variável (D-029)."""
     from amazon_chaos.nonlinear import realistic as RL
-    from amazon_chaos.nonlinear import smap as SM
 
-    limit = RL.null_rates(SPEC).groupby("descriptor").ci_high.max()
-    alpha = SPEC["surrogates"]["alpha"] + R.TOLERANCE
-    rows = []
-    for slug in SLUGS:
-        cfg, t, _, _ = region_data(slug)
-        t = t[(t.kind == "teste") & (t.window == "2001_2024")]
-        frac = {(v, d): float((g.pvalue <= alpha).mean())
-                for (v, d), g in t.groupby(["variable", "descriptor"])}
-        sub = pd.read_parquet(E.output_dir(cfg, SPEC) / "subamostra.parquet")
-        frac |= {(v, d): float((g.pvalue <= alpha).mean())
-                 for (v, d), g in sub.groupby(["variable", "descriptor"])}
-        sm = SM.load(cfg, SPEC)
-        frac |= {(v, "smap"): float((g.pvalue <= alpha).mean())
-                 for v, g in sm[sm.horizon == 1].groupby("variable")}
-        for (var, desc), value in frac.items():
-            rows.append({"region": slug, "variable": var, "descriptor": desc,
-                         "cells": value, "limit": float(limit[desc]),
-                         "beyond": value > limit[desc]})
-    return pd.DataFrame(rows)
+    return RL.cell_comparison(SPEC, SLUGS)
+
+
+@app.function(hide_code=True)
+@mo.cache
+def realistic_cells_table():
+    """A mesma comparação com as nulas ajustadas célula a célula na subamostra (G2b)."""
+    from amazon_chaos.nonlinear import realistic as RL
+    from amazon_chaos.nonlinear import realistic_cells as RC
+
+    return RL.cell_comparison(SPEC, SLUGS, rates=RC.null_rates(SPEC))
 
 
 @app.function(hide_code=True)
@@ -1005,15 +998,29 @@ def _():
               "cao_de2": "Cao · D_E2*", "smap": "S-map (ganho, 1 dia)"}
     _order = ["pe_entropy", "pe_complexity", "prediction", "rqa_det", "rqa_lam", "d2",
               "asymmetry", "lyapunov", "wolf", "kantz", "cao_de2", "smap"]
+    _mark = {"acima": " ▲", "dentro": "", "indistinguível": " ≈"}
+    _c = realistic_cells_table()
     _rows = []
-    for _d in _order:
-        _g = _r[_r.descriptor == _d]
-        _row = {"Descritor": _names[_d], "Nula mais permissiva": f"{100 * _g.limit.iloc[0]:.1f}%".replace(".", ",")}
-        for _, _x in _g.iterrows():
-            _col = (f"{load_region(_x.region)['name'].replace('Bacia do Rio ', '')} · "
-                    f"{R.VARIABLES[_x.variable]}")
-            _row[_col] = f"{100 * _x.cells:.0f}%" + (" ▲" if _x.beyond else "")
-        _rows.append(_row)
+    for _v in R.VARIABLES:
+        for _d in _order:
+            _g = _r[(_r.descriptor == _d) & (_r.variable == _v)].set_index("region")
+            _gc = _c[(_c.descriptor == _d) & (_c.variable == _v)].set_index("region")
+            _row = {"Variável": R.VARIABLES[_v], "Descritor": _names[_d],
+                    "Nula mais permissiva": REALISTIC_NAMES[_g.null.iloc[0]],
+                    "Limite": f"{100 * _g.limit.iloc[0]:.1f}%".replace(".", ",")}
+            for _s in SLUGS:
+                _x = _g.loc[_s]
+                _flag = _mark[_x.leitura] or (" △" if _x.pontual else "")
+                _row[load_region(_s)["name"].replace("Bacia do Rio ", "")] = (
+                    f"{100 * _x.fraction:.0f}%{_flag} (n′ {_x.n_effective:.0f})")
+            if len(_gc):
+                _row["Limite por célula"] = f"{100 * _gc.limit.iloc[0]:.1f}%".replace(".", ",")
+                _row["Leitura por célula"] = " / ".join(
+                    (_mark[_gc.loc[_s].leitura]
+                     or (" △" if _gc.loc[_s].pontual else " ·")).strip() for _s in SLUGS)
+            else:
+                _row["Limite por célula"] = _row["Leitura por célula"] = "–"
+            _rows.append(_row)
     _sm = {s: smap_summary(s) for s in SLUGS}
     mo.vstack([
         mo.md(r"""
@@ -1022,49 +1029,89 @@ def _():
         O capítulo 5 mostrou que processos estocásticos sem caos, mas com a memória variando
         ao longo do ano ou com variância condicional, fazem vários descritores rejeitar a
         hipótese das substitutas (D-027). A comparação com os 5% esperados por acaso,
-        portanto, superestima o que as células mostram. A regra fixada antes do cálculo é
-        comparar a fração de células que rejeitam com o limite superior do intervalo de 95%
-        da nula mais permissiva para cada descritor: só acima dele a rejeição nas células se
-        distingue de um clima estocástico com essas propriedades. A Tabela 5 faz essa
-        comparação e acrescenta três estimadores calculados na subamostra de cerca de 60
-        células por bacia (marcados com asterisco) e o ganho do S-map em todas as células.
+        portanto, superestima o que as células mostram. A pergunta certa é se as células
+        rejeitam mais do que um clima estocástico com essas propriedades, ajustado à mesma
+        variável. A Tabela 5 faz essa comparação para cada variável, com a nula mais
+        permissiva entre as quatro, ajustada às séries das duas bacias (D-029), e acrescenta
+        três estimadores calculados na subamostra de cerca de 60 células por bacia
+        (marcados com asterisco) e o ganho do S-map em todas as células.
+
+        Há duas complicações na leitura. A primeira é que, quando a nula já rejeita em
+        quase todas as suas séries, as células não têm como rejeitar mais: acima de 95%,
+        a comparação não informa, e a tabela marca o descritor como indistinguível. A
+        segunda é que as células vizinhas se parecem, e a fração de células que rejeitam
+        não vale como centenas de observações independentes. O $n'$ ao lado de cada fração
+        é o número efetivo de observações, calculado a partir da semelhança entre células
+        no mapa do escore $z$; ele fica entre 3 e 25 na maior parte dos descritores. A
+        marca ▲ exige que a fração passe do limite mesmo com essa incerteza; a marca △
+        indica que ela passa do limite, mas sem essa folga.
         """),
         book.table(pd.DataFrame(_rows), "natureza_nulas_realistas",
-                   "Tabela 5. Comparativo (D-027). Fração das células com p ≤ 0,05 contra as "
-                   "substitutas em 2001–2024 e limite superior do IC 95% da taxa de rejeição na "
-                   "nula realista mais permissiva (capítulo 5). ▲: acima do limite. *: na "
-                   "subamostra de D-024. S-map: teste de Diebold–Mariano do ganho sobre a "
-                   "previsão linear, horizonte de 1 dia.", selection=None),
+                   "Tabela 5. Comparativo (D-027, emendado na D-029). Fração das células com "
+                   "p ≤ 0,05 contra as substitutas em 2001–2024, por variável, ao lado do "
+                   "limite superior do IC 95% da taxa de rejeição na nula realista mais "
+                   "permissiva ajustada à mesma variável (capítulo 5). n′: número efetivo de "
+                   "células independentes. ▲: acima do limite mesmo com o IC da fração; △: "
+                   "acima só pontualmente; ≈: a nula rejeita em mais de 95% e a comparação não "
+                   "informa. *: na subamostra de D-024. S-map: teste de Diebold–Mariano do "
+                   "ganho sobre a previsão linear, horizonte de 1 dia. Limite e leitura por "
+                   "célula: a mesma regra com as quatro nulas ajustadas a cada célula da "
+                   "subamostra (39 substitutas por série), Xingu / Tapajós; ·: dentro do "
+                   "limite; –: estimador sem nula por célula.", selection=None),
         mo.md(rf"""
-        A tabela separa os descritores em dois grupos. O determinismo e a laminaridade da
-        recorrência e os expoentes de Lyapunov rejeitam nas células tanto quanto nas nulas
-        realistas, ou só uma fração de ponto acima, como a laminaridade, o Kantz e o Wolf
-        do VPD: sozinhos, não dizem nada sobre caos nem sobre não linearidade, porque um
-        AR(1) com memória sazonal ou com variância condicional faz o mesmo. A dimensão de
-        correlação, a assimetria temporal e os padrões ordinais do VPD, ao contrário,
-        rejeitam em mais células do que qualquer nula, e no Xingu também os padrões
-        ordinais da temperatura, por pouco. Há uma ressalva para os padrões ordinais: a nula
-        de memória sazonal ajustada ao próprio VPD rejeita em 90% a 100% das suas séries, e o
-        limite da tabela vem da média das quatro bacias e variáveis.
+        A temperatura e o VPD contam histórias diferentes. Na temperatura, a assimetria
+        temporal e a dimensão de correlação rejeitam em todas as células, contra no máximo
+        47% e 64% das séries da nula mais permissiva, e a diferença resiste à incerteza da
+        fração nas duas bacias. Os padrões ordinais também passam do limite, com 74% das
+        células no Xingu e 52% no Tapajós contra cerca de 36% na nula de memória sazonal,
+        mas a rejeição se concentra em poucas regiões contínuas, que valem por três ou
+        quatro observações independentes, e a diferença não tem folga. No VPD, ao
+        contrário, quase nada se distingue: a nula de memória sazonal ajustada ao próprio
+        VPD já faz os padrões ordinais e a dimensão de correlação rejeitarem em 92% a 98%
+        das suas séries. O que parecia estrutura não linear no VPD é, em boa parte, a
+        memória que muda ao longo do ano, que é forte nessa variável porque a estação seca
+        a altera de um modo que a temperatura não sente.
+
+        As nulas da tabela foram ajustadas às séries da bacia como um todo, e cada célula
+        tem a sua própria memória e a sua própria sazonalidade. As duas últimas colunas
+        repetem a comparação com as quatro nulas ajustadas a cada uma das cerca de 60
+        células da subamostra, uma simulação por célula. A leitura principal resiste: a
+        assimetria e a dimensão de correlação da temperatura continuam acima com folga nas
+        duas bacias. O que muda está nas margens. A nula de memória sazonal ajustada a cada
+        célula faz os padrões ordinais da temperatura rejeitarem em quase metade das suas
+        séries, e o Tapajós, com 52% das células, deixa de passar do limite; no VPD, a nula
+        deixa de saturar, mas os padrões ordinais ficam dentro do limite e a dimensão de
+        correlação passa dele só pontualmente. O S-map da temperatura no Tapajós é o único
+        descritor que ganha folga. Essas simulações usaram 39 substitutas por série, contra
+        99 nas células, e um teste com menos substitutas rejeita um pouco menos; o limite
+        por célula, portanto, tende a ficar ligeiramente baixo, e as marcas de acima nessas
+        colunas devem ser lidas com essa ressalva.
+
+        Em nenhuma das duas o determinismo e a laminaridade da recorrência ou os expoentes
+        de Lyapunov se distinguem das nulas: um AR(1) com memória sazonal ou com variância
+        condicional faz o mesmo, e esses descritores, sozinhos, não dizem nada sobre caos
+        nem sobre não linearidade.
 
         O teste de Cao responde à pergunta que as substitutas não respondem. Nas células, o
         afastamento $D_{{E2}}$ tem mediana de cerca de 0,02, o mesmo das suas substitutas e das
         nulas estocásticas, contra 0,08 a 0,32 nos sistemas caóticos do portão; a dimensão
-        não satura antes de 8 ou 9. Ele rejeita em poucas células, no Tapajós ligeiramente
-        acima da nula mais permissiva, mas com a mesma ordem de grandeza das nulas. Os
-        valores futuros, portanto, quase não dependem do passado reconstruído além do que a
-        estrutura linear explica: é a assinatura de um processo estocástico. O S-map conta a
-        mesma história por outro caminho. A previsão local supera a linear em muitas
-        células, mais do que em qualquer nula, mas o ganho é minúsculo: {_sm['xingu']} no
+        não satura antes de 8 ou 9, e a fração de células que rejeitam fica dentro do
+        limite das nulas. Os valores futuros, portanto, quase não dependem do passado
+        reconstruído além do que a estrutura linear explica: é a assinatura de um processo
+        estocástico. O S-map conta a mesma história por outro caminho. Na temperatura, a
+        previsão local supera a linear em mais células do que na nula mais permissiva, mas
+        sem folga diante da semelhança entre vizinhas; no VPD, nem isso. Em todo caso, o ganho é minúsculo: {_sm['xingu']} no
         Xingu e {_sm['tapajos']} no Tapajós, contra 37% a 57% nos sistemas caóticos. Há não
         linearidade dependente do estado, mas fraca.
         """),
         mo.callout(mo.md(
-            "As nulas mais exigentes reforçam a leitura do capítulo, em vez de mudá-la: o "
-            "clima diário das bacias tem estrutura não linear, fraca e detectável em alguns "
-            "descritores, mas não a dependência determinística de um caos de baixa dimensão. "
-            "O determinismo da recorrência, que rejeita em todas as células, não serve de "
-            "evidência isolada de nada além do afastamento da hipótese linear estacionária."),
+            "As nulas mais exigentes mudam a leitura do capítulo em um ponto. O clima diário "
+            "das bacias é um processo estocástico com memória sazonal, sem a dependência "
+            "determinística de um caos de baixa dimensão. A temperatura guarda uma não "
+            "linearidade fraca que nenhuma nula realista reproduz, sobretudo na assimetria "
+            "e na dimensão de correlação; no VPD, a rejeição das substitutas vem em boa parte "
+            "da memória sazonal. Recorrências mais longas (DET e LAM) não servem de evidência "
+            "de nada além do afastamento da hipótese linear estacionária."),
             kind="warn"),
     ])
     return

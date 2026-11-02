@@ -51,6 +51,7 @@ def events(slug):
     cells = G.cell_table(cfg, SPEC)
     ev = ev.join(cells[["perda_antecedente", "elegivel"]], on="cell_id")
     ev = ev[ev.elegivel].copy()
+    ev["bloco"] = ev.cell_id.map(pd.Series(G.blocks(cells), index=cells.index))
     ev["estacao"] = np.where(ev.dia.dt.month.isin(DRY_SEASON), "seca", "chuvosa")
     # os cortes dos terços são feitos nas células, e cada evento herda o da sua célula
     ev["terco"] = ev.cell_id.map(F.cell_thirds(cells)).astype(
@@ -61,8 +62,12 @@ def events(slug):
 @app.function(hide_code=True)
 @mo.cache
 def contrasts():
-    return pd.concat([F.contrast(events(slug), ["estacao"]).assign(bacia=slug)
-                      for slug in SLUGS], ignore_index=True)
+    # IC por anos (D-025) e, como robustez, por anos × blocos de 1° (G5)
+    return pd.concat([F.contrast(events(slug), ["estacao"]).assign(bacia=slug).merge(
+        F.contrast(events(slug), ["estacao"], blocks="bloco")[
+            ["estacao", "medida", "ic_inf", "ic_sup", "exclui_zero"]],
+        on=["estacao", "medida"], suffixes=("", "_blocos")) for slug in SLUGS],
+        ignore_index=True)
 
 
 @app.function(hide_code=True)
@@ -240,7 +245,9 @@ def _():
         "Medida": _con.medida.map(LABELS), "Preservadas": _con.preservada.round(3),
         "Perturbadas": _con.perturbada.round(3),
         "Diferença [IC 95%]": [f"{d:+.3f} [{a:+.3f}; {b:+.3f}]" for d, a, b in zip(
-            _con.diferenca, _con.ic_inf, _con.ic_sup, strict=True)]})
+            _con.diferenca, _con.ic_inf, _con.ic_sup, strict=True)],
+        "IC anos × blocos": [f"[{a:+.3f}; {b:+.3f}]" for a, b in zip(
+            _con.ic_inf_blocos, _con.ic_sup_blocos, strict=True)]})
     mo.vstack([
         mo.md(r"""
         ## 🌡️ O tempo antes do fogo
@@ -292,12 +299,20 @@ def _():
         anterior no Xingu. Na estação chuvosa, as diferenças são menores, e só a dos dias
         secos seguidos exclui zero nas duas bacias: mesmo fora da época do fogo, ele começa
         nas preservadas depois de uma janela seca um pouco mais longa.
+
+        Os terços, porém, não se espalham ao acaso pelo mapa: as células perturbadas ficam
+        nas frentes de ocupação, e as preservadas, longe delas. Se uma região inteira tiver
+        tido um ano atípico, os eventos das suas células não são independentes. A última
+        coluna repete o intervalo sorteando, além dos anos, os blocos de 1° em que as
+        células estão. Os intervalos ficam um pouco mais largos, e na estação seca todos os
+        que excluíam zero continuam a excluir.
         """),
         book.table(_con, "contraste",
                    "Tabela 2. Diferença do percentil médio dos inícios de episódio de fogo "
                    "entre as células preservadas e as perturbadas (terços de perda "
                    "antecedente), por bacia, estação e medida, com IC 95% por bootstrap dos "
-                   "mesmos anos nos dois grupos.", selection=None),
+                   "mesmos anos nos dois grupos e, na última coluna, por bootstrap cruzado de "
+                   "anos e blocos espaciais de 1° (G5).", selection=None),
         mo.callout(mo.md(
             "Na estação seca, o fogo da paisagem convertida começa com o tempo de um dia "
             "qualquer, como se esperaria de queimas agendadas pelo uso da terra; o fogo das "

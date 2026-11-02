@@ -30,7 +30,12 @@ CONTENTS = [
     "data/external/ibge_estados_minima.json",
 ]
 PER_EXPERIMENT = ["summary_1990_2024.nc", "basin_grid.geojson", "era5_estatico.nc",
-                  "perturbacao", "descritores", "substitutas_bacia"]
+                  "perturbacao", "descritores", "substitutas_bacia",
+                  # caderno 12 (D-031): resultados das etapas 1 a 3, sem as séries por ponto
+                  "vegetacao/8cbbd4c044/resultados.parquet",
+                  *(f"vegetacao/fogo_subamostra/{f}" for f in
+                    ("delta.parquet", "resposta.parquet", "episodios.parquet",
+                     "fogo_execucao.json"))]
 EXPERIMENTS = ["xingu-era5-1990-2024", "tapajos-bacia-era5-1990-2024"]
 
 
@@ -67,6 +72,7 @@ def build(root: Path | None = None, out: Path | None = None) -> Path:
     paths = [root / p for p in CONTENTS]
     paths += [root / "data/processed" / e / f for e in EXPERIMENTS for f in PER_EXPERIMENT]
     gate = sorted((root / "data/processed/gate").glob("[0-9a-f]*/descritores.csv"))
+    gate += sorted((root / "data/processed/gate").glob("vegetacao_*/descritores.csv"))
     paths += [g.parent for g in gate]
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path in paths:

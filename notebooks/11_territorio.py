@@ -152,8 +152,10 @@ def _():
         Os limites são visíveis a olho nu. Dentro das Terras Indígenas e das Unidades de
         Conservação, a perda de floresta de 2000 a 2024 é praticamente nula, e a densidade de
         focos de fogo é de 30 a 55 vezes menor que fora no Xingu e cerca de 6 vezes menor no
-        Tapajós. A superfície, na estação seca, fica de 3 a 4,4 °C mais fresca. A máxima do ar no ERA5, por outro lado, é a mesma nas
-        quatro classes, cerca de 33 °C: o modelo não vê o território. A Tabela 1 tem uma
+        Tapajós. A superfície, na estação seca, fica de 3 a 4,4 °C mais fresca. A máxima do ar no ERA5, por outro
+        lado, é a mesma nas quatro classes, cerca de 33 °C: o ar do modelo não vê o
+        território, e a sua superfície, como mostrou o capítulo 8, vê só uma fração do
+        contraste. A Tabela 1 tem uma
         exceção que vale notar. No Tapajós, as Terras Indígenas têm uma perda antecedente
         mediana de 10%, que não é desmatamento: são as terras do sul da bacia, como as dos
         povos Paresí, Nambikwara e Bakairí, onde boa parte da vegetação original é Cerrado.
@@ -298,7 +300,7 @@ def _():
     demarcação, por políticas de criação de áreas protegidas e pela pressão da agropecuária
     e das estradas, e é nela que a interpretação socioespacial deste trabalho encontra os
     números. Dois cuidados acompanham essa leitura: a reanálise usada como instrumento
-    principal não enxerga nada disso, e as diferenças aqui descritas são associações num
+    principal enxerga muito pouco disso, e as diferenças aqui descritas são associações num
     território em que a proteção e a geografia andam juntas.
     """)
     return

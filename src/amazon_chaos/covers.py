@@ -47,6 +47,9 @@ COVERS = {
     "11_territorio": ("O território",
                       "Terras Indígenas e Unidades de Conservação diante do clima e do fogo",
                       "11_territorio/mapas.png", 0.3),
+    "12_floresta_atmosfera": ("A floresta como sistema dinâmico",
+                              "A vegetação sozinha, com a atmosfera e depois do fogo",
+                              "12_floresta_atmosfera/delta.png", 0.25),
 }
 
 

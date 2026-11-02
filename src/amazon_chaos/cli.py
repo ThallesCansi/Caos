@@ -2,13 +2,17 @@
 
     amazon-chaos region list | prepare <região>
     amazon-chaos era5 plan | download | edh | process | static | summarize <região> ...
-    amazon-chaos era5 passage | overpass <região>
+    amazon-chaos era5 passage | overpass | seasonality <região>
     amazon-chaos disturbance fetch | build <região>
     amazon-chaos descriptors run | basin | precip | sensitivity <região>
     amazon-chaos descriptors delays | extremes | estimators | smap | multivariate | dither <região>
+    amazon-chaos descriptors checks | multivariate-ft | rain-split <região>
     amazon-chaos modis fetch | build <região>
     amazon-chaos chirps fetch | build <região>
-    amazon-chaos gate run | realistic [--quick]
+    amazon-chaos vegetation fetch <região> --part vegetacao | fogo
+    amazon-chaos vegetation build | dynamics | episodes | fetch-points | fire <região>
+    amazon-chaos vegetation gate
+    amazon-chaos gate run | realistic [--quick] | cells <região>
     amazon-chaos manifest <pasta>
     amazon-chaos notify "mensagem"
 
@@ -37,6 +41,8 @@ descriptors_app = typer.Typer(no_args_is_help=True,
                               help="Descritores pré-registrados por célula, com substitutas")
 modis_app = typer.Typer(no_args_is_help=True, help="MODIS LST pelo AppEEARS (checagem D-011)")
 chirps_app = typer.Typer(no_args_is_help=True, help="Chuva diária CHIRPS v3 sat (D-021)")
+vegetation_app = typer.Typer(no_args_is_help=True,
+                             help="LAI, NDMI e área queimada do MODIS pelo AppEEARS (D-031)")
 gate_app = typer.Typer(no_args_is_help=True, help="Gate F4: descritores em controles sintéticos")
 app.add_typer(era5_app, name="era5")
 app.add_typer(disturbance_app, name="disturbance")
@@ -44,6 +50,7 @@ app.add_typer(descriptors_app, name="descriptors")
 app.add_typer(modis_app, name="modis")
 app.add_typer(chirps_app, name="chirps")
 app.add_typer(gate_app, name="gate")
+app.add_typer(vegetation_app, name="vegetation")
 
 Region = Annotated[str, typer.Argument(help="slug em configs/regions/ (ex.: xingu)")]
 Start = Annotated[str, typer.Argument(help="primeiro dia, AAAA-MM-DD")]
@@ -227,6 +234,25 @@ def era5_overpass(region: Region) -> None:
     typer.echo(f"{table.era5_skt_1030_seca.notna().sum()} células → {target}")
 
 
+@era5_app.command("seasonality")
+def era5_seasonality(region: Region) -> None:
+    """Memória e variância sazonais de t2m e VPD por célula (G2a)."""
+    from amazon_chaos.features import seasonality
+    from amazon_chaos.features.disturbance import out_dir
+    from amazon_chaos.provenance import sha256_file
+
+    cfg = load_region(region)
+    table = seasonality.cell_seasonality(cfg)
+    target = out_dir(cfg) / "sazonalidade.parquet"
+    table.to_parquet(target)
+    target.with_suffix(".json").write_text(json.dumps({
+        "rules": {"normal": list(seasonality.NORMAL), "variables": seasonality.VARIABLES,
+                  "phi_half_window": 15},
+        "output_sha256": sha256_file(target),
+    }, indent=2), encoding="utf-8")
+    typer.echo(f"{len(table)} células → {target}")
+
+
 @era5_app.command("summarize")
 def era5_summarize(region: Region, first: int = 1990, last: int = 2024) -> None:
     """Resumo regional (série ponderada, mensais e extremos por célula) lido pelos cadernos."""
@@ -379,6 +405,52 @@ def descriptors_multivariate(
                    report=reporter(notify)))
 
 
+@descriptors_app.command("checks")
+def descriptors_checks(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Kantz nos quatro raios e diagnósticos do Wolf, na bacia e na subamostra (G5)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.estimator_checks import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                   report=reporter(notify)))
+
+
+@descriptors_app.command("multivariate-ft")
+def descriptors_multivariate_ft(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """T + q contra a FT multivariada na subamostra, com o diagnóstico cruzado (G5)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.multivariate import run_subsample_ft
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run_subsample_ft(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                                report=reporter(notify)))
+
+
+@descriptors_app.command("rain-split")
+def descriptors_rain_split(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = False,
+) -> None:
+    """Chuva: ocorrência separada da intensidade (G6)."""
+    from amazon_chaos.nonlinear.precip_split import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    typer.echo(run(load_region(region), load_spec(), workers=workers,
+                   report=reporter(notify)))
+
+
 @descriptors_app.command("dither")
 def descriptors_dither(
     region: Region,
@@ -462,6 +534,159 @@ def modis_build(region: Region) -> None:
     typer.echo(f"{len(clim)} células · {clim.lst_dia_c.notna().sum()} com LST")
 
 
+# ── vegetação e fogo (D-031) ─────────────────────────────────────────────────
+
+
+@vegetation_app.command("fetch")
+def vegetation_fetch(
+    region: Region,
+    part: Annotated[str, typer.Option(help="vegetacao (subamostra), fogo ou cobertura (bacia)")],
+    wait: Annotated[bool, typer.Option(help="esperar o AppEEARS e baixar")] = True,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Envia o pedido ao AppEEARS (ou retoma), espera o processamento e baixa os arquivos."""
+    from amazon_chaos.features import vegetation as V
+    from amazon_chaos.io import appeears
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    if part not in ("vegetacao", "fogo", "cobertura"):
+        raise typer.BadParameter("use vegetacao, fogo ou cobertura")
+    cfg, report = load_region(region), reporter(notify)
+    jobs = ({f"vegetacao/{k}": lambda k=k: V.vegetation_payload(cfg, load_spec(), k)
+             for k in V.VEGETATION_PARTS} if part == "vegetacao"
+            else {"fogo": lambda: V.fire_payload(cfg)} if part == "fogo"
+            else {"cobertura": lambda: V.cover_payload(cfg)})
+    token = appeears.login()
+    tasks = {}
+    for folder, payload in jobs.items():
+        tasks[folder] = appeears.submit(cfg, token, payload(), folder=folder)
+        report(f"🛰️ {folder} · {cfg['name']}: pedido {tasks[folder][:8]} no AppEEARS")
+    if not wait:
+        return
+    for folder, task in tasks.items():
+        appeears.wait(task, appeears.login(), report=report)
+        files = appeears.download(cfg, task, appeears.login(), report=typer.echo,
+                                  folder=folder)
+        report(f"✅ {folder} · {cfg['name']}: {len(files)} arquivos baixados")
+
+
+@vegetation_app.command("build")
+def vegetation_build(
+    region: Region,
+    mask: Annotated[str, typer.Option(help="mapbiomas (D-031) ou mcd12q1 (reserva)")] = "mapbiomas",
+) -> None:
+    """LAI e NDMI por célula da subamostra e composição (D-031)."""
+    from amazon_chaos.features.vegetation import cell_series
+    from amazon_chaos.nonlinear.suite import load_spec
+    from amazon_chaos.nonlinear.vegetation_dynamics import series_path
+    from amazon_chaos.provenance import sha256_file
+
+    cfg = load_region(region)
+    table = cell_series(cfg, load_spec(), mask_source=mask)
+    target = series_path(cfg)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    table.to_parquet(target)
+    target.with_suffix(".json").write_text(json.dumps({
+        "mask": mask, "rows": len(table), "output_sha256": sha256_file(target)}, indent=2))
+    typer.echo(f"{table.cell_id.nunique()} células → {target}")
+
+
+@vegetation_app.command("dynamics")
+def vegetation_dynamics(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Etapas 1 e 2 da D-031 na subamostra: vegetação isolada e com a atmosfera."""
+    from amazon_chaos.nonlinear.vegetation_dynamics import run
+    from amazon_chaos.nonlinear.vegetation_gate import load_vegetation_spec
+
+    typer.echo(run(load_region(region), load_vegetation_spec(), workers=workers,
+                   report=reporter(notify)))
+
+
+@vegetation_app.command("episodes")
+def vegetation_episodes(
+    region: Region,
+    submit: Annotated[bool, typer.Option(help="enviar o pedido de pontos ao AppEEARS")] = True,
+    local: Annotated[bool, typer.Option(
+        help="só nas células da subamostra, com os pontos tirados dos cubos de área")] = False,
+) -> None:
+    """Episódios de fogo em floresta e candidatos a controle; pedido de pontos (D-031)."""
+    import pandas as pd
+
+    from amazon_chaos.features import fire_episodes as F
+    from amazon_chaos.io import appeears
+    from amazon_chaos.nonlinear import fire_response as R
+    from amazon_chaos.nonlinear.vegetation_dynamics import series_path
+
+    cfg = load_region(region)
+    only = pd.read_parquet(series_path(cfg)).cell_id.unique() if local else None
+    rules = F.LOCAL_RULES if local else F.RULES
+    chosen, pool = F.episodes(cfg, rules, only=only)
+    folder = R.folder(cfg, local)
+    folder.mkdir(parents=True, exist_ok=True)
+    chosen.to_parquet(folder / "episodios.parquet")
+    pool.to_parquet(folder / "candidatos.parquet")
+    (folder / "episodios.json").write_text(json.dumps(
+        {"rules": rules, **chosen.attrs["resumo"], "sorteados": len(chosen),
+         "candidatos": len(pool)}, indent=2, ensure_ascii=False))
+    typer.echo(f"{len(chosen)} episódios, {len(pool)} candidatos · {chosen.attrs['resumo']}")
+    if local:
+        F.cube_series(cfg, R.points(chosen, pool)).to_parquet(folder / "pontos.parquet")
+        typer.echo(f"pontos tirados dos cubos: {folder / 'pontos.parquet'}")
+    elif submit:
+        token = appeears.login()
+        for key, payload in F.point_payloads(cfg, chosen, pool).items():
+            task = appeears.submit(cfg, token, payload, folder=f"fogo_pontos/{key}")
+            typer.echo(f"pedido de pontos {key}: {task[:8]} no AppEEARS")
+
+
+@vegetation_app.command("fetch-points")
+def vegetation_fetch_points(
+    region: Region,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Espera e baixa o pedido de pontos dos episódios de fogo (D-031, etapa 3)."""
+    import json as _json
+
+    from amazon_chaos.io import appeears
+
+    cfg, report = load_region(region), reporter(notify)
+    records = sorted(appeears.task_dir(cfg, "fogo_pontos").glob("*/tarefa.json"))
+    files = []
+    for record in records:
+        task = _json.loads(record.read_text())["task_id"]
+        appeears.wait(task, appeears.login(), report=report)
+        files += appeears.download(cfg, task, appeears.login(), report=typer.echo,
+                                   folder=f"fogo_pontos/{record.parent.name}")
+    report(f"✅ pontos do fogo · {cfg['name']}: {len(records)} pedidos, {len(files)} arquivos")
+
+
+@vegetation_app.command("fire")
+def vegetation_fire(
+    region: Region,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+    local: Annotated[bool, typer.Option(
+        help="a variante da subamostra (episodes --local)")] = False,
+) -> None:
+    """Alteração, recuperação e resposta ao clima depois do fogo (D-031, etapa 3)."""
+    from amazon_chaos.nonlinear.fire_response import run
+
+    typer.echo(run(load_region(region), report=reporter(notify), local=local))
+
+
+@vegetation_app.command("gate")
+def vegetation_gate(
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Portão das séries de 8 dias: controles com ~1.100 pontos (D-031, etapa 1)."""
+    from amazon_chaos.nonlinear.vegetation_gate import load_vegetation_spec, run
+
+    typer.echo(run(load_vegetation_spec(), workers=workers, report=reporter(notify)))
+
+
 # ── CHIRPS ──────────────────────────────────────────────────────────────────
 
 
@@ -528,6 +753,22 @@ def gate_realistic(
 
     out = run(load_spec(), workers=workers, report=reporter(notify), quick=quick)
     typer.echo(out)
+
+
+@gate_app.command("cells")
+def gate_cells(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Nulas realistas ajustadas em cada célula da subamostra, GARCH por MV (G2b)."""
+    from amazon_chaos import gradient as G
+    from amazon_chaos.nonlinear.realistic_cells import run
+    from amazon_chaos.nonlinear.suite import load_spec
+
+    cfg, spec = load_region(region), load_spec()
+    typer.echo(run(cfg, spec, G.cell_table(cfg, spec), workers=workers,
+                   report=reporter(notify)))
 
 
 # ── utilidades ──────────────────────────────────────────────────────────────

@@ -389,8 +389,9 @@ def _(null_method, null_region, null_variable):
         valor original está muito longe das substitutas: o determinismo e a laminaridade da
         recorrência ficam a cerca de 10 desvios-padrão acima, a assimetria temporal a quase
         10 abaixo e a dimensão de correlação a 5 abaixo. São rejeições inequívocas, de séries
-        mais organizadas e mais assimétricas do que qualquer processo linear com o mesmo
-        espectro e a mesma distribuição. No segundo grupo, a entropia de permutação e a
+        com recorrências mais longas e mais assimétricas do que qualquer processo linear com
+        o mesmo espectro e a mesma distribuição, embora o capítulo 5 mostre que recorrências
+        mais longas também aparecem em processos estocásticos com memória sazonal. No segundo grupo, a entropia de permutação e a
         complexidade estatística, o valor original fica na borda da nuvem, com $|z|$ perto de
         2: há estrutura nos padrões de ordem, mas pouca.
 
@@ -627,7 +628,7 @@ def _():
         três que separa caos de processos estocásticos no portão, fica entre 0,02 e 0,05.
         Na temperatura, ele não se distingue das substitutas; no VPD, fica um pouco acima
         delas nas duas bacias, e no Tapajós acima também de quase todas as séries das nulas
-        estocásticas. Mesmo assim, é de quatro a dez vezes menor que nos sistemas caóticos
+        estocásticas. Mesmo assim, é de cerca de 2 a 19 vezes menor que nos sistemas caóticos
         do portão (0,08 a 0,32), e a dimensão só satura em 8 ou 9: os valores futuros
         dependem pouco do passado reconstruído, com um traço de dependência a mais no VPD.
 
@@ -664,6 +665,85 @@ def _():
         do Tapajós. Há, portanto, um pouco de estrutura conjunta não linear na previsão da
         umidade, mais clara no Xingu, mas de novo com ganhos pequenos: a mediana nas células
         é de 0,6% do erro no Xingu e de 1,2% no Tapajós.
+
+        A revisão de 30/10 levantou uma dúvida sobre essa nula: a versão IAAFT, ao ajustar
+        a distribuição de cada variável, poderia enfraquecer a correlação entre elas e
+        fazer o ganho conjunto parecer maior do que é. Medimos isso diretamente em cinco
+        substitutas por célula. O espectro de cada variável fica a menos de 0,1% do
+        original, e a correlação cruzada das substitutas, nos atrasos de até 30 dias, é em
+        média 0,999 da correlação dos dados; a IAAFT, portanto, não enfraquece a dependência entre temperatura e
+        umidade nessas séries. Repetimos também a subamostra contra 39 substitutas FT, que
+        preservam o espectro cruzado por construção. As frações de células que rejeitam
+        mudam pouco: na umidade, 72% no Xingu e 57% no Tapajós, contra 73% e 50% com a
+        IAAFT; na temperatura, 23% e 32%, contra 13% e 23%, todas abaixo do nível depois da
+        correção. Com 39 substitutas o menor p possível é 0,025, e a correção de
+        Benjamini–Hochberg fica numa fronteira: com a FT ela mantém 65% das células do
+        Xingu e 52% das do Tapajós na umidade, e com a IAAFT 57% e nenhuma. A leitura não
+        muda com a nula: há uma estrutura conjunta não linear pequena na umidade, e quase
+        nenhuma na temperatura.
+        """),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+@mo.cache
+def kantz_radii():
+    """Kantz nos quatro raios, nas bacias e na subamostra, e cobertura do Wolf (G5, D-030)."""
+    from amazon_chaos.nonlinear import estimator_checks as EC
+
+    rows = []
+    for slug in SLUGS:
+        out = EC.output_dir(load_region(slug), SPEC)
+        basin = pd.read_parquet(out / "bacia.parquet")
+        sub = pd.read_parquet(out / "subamostra.parquet")
+        for (var, name), g in sub.groupby(["variable", "descriptor"]):
+            b = basin[(basin.variable == var) & (basin.descriptor == name)].iloc[0]
+            rows.append({"bacia": slug, "variavel": var, "raio": name, "z_bacia": b.z,
+                         "p_bacia": b.pvalue, "rejeitam": (g.pvalue <= 0.05 + R.TOLERANCE).mean(),
+                         "wolf_passos": b.wolf_passos})
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _k = kantz_radii()
+    _order = {f"kantz_{q}": i for i, q in enumerate(("1", "2", "5", "10"))}
+    _k = _k.sort_values(["bacia", "variavel", "raio"], key=lambda c: c.map(_order)
+                        if c.name == "raio" else c)
+    _tab = pd.DataFrame({
+        "Bacia": _k.bacia.map(lambda s: load_region(s)["name"].replace("Bacia do Rio ", "")),
+        "Variável": _k.variavel.map(R.VARIABLES),
+        "Raio (quantil das distâncias)": _k.raio.str.replace("kantz_", "") + "%",
+        "z na bacia": _k.z_bacia.round(1), "p na bacia": _k.p_bacia.round(3),
+        "Células que rejeitam": [f"{100 * v:.0f}%" for v in _k.rejeitam]})
+    mo.vstack([
+        mo.md(r"""
+        ## 🔧 Uma auditoria dos estimadores (comparativo)
+
+        Um estimador de Lyapunov depende de escolhas que o resultado não mostra. No de
+        Kantz, a principal é o raio da vizinhança: pares de pontos mais próximos que ele são
+        acompanhados no tempo, e a inclinação da divergência média dá o expoente. A Tabela 3
+        usou o raio de 2% das distâncias; a Tabela 5 repete o cálculo com 1%, 5% e 10%,
+        nas séries das bacias e nas células da subamostra, com as mesmas substitutas (D-030).
+        """),
+        book.table(_tab, "kantz_raios",
+                   "Tabela 5. Comparativo (D-030). Lyapunov de Kantz com o raio da vizinhança "
+                   "nos quantis de 1%, 2%, 5% e 10% das distâncias entre pares: z e p contra "
+                   "199 substitutas IAAFT na série média da bacia, e fração das células da "
+                   "subamostra com p ≤ 0,05 contra 39 substitutas.", selection=None),
+        mo.md(r"""
+        O resultado depende do raio. Com raios pequenos, o expoente dos dados fica acima do
+        das substitutas em quase todas as células na temperatura e em cerca de dois terços
+        no VPD; com 10%, a diferença diminui e, no VPD do Tapajós, desaparece. Raios
+        pequenos olham para a escala em que o ruído domina, e é justamente nela que um
+        processo estocástico com variância condicional também diverge mais depressa que as
+        suas substitutas (capítulo 5). O Kantz, portanto, não traz evidência de divergência
+        determinística. O Wolf tem um problema de outra ordem: os diagnósticos mostraram
+        que a implementação encerra a trajetória quando o vizinho chega ao fim da série, e
+        na bacia do Xingu o expoente usa só cerca de 60% dos passos na temperatura e 20% no
+        VPD. Ele fica registrado como limitação e não deve ser lido como estimativa do
+        expoente.
         """),
     ])
     return
@@ -678,12 +758,14 @@ def _():
     gaussiano, nem com um processo assim visto através de uma transformação fixa dos
     valores. Essa conclusão não depende da tendência de aquecimento, que retiramos sem
     mudar o resultado, nem da forma da distribuição, que a IAAFT preserva. A estrutura que
-    sobra é de um tipo específico: recorrências mais organizadas, padrões de ordem menos
+    sobra é de um tipo específico: recorrências mais longas, padrões de ordem menos
     uniformes, quedas mais bruscas que subidas e períodos agitados que se agrupam. Ela não
     inclui o que distinguiria um caos de baixa dimensão: o expoente de Lyapunov não se
     separa das substitutas, e a previsão não linear fica pior, e não melhor, do que nas
     séries lineares equivalentes. Os estimadores acrescentados depois, sobretudo o teste de
-    Cao, e a análise conjunta de temperatura e umidade apontam na mesma direção.
+    Cao, e a análise conjunta de temperatura e umidade apontam na mesma direção. E uma
+    parte dessa estrutura, sobretudo no VPD, não exige não linearidade nenhuma: um processo
+    linear cuja memória muda ao longo do ano já a reproduz, como mostram os capítulos 5 e 7.
 
     O quadro mais coerente com esses resultados é o de um processo não linear e
     estocástico, em que o ruído não é um acessório que esconde uma dinâmica simples, mas

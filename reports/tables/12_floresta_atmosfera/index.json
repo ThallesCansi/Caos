@@ -1,0 +1,56 @@
+[
+  {
+    "name": "ccm",
+    "region": null,
+    "caption": "Tabela 3. Mapeamento cruzado convergente (CCM) entre a anomalia da vegetação e a atmosfera, nos dois sentidos: fração das células em que a habilidade ρ supera a de 99 substitutas sazonais (α = 0,05), ρ mediano e ρ mediano das substitutas. O sentido atmosfera→vegetação é estimado pelo espaço de fases da vegetação.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/ccm.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/ccm.tex",
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "janelas",
+    "region": null,
+    "caption": "Tabela 5. Δ médio do LAI e do NDMI por janela depois da queima e fração das composições da janela em que o IC 95% exclui zero.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/janelas.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/janelas.tex",
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "painel",
+    "region": null,
+    "caption": "Tabela 6. Mudança, depois da queima e nos pixels queimados em relação aos controles, do nível, da persistência e da resposta da anomalia da vegetação à chuva acumulada (96 dias, CHIRPS) e ao VPD (ERA5), no painel com efeitos fixos de pixel e erros agrupados por célula do ERA5 (k de −46 a 138, sem a composição da queima).",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/painel.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/painel.tex",
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "perda",
+    "region": null,
+    "caption": "Tabela 4. Correlação de postos parcial entre a perda antecedente de floresta (até 2000) e as medidas da vegetação por célula (etapas 1 e 2), controlando latitude, fração de água e altitude, com IC 95% por bootstrap de blocos de 1°.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/perda.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/perda.tex",
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "portao",
+    "region": null,
+    "caption": "Tabela 1. Portão dos descritores nas séries de 8 dias (1.104 pontos, 20% de ruído de observação, 20 repetições): fração de rejeição das substitutas IAAFT nos controles caóticos (poder) e nos aleatórios (tamanho). Família primária: os descritores que entram na leitura, fixados no pré-registro das séries de vegetação.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/portao.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/portao.tex",
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "rejeicao",
+    "region": null,
+    "caption": "Tabela 2. Fração das células em que cada descritor primário rejeita as 99 substitutas IAAFT (α = 0,05, no sentido pré-registrado): LAI nas células com até 20% de lacunas e NDMI em todas as analisadas. Células: Xingu, LAI 43 e NDMI 29; Tapajós, LAI 59 e NDMI 39.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/rejeicao.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/rejeicao.tex",
+    "commit": "180e485+modificado"
+  }
+]

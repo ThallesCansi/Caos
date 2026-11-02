@@ -8,7 +8,20 @@ A pergunta se desdobra em três: que tipo de dinâmica o clima diário local tem
 
 Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Período: 2001–2024, com o arquivo 1990–2000 para sensibilidade. Método: reconstrução do espaço de fases, Lyapunov, RQA, D2, entropia de permutação e sinais precoces, sempre contra controles sintéticos e séries substitutas. Os detalhes estão em [docs/metodologia.md](docs/metodologia.md).
 
-O pré-registro (D-010), o gate congelado `1c2fb37657` e o lote `81333bb007` são o resultado principal. As extensões da revisão crítica de 29/10/2026 (D-027: grade de atrasos, mínima e máxima, temperatura + umidade, Wolf e Kantz, temperatura de pele do ERA5, gate com nulas realistas, S-map, Cao e dither da chuva) são comparativos, apresentados ao lado do resultado principal nos capítulos em que cabem, sem substituí-lo.
+O pré-registro (D-010), o gate congelado `1c2fb37657` e o lote `81333bb007` são o resultado principal. As extensões da revisão crítica de 29/10/2026 (D-027: grade de atrasos, mínima e máxima, temperatura + umidade, Wolf e Kantz, temperatura de pele do ERA5, gate com nulas realistas, S-map, Cao e dither da chuva) são comparativos, apresentados ao lado do resultado principal nos capítulos em que cabem, sem substituí-lo. A reanálise de 30/10/2026 corrigiu a leitura das nulas realistas, que passa a ser por variável (D-029), e acrescentou a sazonalidade como explicação alternativa, blocos espaciais maiores, nulas ajustadas nas células, a auditoria dos comparativos e a separação entre ocorrência e intensidade da chuva (D-030).
+
+A metodologia de 31/10/2026 (D-031) acrescenta a floresta como variável dinâmica: a vegetação do MODIS (LAI e NDMI, composições de 8 dias) sozinha, junto com a atmosfera e depois do fogo, com o seu próprio portão e pré-registro (`configs/analysis/vegetation.yaml`).
+
+### O que os resultados dizem
+
+Em quatro níveis, como no resumo do caderno `00_inicio` (Tabela 1, "o que resiste a quê"):
+
+1. **Validade dos métodos.** Os descritores reconhecem caos em sistemas conhecidos, mas DET, LAM e Lyapunov também rejeitam a hipótese linear em processos estocásticos com memória sazonal ou variância condicional; só o teste de Cao separa caos de ruído (cadernos 05 e 07).
+2. **Estrutura.** O clima diário das bacias é um processo estocástico com memória sazonal e não linearidade fraca, sem caos de baixa dimensão. A temperatura guarda uma não linearidade que nenhuma nula realista reproduz (assimetria e D2); no VPD, a rejeição vem em boa parte da memória sazonal (cadernos 06 e 07).
+3. **Paisagem.** Entre células, a perda antecedente se associa a recorrências mais curtas (DET) na temperatura e a padrões ordinais do VPD mais próximos do aleatório. A evidência confirmatória mais firme é a do DET da temperatura; a associação ordinal é em boa parte geografia da sazonalidade. Ao longo do tempo, nada (caderno 08).
+4. **Detectabilidade.** O MODIS vê a superfície de 6 a 7 °C mais quente nas células convertidas; o ar do ERA5 não vê, e a sua superfície vê só uma fração do contraste entre lugares e nada da mudança no tempo. A chuva do CHIRPS mostra intensidades organizadas de outro modo nas células convertidas (cadernos 08 e 09).
+
+E na própria floresta (caderno 12): a vegetação do MODIS em 8 dias não tem estrutura não linear nem se deixa prever pela atmosfera; o fogo derruba o LAI e o NDMI, deixa um déficit que reaparece em cada estação seca por pelo menos 3 anos e torna a floresta queimada mais sensível à chuva e ao VPD.
 
 ## Cadernos (Marimo)
 
@@ -21,13 +34,14 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `02_regioes` | as bacias, a grade ERA5 e as células da comparação | pronto |
 | `03_clima` | o clima de 1990–2024 e a anomalia padronizada | pronto |
 | `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes, MODIS | pronto |
-| `05_validacao_metodos` | o portão: descritores em controles sintéticos | pronto |
-| `06_surrogates` | substitutas FT/IAAFT nas séries das bacias (D-016) | pronto |
-| `07_descritores` | descritores por célula, robustez, EWS e a grade de atrasos (D-024, D-027) | pronto |
-| `08_gradiente` | perturbação × dinâmica, multiplicidade, inferência espacial e placebo, robustez e checagem MODIS, com a temperatura de pele do ERA5 no horário do satélite (D-014, D-015, D-018, D-022, D-027, D-028) | pronto |
-| `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação (D-021, D-023) | pronto |
-| `10_fogo` | o tempo antes do início dos episódios de fogo, com o contraste direto entre paisagens (pergunta secundária, D-025) | pronto |
+| `05_validacao_metodos` | o portão: descritores em controles sintéticos, e o portão mais exigente com nulas realistas, Wolf, Kantz, Cao e S-map (D-027) | pronto |
+| `06_surrogates` | substitutas FT/IAAFT nas séries das bacias, Wolf, Kantz e Cao, e temperatura + umidade contra substitutas multivariadas (D-016, D-027, D-030) | pronto |
+| `07_descritores` | descritores por célula, robustez, EWS, a grade de atrasos e a natureza diante das nulas realistas, por variável (D-024, D-027, D-029) | pronto |
+| `08_gradiente` | perturbação × dinâmica, multiplicidade, inferência espacial (blocos de 1° a 2,5°, n efetivo) e placebo, robustez, checagem MODIS com a temperatura de pele do ERA5 no horário do satélite, comparativos e a sazonalidade como explicação alternativa (D-014, D-015, D-018, D-022, D-027, D-028, D-030) | pronto |
+| `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação, o dither das substitutas e a ocorrência × intensidade (D-021, D-023, D-027, D-030) | pronto |
+| `10_fogo` | o tempo antes do início dos episódios de fogo, com o contraste direto entre paisagens e bootstrap de anos × blocos (pergunta secundária, D-025, D-030) | pronto |
 | `11_territorio` | Terras Indígenas e Unidades de Conservação diante do clima e do fogo (D-026) | pronto |
+| `12_floresta_atmosfera` | a vegetação do MODIS (LAI e NDMI, 8 dias) como sistema dinâmico: portão de 8 dias, descritores, previsão e CCM com a atmosfera, associação com a perda e a floresta depois do fogo (D-031) | pronto |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 

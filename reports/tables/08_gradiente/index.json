@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/comparativos.csv",
     "tex": "reports/tables/08_gradiente/comparativos.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "exposicoes",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/exposicoes.csv",
     "tex": "reports/tables/08_gradiente/exposicoes.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "longitudinal",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/longitudinal.csv",
     "tex": "reports/tables/08_gradiente/longitudinal.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "modelos",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/modelos.csv",
     "tex": "reports/tables/08_gradiente/modelos.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "modis",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/modis.csv",
     "tex": "reports/tables/08_gradiente/modis.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "passagem",
@@ -51,25 +51,25 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/passagem.csv",
     "tex": "reports/tables/08_gradiente/passagem.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "placebo",
     "region": null,
-    "caption": "Tabela 5. Exposição-placebo (D-028, exploratória). Correlação parcial de Spearman, com IC 95% por blocos de 1°, entre o z dos descritores primários em 2001–2012 e a perda antecedente ou a perda de floresta de 2013 a 2024 (MapBiomas), nas células elegíveis com ao menos 50% de floresta em 2000 (593 no Xingu, 500 no Tapajós).",
+    "caption": "Tabela 5. Exposição-placebo (D-028, exploratória). Correlação parcial de Spearman, com IC 95% por blocos de 1°, entre o z dos descritores primários em 2001–2012 e a perda antecedente ou a perda de floresta de 2013 a 2024 (MapBiomas), nas células elegíveis com ao menos 50% de floresta em 2000 (593 no Xingu, 500 no Tapajós); nas duas últimas colunas, cada exposição com a outra entre os controles (D-030).",
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/placebo.csv",
     "tex": "reports/tables/08_gradiente/placebo.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "resultado_preregistrado",
     "region": null,
-    "caption": "Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda antecedente de floresta e z dos descritores primários, bruta e parcial (controles: latitude, água e altitude), com IC 95% por bootstrap em blocos de 1°, p-valor da mesma reamostragem corrigido por Holm e por Benjamini–Hochberg sobre os 16 testes, I de Moran dos resíduos, n efetivo de Clifford et al. e p-valor com esse n, sem correção (D-028).",
+    "caption": "Tabela 1. Resultado pré-registrado: correlação de Spearman entre perda antecedente de floresta e z dos descritores primários, bruta e parcial (controles: latitude, água e altitude), com IC 95% por bootstrap em blocos de 1°, p-valor da mesma reamostragem corrigido por Holm e por Benjamini–Hochberg sobre os 16 testes, p de Holm com blocos de 2° e de 2,5°, I de Moran dos resíduos, n efetivo de Clifford et al. e p-valor com esse n e n′ − 5 graus de liberdade, sem correção (D-028, D-030).",
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/resultado_preregistrado.csv",
     "tex": "reports/tables/08_gradiente/resultado_preregistrado.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "robustez",
@@ -78,6 +78,15 @@
     "overleaf": true,
     "csv": "reports/tables/08_gradiente/robustez.csv",
     "tex": "reports/tables/08_gradiente/robustez.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "sazonalidade",
+    "region": null,
+    "caption": "Tabela 7. Exploratório (D-030). Correlação parcial entre a perda antecedente e o z dos descritores primários, com IC 95% por blocos de 1°, no modelo pré-registrado e com a memória e a variância sazonais da mesma variável (média e amplitude de φ ao longo do ano, razão dos desvios sazonais e fração do ciclo anual) entre os controles.",
+    "overleaf": true,
+    "csv": "reports/tables/08_gradiente/sazonalidade.csv",
+    "tex": "reports/tables/08_gradiente/sazonalidade.tex",
+    "commit": "180e485+modificado"
   }
 ]

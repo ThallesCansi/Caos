@@ -10,7 +10,9 @@ Documento único de método do projeto. Ele funde o plano de pesquisa, o desenho
 
 1. **Natureza:** que tipo de dinâmica o clima diário local tem: caos de baixa dimensão, ruído ou não linearidade de alta dimensão? (cadernos 01, 05, 06 e 07)
 2. **Relação:** essa dinâmica difere entre lugares mais e menos perturbados, e muda onde a floresta é perdida? (caderno 08)
-3. **Detectabilidade:** que escala, grandeza e tipo de registro são necessários para que essa marca apareça? (checagem MODIS, D-018; condições meteorológicas antes do fogo)
+3. **Detectabilidade:** que escala, grandeza e tipo de registro são necessários para que essa marca apareça? (checagem MODIS e temperatura de pele do ERA5, D-018; chuva do CHIRPS, caderno 09, D-021 e D-030)
+
+Os resultados são lidos em quatro níveis, do mais básico ao mais aplicado: validade dos métodos (cadernos 01 e 05), estrutura (06 e 07), paisagem (08) e detectabilidade (08 e 09). O resumo do caderno 00 traz a tabela "o que resiste a quê".
 
 **Operacionalização:** depois de controlar sazonalidade, tendência, autocorrelação, ruído, tamanho da amostra e geografia, as células ERA5 com mais perturbação florestal antecedente apresentam descritores dinâmicos sistematicamente diferentes das células comparáveis mais preservadas? O ERA5 é o instrumento principal porque é a única série diária, sem falhas, de 35 anos nessa grade; o MODIS é a checagem observacional.
 
@@ -56,7 +58,10 @@ A direção perturbação → clima organiza a hipótese e a ordenação tempora
 | F5 | há estrutura não linear? | `06_surrogates` | hipóteses FT/IAAFT com correção múltipla |
 | F6 | como os descritores variam no espaço? | `07_descritores` | robustez a τ, m e janela |
 | F7 | a dinâmica acompanha a perturbação? | `08_gradiente` | controles espaciais e checagem MODIS |
-| F8 | o que isso significa no território? | texto da dupla | conclusão proporcional à evidência |
+| F7b | uma chuva observada mostra o que o ERA5 não mostra? | `09_chuva` | controles de secura (D-023) |
+| F7c | que tempo antecede o fogo? | `10_fogo` | controles de datas reais (D-025) |
+| F8 | o que isso significa no território? | `11_territorio` e texto da dupla | conclusão proporcional à evidência |
+| F9 | a floresta tem dinâmica própria, acoplada à atmosfera, e o fogo a muda? | `12_floresta_atmosfera` | portão de 8 dias e pré-registro próprio (D-031) |
 
 ## 5. Da hora ao dia
 
@@ -104,13 +109,22 @@ Antes dos dados reais, cada descritor passa pelo **gate F4**: controles positivo
 | Descritor | O que mede | Cuidados |
 |---|---|---|
 | Maior expoente de Lyapunov (Rosenstein) | divergência de trajetórias próximas | a região de ajuste é pré-registrada; AR(1) também produz inclinação positiva (laboratório), por isso a comparação é contra substitutas |
-| RQA (DET, LAM) | estrutura de recorrência | taxa de recorrência fixa (5%), não limiar fixo; a entropia das diagonais (ENTR) não foi calculada |
+| RQA (DET, LAM) | duração das recorrências (linhas diagonais e verticais) | taxa de recorrência fixa (5%), não limiar fixo; a entropia das diagonais (ENTR) não foi calculada; apesar do nome, DET alto não indica determinismo: nulas estocásticas com memória sazonal ou GARCH o reproduzem (D-027, D-029) |
 | Dimensão de correlação D2 | complexidade geométrica | pouco confiável com cerca de 9 mil pontos e ruído; procurar platô, com relato honesto |
 | Entropia de permutação e complexidade estatística | plano complexidade–entropia (Bandt–Pompe; Rosso et al., 2007) | ordem e atraso pré-registrados |
 | Assimetria temporal e erro de previsão não linear | irreversibilidade e previsibilidade | já usados no protocolo de substitutas (§8.4) |
 | EWS: variância e AR(1) em janela móvel | *critical slowing down* | tendência por Kendall τ contra substitutas (Dakos et al., 2012); **não** é evidência de caos |
 
 O resultado de cada descritor é uma distribuição, com robustez na grade e posição em relação às substitutas, não um número isolado.
+
+**Comparativos (D-027, D-030).** Ao lado dos descritores pré-registrados, sem substituí-los:
+- Lyapunov de Wolf (tempo de evolução 3, escala de 0,1% a 10% do diâmetro, com diagnósticos de substituição) e de Kantz (raios dos quantis de 1%, 2%, 5% e 10% das distâncias, com a contagem de pontos com 5 vizinhos);
+- método de Cao (E1 para a dimensão de saturação; D_E2 = max |1 − E2| como medida de dependência determinística);
+- S-map (θ por validação deixando um de fora, ganho sobre a previsão linear, Diebold–Mariano; o θ daqui equivale a 2θ do pyEDM);
+- temperatura + umidade específica contra substitutas FT e IAAFT multivariadas, com diagnóstico do espectro cruzado;
+- mínima, máxima e amplitude diárias; grade de atrasos; chuva com dither em cada substituta e com ocorrência e intensidade separadas.
+
+**Regra de leitura das nulas realistas (D-029).** As quatro nulas (AR(1) com φ do dia do ano, AR(1) com tendência, SETAR, AR(1)-GARCH) são ajustadas a cada variável; a fração de células que rejeitam é comparada com o limite superior do IC 95% da nula mais permissiva da mesma variável. Acima de 95% na nula, a leitura é "indistinguível"; "acima" exige que o limite inferior do IC da fração, com o n efetivo do campo de z, passe do limite. Como sensibilidade, as nulas são também ajustadas em cada célula da subamostra, com o GARCH por máxima verossimilhança (D-030).
 
 ### 8.4 Substitutas
 
@@ -125,11 +139,14 @@ O resultado de cada descritor é uma distribuição, com robustez na grade e pos
 ## 9. Comparação espacial (F7)
 
 - **Transversal:** correlação parcial de Spearman entre os descritores e a perturbação antecedente, com latitude, altitude e fração de água como controles. A inferência é feita por bootstrap em blocos espaciais de 1° (IC percentil, 999 reamostras); o pré-registro dizia "permutação por blocos", e o bootstrap em blocos, que dá intervalo e não só p, foi o implementado desde o primeiro cálculo do caderno 08 (D-028). O I de Moran dos resíduos acompanha cada associação. Os 16 testes pré-registrados (2 bacias × 2 variáveis × 4 descritores primários) têm p-valor do mesmo bootstrap em blocos, corrigido por Holm e por Benjamini–Hochberg; ao lado, o I de Moran por permutação, o correlograma dos resíduos e o n efetivo de Clifford et al. (1989), com o p-valor correspondente (D-028). O resto do caderno 08 é exploratório.
-- **Exposição-placebo (D-028):** a perda de 2013–2024 contra os descritores de 2001–2012, nas células com ao menos metade de floresta em 2000, para separar efeito de seleção geográfica.
+- **Robustez da inferência espacial (D-030):** bootstrap também com blocos de 2° e 2,5°, o alcance do correlograma; graus de liberdade de Clifford n′ − 2 − k, com k = 3 controles.
+- **Exposição-placebo (D-028):** a perda de 2013–2024 contra os descritores de 2001–2012, nas células com ao menos metade de floresta em 2000, para separar efeito de seleção geográfica; também com cada exposição controlando a outra (D-030).
+- **Sazonalidade como explicação alternativa (D-030):** média e amplitude de φ(dia do ano), razão dos desvios sazonais e fração do ciclo anual, por célula e variável, como controles adicionais dos 16 testes; a sazonalidade pode ser confundidora ou mediadora, e o resultado não separa as duas.
 - **Longitudinal:** a mudança do descritor entre 2001–2012 e 2013–2024 contra a mudança da perturbação, na mesma célula. Isso elimina a geografia fixa.
 - **Checagem MODIS:** se o gradiente de LST observado aparece no t2m do ERA5 (D-011).
-  Comparativo (D-027, F2e): a temperatura de pele do ERA5 às 10h30 solares, a mesma grandeza e o mesmo horário do LST, registra um quarto a um terço do contraste entre células e nada do aquecimento ao longo do tempo (D-018).
-- **Tempo antes do fogo (D-025, caderno 10):** cada início de episódio (foco depois de 30 dias sem foco na célula) é comparado com controles da mesma célula, na mesma data dos outros anos sem foco a ±15 dias corridos. O resultado é o percentil do evento entre os controles, com IC por bootstrap de anos. Preservadas × perturbadas (terços de perda antecedente cortados nas células) são comparadas diretamente pela diferença dos percentis médios, reamostrando os mesmos anos. A estação seca do fogo é junho a outubro, e não junho a setembro como no resto do trabalho.
+  Comparativo (D-027, F2e): a temperatura de pele do ERA5 às 10h30 solares, a mesma grandeza e o mesmo horário do LST, registra cerca de um terço do contraste entre células no Xingu (2,4 contra 6,7 °C), e ali só pelo mapa de vegetação fixo do modelo (com a vegetação do ERA5 nos controles, a associação some), e cerca de um quinto no Tapajós (1,2 contra 6,4 °C), onde resiste a esse controle; ao longo do tempo, nada (D-018).
+- **Tempo antes do fogo (D-025, caderno 10):** cada início de episódio (foco depois de 30 dias sem foco na célula) é comparado com controles da mesma célula, na mesma data dos outros anos sem foco a ±15 dias corridos. O resultado é o percentil do evento entre os controles, com IC por bootstrap de anos. Preservadas × perturbadas (terços de perda antecedente cortados nas células) são comparadas diretamente pela diferença dos percentis médios, reamostrando os mesmos anos e, como robustez, anos × blocos de 1° (D-030). A estação seca do fogo é junho a outubro, e não junho a setembro como no resto do trabalho.
+- **A floresta como variável dinâmica (D-031, caderno 12):** LAI (MOD15A2H) e NDMI (MOD09A1) em composições de 8 dias, 2001–2024, média dos pixels de floresta persistente nunca queimados (MCD12Q1) de cada célula da subamostra de D-024, com filtros de nuvem, sombra, aerossol e visada ≤ 35°, anomalia padronizada por composição e lacunas tratadas como no pré-registro (até 2 composições interpoladas). Emenda de 31/10, só pela disponibilidade: cobertura mínima de 5% dos pixels por composição; entram as células com até 35% de lacunas e a leitura principal fica nas com até 20%. *Etapa 1:* portão próprio com 1.104 pontos (`configs/analysis/vegetation.yaml`); descritores primários (padrões ordinais, previsão, assimetria, Cao, S-map) contra 99 IAAFT com as mesmas lacunas. *Etapa 2:* VPD do ERA5 (8 dias até a observação) e chuva do CHIRPS (32 e 96 dias); previsão de V(t+1) com três conjuntos de preditores (S-map, linear e vizinhos, 60% para treino); CCM nos dois sentidos contra 99 substitutas de blocos anuais; dependência do estado no S-map conjunto; associação com a perda antecedente como em F7. *Etapa 3:* episódios do MCD64A1 (2 anos sem queima antes, floresta por 2 anos depois, sem requeima em 3 anos; 15 por ano de 2003 a 2021), 3 controles pareados entre 10 candidatos nunca queimados da mesma célula ERA5, Δ(k) antes e depois com IC por bootstrap de células e painel V(t+1) = aV + bH + cD com interações queimado × depois, efeitos fixos de pixel e erros agrupados por célula. Emenda de 02/11: episódios e controles só nas células da subamostra, com os pontos lidos nos cubos de área (a fila do AppEEARS parou os pedidos de pontos da bacia).
 - **Comparáveis:** localização, relevo, água e condições de fundo justificadas. Não ajustar por respostas climáticas posteriores que façam parte do efeito.
 - Antes de prometer inferência, verificar se há diversidade de perturbação e comparáveis suficientes.
 

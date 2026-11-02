@@ -124,9 +124,30 @@ def kantz(series, dimension: int, delay: int, theiler: int, *, quantile: float =
     return float(np.polyfit(k, y, 1)[0]) if np.isfinite(y).all() else np.nan
 
 
+def kantz_profile(series, dimension: int, delay: int, theiler: int, *,
+                  quantiles=KANTZ_QUANTILES, fit: tuple[int, int] = (0, 5),
+                  seed: int = 0) -> dict[str, float]:
+    """λ de Kantz em cada raio de `quantiles` e o número de pontos com 5 vizinhos ou mais.
+
+    Os raios saem de uma só amostra de pares (a mesma de `kantz` com a mesma semente), de
+    modo que `kantz_2` é exatamente o valor de `kantz` com quantile=0,02.
+    """
+    vectors = delay_embedding(_finite(series), dimension, delay)
+    radii = pair_distance_quantiles(vectors, theiler, list(quantiles), seed=seed)
+    out = {}
+    for q, radius in zip(quantiles, radii, strict=True):
+        curve, used = kantz_curve(vectors, radius, theiler, fit[1])
+        k = np.arange(fit[0], fit[1] + 1)
+        y = curve[fit[0] : fit[1] + 1]
+        label = f"{100 * q:g}"
+        out[f"kantz_{label}"] = float(np.polyfit(k, y, 1)[0]) if np.isfinite(y).all() else np.nan
+        out[f"kantz_{label}_pontos"] = used
+    return out
+
+
 def wolf(series, dimension: int, delay: int, theiler: int, *, evolve: int = 3,
          max_scale: float = 0.10, min_scale: float = 0.001, angle: float = 0.3,
-         max_angle: float = 1.2) -> float:
+         max_angle: float = 1.2, diagnostics: bool = False):
     """λ de Wolf et al. (1985), com tempo de evolução fixo, por passo.
 
     Um par (fiducial, vizinho) é evoluído `evolve` passos e soma ln(d_final/d_inicial).
@@ -135,6 +156,10 @@ def wolf(series, dimension: int, delay: int, theiler: int, *, evolve: int = 3,
     `min_scale` e `max_scale` × diâmetro, fora da janela de Theiler, com ângulo menor que
     `angle` em relação à separação antiga; sem candidato, o ângulo é relaxado em degraus de
     0,3 rad até `max_angle`, e, se ainda faltar, o vizinho evoluído é mantido.
+
+    Com `diagnostics`, devolve um dicionário com o λ, o número de passos, de substituições
+    pedidas, de substituições feitas, de casos sem candidato (vizinho mantido) e o ângulo
+    médio das substituições, em radianos.
     """
     vectors = delay_embedding(_finite(series), dimension, delay)
     n = len(vectors)
@@ -149,11 +174,18 @@ def wolf(series, dimension: int, delay: int, theiler: int, *, evolve: int = 3,
         keep = d > low
         return j[keep], d[keep]
 
+    def result(value, steps=0, asked=0, made=0, angles=()):
+        if not diagnostics:
+            return value
+        return {"wolf": value, "passos": steps, "substituicoes_pedidas": asked,
+                "substituicoes": made, "sem_candidato": asked - made,
+                "angulo_medio": float(np.mean(angles)) if len(angles) else np.nan}
+
     j, d = candidates(0, diameter)
     if not len(j):
-        return np.nan
+        return result(np.nan)
     i, j = 0, int(j[np.argmin(d)])
-    total, steps = 0.0, 0
+    total, steps, asked, made, chosen = 0.0, 0, 0, 0, []
     while i + evolve < n and j + evolve < n:
         start = np.linalg.norm(vectors[j] - vectors[i])
         i, j = i + evolve, j + evolve
@@ -164,6 +196,7 @@ def wolf(series, dimension: int, delay: int, theiler: int, *, evolve: int = 3,
             steps += evolve
         if end <= high or i + evolve >= n:
             continue
+        asked += 1
         cand, dist = candidates(i, high)
         if not len(cand):
             continue
@@ -173,7 +206,10 @@ def wolf(series, dimension: int, delay: int, theiler: int, *, evolve: int = 3,
         while limit <= max_angle + 1e-9:
             ok = angles < limit
             if ok.any():
-                j = int(cand[ok][np.argmin(dist[ok])])
+                best = np.flatnonzero(ok)[np.argmin(dist[ok])]
+                j = int(cand[best])
+                made += 1
+                chosen.append(float(angles[best]))
                 break
             limit += 0.3
-    return total / steps if steps else np.nan
+    return result(total / steps if steps else np.nan, steps, asked, made, chosen)

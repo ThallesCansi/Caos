@@ -2,11 +2,11 @@
   {
     "name": "contraste",
     "region": null,
-    "caption": "Tabela 2. Diferença do percentil médio dos inícios de episódio de fogo entre as células preservadas e as perturbadas (terços de perda antecedente), por bacia, estação e medida, com IC 95% por bootstrap dos mesmos anos nos dois grupos.",
+    "caption": "Tabela 2. Diferença do percentil médio dos inícios de episódio de fogo entre as células preservadas e as perturbadas (terços de perda antecedente), por bacia, estação e medida, com IC 95% por bootstrap dos mesmos anos nos dois grupos e, na última coluna, por bootstrap cruzado de anos e blocos espaciais de 1° (G5).",
     "overleaf": true,
     "csv": "reports/tables/10_fogo/contraste.csv",
     "tex": "reports/tables/10_fogo/contraste.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "resumo",
@@ -15,6 +15,6 @@
     "overleaf": true,
     "csv": "reports/tables/10_fogo/resumo.csv",
     "tex": "reports/tables/10_fogo/resumo.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   }
 ]

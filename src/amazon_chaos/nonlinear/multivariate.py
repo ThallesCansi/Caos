@@ -67,6 +67,31 @@ def multivariate_iaaft(data: np.ndarray, rng: np.random.Generator,
     return y
 
 
+def cross_diagnostics(data: np.ndarray, surrogate: np.ndarray, max_lag: int = 30) -> dict:
+    """Quanto a substituta preserva de cada espectro e das correlações cruzadas (G5).
+
+    Erro espectral relativo por canal (‖|F(s)| − |F(x)|‖ / ‖|F(x)|‖) e, nas correlações
+    cruzadas dos atrasos −`max_lag` a `max_lag`, o erro médio absoluto e a razão média
+    entre a correlação da substituta e a dos dados (abaixo de 1: dependência mais fraca).
+    """
+    def spectral(a, b):
+        fa, fb = np.abs(np.fft.rfft(a)), np.abs(np.fft.rfft(b))
+        return float(np.linalg.norm(fb - fa) / np.linalg.norm(fa))
+
+    def cross(m):
+        a, b = ((m - m.mean(axis=0)) / m.std(axis=0)).T
+        n = len(m)
+        return np.array([np.mean(a[max(0, -k):n - max(0, k)] * b[max(0, k):n - max(0, -k)])
+                         for k in range(-max_lag, max_lag + 1)])
+
+    cx, cs = cross(data), cross(surrogate)
+    strong = np.abs(cx) > 0.1
+    return {**{f"erro_espectral_{c}": spectral(data[:, c], surrogate[:, c])
+               for c in range(data.shape[1])},
+            "erro_cruzada": float(np.mean(np.abs(cs - cx))),
+            "razao_cruzada": float(np.mean(cs[strong] / cx[strong])) if strong.any() else np.nan}
+
+
 # ── previsores ──────────────────────────────────────────────────────────────
 
 
@@ -173,6 +198,63 @@ def _series_jobs(data, spec, seed, nulls, n):
     jobs = [(data, params, theiler, nulls[0], seed, -1)]
     jobs += [(data, params, theiler, method, seed, i) for method in nulls for i in range(n)]
     return jobs, params
+
+
+def run_subsample_ft(cfg, spec, cells, *, workers=None, report=print):
+    """Subamostra contra 39 FT multivariadas (G5): a FT preserva exatamente o espectro
+    cruzado, que a IAAFT multivariada enfraquece. Mesmas células e sementes do F2c;
+    resultado em `subamostra_ft.parquet`, ao lado do da IAAFT."""
+    import json
+    import os
+    from concurrent.futures import ProcessPoolExecutor
+    from datetime import UTC, datetime
+
+    import pandas as pd
+
+    from amazon_chaos import regions
+    from amazon_chaos.nonlinear.batch import NORMAL, _commit, _seed, load_cubes, windows
+    from amazon_chaos.nonlinear.sensitivity import subsample
+    from amazon_chaos.regional import standardized_anomalies
+
+    out = output_dir(cfg, spec)
+    parts = out / "celulas_ft"
+    parts.mkdir(parents=True, exist_ok=True)
+    started = datetime.now(UTC)
+    chosen = subsample(cells, RULES["subsample"]["n"], RULES["subsample"]["seed"])
+    grid = regions.cells(cfg).set_index("cell_id").loc[chosen]
+    cubes = load_cubes(cfg, RULES["channels"])
+    start, end = windows(spec)["2001_2024"]
+    diagnostics = []
+    with ProcessPoolExecutor(workers or os.cpu_count()) as pool:
+        for k, cell in enumerate(grid.itertuples(), 1):
+            data = np.column_stack([
+                standardized_anomalies(cube.sel(latitude=cell.latitude,
+                                                longitude=cell.longitude).to_series(),
+                                       NORMAL)[0].loc[start:end].to_numpy(dtype=float)
+                for cube in cubes.values()])
+            seed = _seed(spec, cell.Index, "t2m+q", "2001_2024", "multivariado")
+            for method in ("FT", "IAAFT"):  # diagnóstico nas 5 primeiras substitutas
+                for i in range(5):
+                    diagnostics.append({"cell_id": cell.Index, "null": method, "surrogate": i,
+                                        **cross_diagnostics(data, surrogate(data, method,
+                                                                            seed, i))})
+            if (parts / f"{cell.Index}.parquet").exists():
+                continue
+            jobs, _ = _series_jobs(data, spec, seed, ["FT"], RULES["subsample_surrogates"])
+            pd.DataFrame(list(pool.map(_errors_task, jobs))).assign(
+                cell_id=cell.Index).to_parquet(parts / f"{cell.Index}.parquet")
+            if k % max(1, len(grid) // 5) == 0:
+                report(f"📊 T + q contra a FT (G5) · {cfg['name']}: {k}/{len(grid)} células")
+    pd.concat([pd.read_parquet(parts / f"{c}.parquet") for c in grid.index],
+              ignore_index=True).to_parquet(out / "subamostra_ft.parquet")
+    pd.DataFrame(diagnostics).to_parquet(out / "diagnostico_cruzado.parquet")
+    (out / "execucao_ft.json").write_text(json.dumps({
+        "region": cfg["slug"], "multivariate_hash": multivariate_hash(spec),
+        "rules": {**RULES, "subsample_nulls": ["FT"], "diagnostics": "5 FT e 5 IAAFT por célula"},
+        "commit": _commit(), "started_utc": started.isoformat(timespec="seconds"),
+        "finished_utc": datetime.now(UTC).isoformat(timespec="seconds"),
+    }, indent=2, ensure_ascii=False))
+    return out
 
 
 def run(cfg, spec, cells, *, workers=None, report=print):

@@ -125,6 +125,14 @@ Todos usam o cabeçalho comum (`scripts/hpc/_common.sh`: avisos no Telegram, tem
 | `smap.sbatch` | S-map em todas as células, horizontes 1, 3 e 7 dias (F2g, D-027) | ~1,5 h por bacia (14 CPUs) |
 | `multivariado.sbatch` | temperatura + umidade contra substitutas FT e IAAFT multivariadas, bacia e subamostra (F2c, D-027) | 10 a 20 h por bacia (14 CPUs) |
 | `chuva_dither.sbatch` | chuva com dither em cada substituta (todas as células, ERA5 e CHIRPS) e erro espectral do IAAFT na subamostra (F2i, D-027) | ~1 h por bacia (14 CPUs) |
+| `nulas_celulas.sbatch` | nulas realistas ajustadas em cada célula da subamostra, GARCH por máxima verossimilhança, oito descritores e S-map (G2b, D-030) | algumas horas por bacia (14 CPUs) |
+| `estimadores_checagem.sbatch` | Kantz nos quatro raios e diagnósticos do Wolf, bacia e subamostra (G5, D-030) | algumas horas por bacia (14 CPUs) |
+| `multivariado_ft.sbatch` | temperatura + umidade na subamostra contra a FT multivariada, com diagnóstico do espectro cruzado (G5, D-030) | ~6 h por bacia (14 CPUs) |
+| `vegetacao_fetch.sbatch` | espera e baixa os pedidos do AppEEARS da D-031 (LAI e refletâncias na subamostra; MCD64A1 na bacia) | horas, conforme a fila do AppEEARS (1 CPU) |
+| `vegetacao_gate.sbatch` | portão das séries de 8 dias: controles com 1.104 pontos (D-031, etapa 1) | ~1 h (14 CPUs) |
+| `vegetacao.sbatch` | cobertura MCD12Q1, séries de LAI e NDMI e etapas 1 e 2 da D-031 na subamostra | algumas horas por bacia (14 CPUs, 32 GB) |
+| `vegetacao_fogo.sbatch` | episódios de fogo na bacia, pedido de pontos, Δ(k) e resposta ao clima (D-031, etapa 3; complemento); `FROM=pontos` retoma da espera sem refazer os episódios | horas a dias, conforme a fila do AppEEARS (2 CPUs, 32 GB) |
+| `vegetacao_fogo_local.sbatch` | a etapa 3 na subamostra, com os pontos lidos nos cubos de área já baixados (leitura do TCC, emenda de 02/11); `FROM=fogo` reaproveita episódios e pontos | 3–6 h por bacia (4 CPUs, 32 GB) |
 
 Como a cota é de 16 CPUs, encadeie os jobs grandes:
 
@@ -149,6 +157,7 @@ No nó de login, `tmux new -s era5` e depois `REGION=xingu bash scripts/hpc/era5
 | `nenhum mês CDS … para conferir` | rode com `VERIFY=0` ou copie os meses CDS para `data/raw/<experimento>/era5` |
 | `spatial.area de … deveria ser […]` | a caixa do YAML não é o envelope do limite; copie o valor sugerido |
 | TIs da FUNAI com erro de certificado | o servidor omite o intermediário TLS; o código o obtém pelo endereço AIA (`regions.MISSING_INTERMEDIATE`); se o certificado mudar, atualize o endereço |
+| `403 FORBIDDEN` do AppEEARS depois de horas de espera | o token de sessão expirou; `appeears.wait` renova o login sozinho, e um job antigo se retoma com `FROM=pontos` |
 | job pendente com `QOSMaxCpuPerUserLimit` | pediu mais que 16 CPUs (somando os jobs em execução): reduza `--cpus-per-task` |
 | `ssh hpc` trava sem erro (o direto funciona) | conexão compartilhada (ControlMaster) presa, por exemplo depois de cair a VPN: `ssh -O exit hpc` ou apague `~/.ssh/cm-*` |
 | nó sem rede (timeout no `NETWORK=1`) | rode no nó de login, dentro do `tmux` (§6) |

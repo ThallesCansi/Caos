@@ -1,0 +1,11 @@
+[
+  {
+    "name": "sintese",
+    "region": null,
+    "caption": "Tabela 1. O que resiste a quê. Os resultados principais em quatro níveis, com as checagens a que cada um foi submetido e onde estão.",
+    "overleaf": true,
+    "csv": "reports/tables/00_inicio/sintese.csv",
+    "tex": "reports/tables/00_inicio/sintese.tex",
+    "commit": "180e485+modificado"
+  }
+]

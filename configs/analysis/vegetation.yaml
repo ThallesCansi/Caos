@@ -1,0 +1,57 @@
+# Pré-registro das séries de vegetação de 8 dias (D-031, etapa 1), derivado de
+# descriptors.yaml. Fixado em 30/10/2026, antes de qualquer dado de vegetação. As mudanças
+# em relação às séries diárias vêm do passo de 8 dias e do tamanho (cerca de 1.100 pontos).
+version: 1
+status: congelado
+frozen_on: 2026-10-30
+derived_from: descriptors.yaml (versão 2)
+
+series:
+  variables: [lai, ndmi]
+  step_days: 8
+  composites_per_year: 46
+  transform: standardized_anomaly_by_composite   # climatologia 2001–2024, por composição
+  period: [2001-01-01, 2024-12-31]
+  gaps: {interpolate_max: 2, max_missing_fraction: 0.2, fill: climatology}
+
+embedding:
+  delay: {max_lag: 23}               # meio ano em composições
+  dimension: {max_dimension: 8, threshold: 0.05}
+  theiler: {minimum: 2}              # 16 dias
+  sensitivity: {delay_factors: [0.5, 2.0], dimension_offsets: [-1, 1]}
+
+descriptors:
+  lyapunov:      {fit: [0, 5], alternative: two-sided}
+  rqa_det:       {rate: 0.05, lmin: 2, alternative: greater}
+  rqa_lam:       {rate: 0.05, vmin: 2, alternative: two-sided}
+  d2:            {window: [1.0e-4, 1.0e-2], alternative: less}
+  pe_entropy:    {order: 4, delay: 1, alternative: less}       # 24 padrões
+  pe_complexity: {order: 4, delay: 1, alternative: greater}
+  asymmetry:     {lag: 1, alternative: absolute}
+  prediction:    {neighbors: 5, train_fraction: 0.6, horizon: 1, alternative: less}
+
+surrogates:
+  method: IAAFT
+  per_cell: 99
+  max_iter: 200
+  seed: 20261031
+  alpha: 0.05
+
+ews:
+  window_fraction: 0.5
+  bandwidth: 46
+  alternative: greater
+  surrogates: 39
+
+gate:
+  positive: [logistic, henon, lorenz]
+  negative: [white, ar1, sine_noise, seasonal_trend]
+  lengths: [1104]                    # 24 anos × 46 composições
+  noise: [0.0, 0.2]
+  repetitions: 20
+  seed: 20261031
+  criterion: {power: 0.8, positives_required: 2, size: 0.2, size_controls: [white, ar1]}
+
+families:
+  primary: [cao_de2, smap, pe_entropy, pe_complexity, asymmetry, prediction]
+  exploratory: [rqa_det, rqa_lam, d2, lyapunov, kantz]

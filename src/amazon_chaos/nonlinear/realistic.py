@@ -181,20 +181,98 @@ def load(spec, alpha: float | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     return desc, smaps
 
 
-def null_rates(spec, horizon: int = 1) -> pd.DataFrame:
-    """Taxa de rejeição em cada nula realista (80 séries), com IC de Clopper–Pearson.
+def null_rates(spec, horizon: int = 1, by=("variable",)) -> pd.DataFrame:
+    """Taxa de rejeição em cada nula realista, com IC de Clopper–Pearson.
 
-    Inclui o S-map (teste de Diebold–Mariano no horizonte `horizon`) como mais um descritor.
+    `by` separa os ajustes: ("variable",) junta as duas bacias de cada variável (40 séries por
+    nula; leitura principal da D-029), ("region", "variable") usa só o ajuste da própria bacia
+    (20 séries) e () junta os quatro ajustes (80 séries, como na D-027). Inclui o S-map (teste
+    de Diebold–Mariano no horizonte `horizon`) como mais um descritor.
     """
     from scipy.stats import binomtest
 
     desc, smaps = load(spec)
     nulls = desc[(desc.group == "nula") & (desc.descriptor != "erro")]
     sm = smaps[(smaps.group == "nula") & (smaps.horizon == horizon)].assign(descriptor="smap")
+    table = pd.concat([nulls, sm], ignore_index=True)
+    table[["region", "variable"]] = table.fit.str.split("_", n=1, expand=True)
+    keys = ["descriptor", "control", *by]
     rows = []
-    for (name, control), part in pd.concat([nulls, sm]).groupby(["descriptor", "control"]):
+    for key, part in table.groupby(keys):
         k, n = int(part.rejects.sum()), int(part.pvalue.notna().sum())
         ci = binomtest(k, n).proportion_ci()
-        rows.append({"descriptor": name, "control": control, "rejections": k, "total": n,
+        rows.append({**dict(zip(keys, key, strict=True)), "rejections": k, "total": n,
                      "rate": k / n, "ci_low": ci.low, "ci_high": ci.high})
+    return pd.DataFrame(rows)
+
+
+def permissive(rates: pd.DataFrame, by=("variable",)) -> pd.DataFrame:
+    """A nula mais permissiva (maior limite superior) por descritor e `by`."""
+    keys = ["descriptor", *by]
+    top = rates.loc[rates.groupby(keys).ci_high.idxmax()]
+    return top.set_index(keys)[["control", "rate", "ci_high"]].rename(
+        columns={"control": "null", "rate": "null_rate", "ci_high": "limit"})
+
+
+SATURATED = 0.95  # acima disso, a nula já rejeita quase sempre: as células não se distinguem
+
+
+def compare(fraction: float, n_effective: float, limit: float) -> str:
+    """Regra de leitura da D-029: "acima", "dentro" ou "indistinguível".
+
+    A fração das células passa da nula quando o limite inferior do seu IC 95% de
+    Clopper–Pearson, com o n efetivo da fração (autocorrelação espacial), fica acima do limite
+    superior da nula mais permissiva. Se esse limite passa de 95%, a nula rejeita quase tão
+    sempre quanto as células podem rejeitar, e a comparação não informa.
+    """
+    from scipy.stats import beta
+
+    if limit > SATURATED:
+        return "indistinguível"
+    n = max(float(n_effective), 1.0)
+    k = fraction * n
+    low = 0.0 if k <= 0 else float(beta.ppf(0.025, k, n - k + 1))
+    return "acima" if low > limit else "dentro"
+
+
+def cell_comparison(spec, slugs=("xingu", "tapajos"), by=("variable",),
+                    rates: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Fração das células que rejeitam contra a nula mais permissiva da mesma variável (D-029).
+
+    Para cada bacia × variável × descritor: a fração de células com p ≤ α (janela completa;
+    Wolf, Kantz e Cao na subamostra; S-map no horizonte de 1 dia), o n efetivo dessa fração,
+    medido no campo do z (do ganho, no S-map), a nula mais permissiva e a leitura pela regra:
+    `pontual` compara só a fração com o limite, e `leitura` aplica `compare`. Com `rates`
+    (p. ex. `realistic_cells.null_rates`), os limites vêm dessas taxas, e os descritores
+    sem taxa ficam de fora.
+    """
+    from amazon_chaos import gradient as G
+    from amazon_chaos.config import load_region
+    from amazon_chaos.nonlinear import results as R
+
+    limits = permissive(null_rates(spec, by=by) if rates is None else rates, by=by)
+    alpha = spec["surrogates"]["alpha"] + R.TOLERANCE
+    rows = []
+    for slug in slugs:
+        cfg = load_region(slug)
+        lote = R.load(cfg, spec)
+        lote = lote[(lote.kind == "teste") & (lote.window == "2001_2024")]
+        sub = pd.read_parquet(estimators.output_dir(cfg, spec) / "subamostra.parquet")
+        sm = smap.load(cfg, spec)
+        sm = sm[sm.horizon == 1].assign(descriptor="smap", z=lambda t: t.gain)
+        for frame in (lote, sub, sm):
+            frame = R.with_cells(cfg, frame[["cell_id", "variable", "descriptor", "z",
+                                             "pvalue"]])
+            for (var, desc), g in frame.groupby(["variable", "descriptor"]):
+                fraction = float((g.pvalue <= alpha).mean())
+                n_eff = G.effective_n_mean(g.z.to_numpy(), g.latitude, g.longitude)
+                key = (desc, slug, var) if "region" in by else (desc, var)
+                if key not in limits.index:
+                    continue
+                limit = limits.loc[key]
+                rows.append({"region": slug, "variable": var, "descriptor": desc,
+                             "cells": len(g), "fraction": fraction, "n_effective": n_eff,
+                             "null": limit["null"], "null_rate": limit.null_rate,
+                             "limit": limit.limit, "pontual": fraction > limit.limit,
+                             "leitura": compare(fraction, n_eff, limit.limit)})
     return pd.DataFrame(rows)

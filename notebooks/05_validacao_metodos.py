@@ -473,7 +473,7 @@ def realistic_rates():
                & (smaps.horizon == 1)].assign(descriptor="smap")
     extra = (pd.concat([new, sm]).groupby(["descriptor", "control"]).rejects.mean()
              .rename("rate").reset_index())
-    nulls = RL.null_rates(SPEC)
+    nulls = RL.null_rates(SPEC, by=())  # os quatro ajustes juntos, 80 séries (D-027)
     return pd.concat([final, extra, nulls[["descriptor", "control", "rate"]]]), nulls
 
 
@@ -559,8 +559,8 @@ def _():
         sustentam. O erro de previsão quase nunca rejeita nas nulas, como nas células. E o
         $D_{E2}$ de Cao separa as duas coisas: rejeita em todos os controles caóticos e em no
         máximo 8% das séries de cada nula realista. O ganho do S-map é significativo em
-        parte das séries da SETAR, que é de fato não linear, mas é minúsculo, menos de 0,2%
-        do erro, contra 37% a 57% nos sistemas caóticos. A Tabela 3 traz as taxas das nulas
+        parte das séries da SETAR, que é de fato não linear, mas é minúsculo, abaixo de 0,3%
+        do erro mesmo no percentil 99 das séries, contra 37% a 57% nos sistemas caóticos. A Tabela 3 traz as taxas das nulas
         com os intervalos.
         """),
         book.table(_tab, "portao_realista",

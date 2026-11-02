@@ -1,7 +1,7 @@
-"""MODIS LST (MOD11A2.061, 8 dias, 1 km) pelo NASA AppEEARS, para a checagem D-011.
+"""Produtos MODIS pelo NASA AppEEARS: o LST da checagem D-011 e a vegetação e o fogo da D-031.
 
-O AppEEARS recorta o produto pelo polígono da bacia no servidor; aqui só se envia o
-pedido, acompanha o processamento e baixa os arquivos com manifesto. O login usa usuário
+O AppEEARS recorta o produto pelo polígono pedido no servidor; aqui só se envia o pedido,
+acompanha o processamento e baixa os arquivos com manifesto. O login usa usuário
 e senha do NASA Earthdata em `~/.netrc` (linha `machine urs.earthdata.nasa.gov login …
 password …`); o token devolvido pelo AppEEARS vale só para a sessão.
 """
@@ -65,48 +65,64 @@ def _headers(token):
     return {"Authorization": f"Bearer {token}"}
 
 
-def task_payload(cfg, start="01-01-2001", end="12-31-2024", tolerance=0.01) -> dict:
-    """Pedido de área: o limite da bacia simplificado (~1 km) como FeatureCollection."""
-    limit = regions.boundary(cfg).to_crs("EPSG:4326")
-    limit = limit.assign(geometry=limit.geometry.simplify(tolerance))
+def area_payload(name: str, layers: list[tuple[str, str]], geometry, start="01-01-2001",
+                 end="12-31-2024") -> dict:
+    """Pedido de área: `layers` como (produto, camada) e `geometry` como GeoDataFrame."""
     return {
         "task_type": "area",
-        "task_name": f"tcc-caos-{cfg['slug']}-mod11a2",
+        "task_name": name,
         "params": {
             "dates": [{"startDate": start, "endDate": end}],
-            "layers": [{"product": PRODUCT, "layer": layer} for layer in LAYERS],
+            "layers": [{"product": p, "layer": layer} for p, layer in layers],
             "output": {"format": {"type": "netcdf4"}, "projection": "geographic"},
-            "geo": json.loads(limit[["geometry"]].to_json()),
+            "geo": json.loads(geometry.to_crs("EPSG:4326")[["geometry"]].to_json()),
         },
     }
 
 
-def task_dir(cfg) -> Path:
-    path = Path("data/raw") / cfg["experiment_id"] / "modis"
+def task_payload(cfg, start="01-01-2001", end="12-31-2024", tolerance=0.01) -> dict:
+    """Pedido do LST: o limite da bacia simplificado (~1 km) como FeatureCollection."""
+    limit = regions.boundary(cfg).to_crs("EPSG:4326")
+    limit = limit.assign(geometry=limit.geometry.simplify(tolerance))
+    return area_payload(f"tcc-caos-{cfg['slug']}-mod11a2",
+                        [(PRODUCT, layer) for layer in LAYERS], limit, start, end)
+
+
+def task_dir(cfg, folder: str = "modis") -> Path:
+    path = Path("data/raw") / cfg["experiment_id"] / folder
     path.mkdir(parents=True, exist_ok=True)
     return path
 
 
-def submit(cfg, token) -> str:
+def submit(cfg, token, payload: dict | None = None, folder: str = "modis") -> str:
     """Envia o pedido (ou reaproveita o já enviado) e devolve o id da tarefa."""
-    record = task_dir(cfg) / "tarefa.json"
+    record = task_dir(cfg, folder) / "tarefa.json"
     if record.exists():
         return json.loads(record.read_text())["task_id"]
-    response = requests.post(f"{API}/task", json=task_payload(cfg), headers=_headers(token),
+    payload = payload or task_payload(cfg)
+    response = requests.post(f"{API}/task", json=payload, headers=_headers(token),
                              timeout=300)
     response.raise_for_status()
     task_id = response.json()["task_id"]
-    record.write_text(json.dumps({"task_id": task_id, "product": PRODUCT, "layers": LAYERS,
+    record.write_text(json.dumps({"task_id": task_id, "task_name": payload["task_name"],
+                                  "layers": payload["params"]["layers"],
                                   "submitted_utc": datetime.now(UTC).isoformat()}, indent=2))
     return task_id
 
 
 def wait(task_id, token, report=print, every=600, timeout_hours=48) -> None:
+    """Acompanha a tarefa até `done`. O token de sessão expira em algumas horas (403):
+    nesse caso faz um login novo e consulta de novo."""
     started = time.time()
     last = None
+    renewed = False
     while True:
         response = requests.get(f"{API}/task/{task_id}", headers=_headers(token), timeout=120)
+        if response.status_code in {401, 403} and not renewed:
+            token, renewed = login(report=report), True
+            continue
         response.raise_for_status()
+        renewed = False
         status = response.json().get("status")
         if status != last:
             report(f"AppEEARS {task_id[:8]}: {status}")
@@ -120,17 +136,17 @@ def wait(task_id, token, report=print, every=600, timeout_hours=48) -> None:
         time.sleep(every)
 
 
-def download(cfg, task_id, token, report=print) -> list[Path]:
+def download(cfg, task_id, token, report=print, folder: str = "modis") -> list[Path]:
     """Baixa os arquivos do pacote (só NetCDF e metadados), conferindo o tamanho."""
     response = requests.get(f"{API}/bundle/{task_id}", headers=_headers(token), timeout=120)
     response.raise_for_status()
     files = [f for f in response.json()["files"]
              if f["file_name"].endswith((".nc", ".json", ".csv", ".txt", ".xml"))]
-    out, records = task_dir(cfg), []
+    out, records = task_dir(cfg, folder), []
     for item in files:
         target = out / Path(item["file_name"]).name
         if not (target.exists() and target.stat().st_size == item["file_size"]):
-            report(f"MODIS: {target.name} ({item['file_size'] / 2**20:.0f} MiB)")
+            report(f"{folder}: {target.name} ({item['file_size'] / 2**20:.0f} MiB)")
             with requests.get(f"{API}/bundle/{task_id}/{item['file_id']}",
                               headers=_headers(token), stream=True, timeout=600) as r:
                 r.raise_for_status()

@@ -560,8 +560,9 @@ def _():
         antecedente de floresta, é anterior ao clima que vamos analisar e contínua, mas
         mistura conversão e vegetação natural, uma ambiguidade que o capítulo 8 trata
         explicitamente. O satélite mostra que a conversão aquece a superfície em vários
-        graus, e que o ERA5 não registra esse aquecimento. As tabelas completas, com as quarenta medidas de cada célula, estão
-        abaixo.
+        graus; o ar do ERA5 não registra esse aquecimento, e a sua superfície registra só
+        uma fração do contraste entre lugares e nada da mudança no tempo (capítulo 8). As
+        tabelas completas, com as quarenta medidas de cada célula, estão abaixo.
         """),
         mo.accordion({f"📋 Todas as medidas por célula, {k}": v for k, v in _tables.items()}),
     ])

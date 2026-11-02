@@ -1,0 +1,737 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "amazon-chaos @ git+https://github.com/ThallesCansi/Caos.git",
+#     "marimo>=0.23",
+# ]
+# [tool.marimo.opengraph]
+# title = "12 · A floresta como sistema dinâmico"
+# description = "A vegetação sozinha, com a atmosfera e depois do fogo"
+# ///
+import marimo
+
+__generated_with = "0.23.16"
+app = marimo.App(width="medium", app_title="12 · A floresta como sistema dinâmico")
+
+with app.setup(hide_code=True):
+    import json
+
+    import marimo as mo
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+
+    from amazon_chaos import gradient as G
+    from amazon_chaos import nb
+    from amazon_chaos.config import load_region
+    from amazon_chaos.nonlinear import fire_response as FR
+    from amazon_chaos.nonlinear import gate as GT
+    from amazon_chaos.nonlinear import vegetation_dynamics as VD
+    from amazon_chaos.nonlinear.results import NAMES
+    from amazon_chaos.nonlinear.suite import load_spec
+    from amazon_chaos.nonlinear.vegetation_gate import load_vegetation_spec
+    from amazon_chaos.nonlinear.vegetation_gate import output_dir as gate_dir
+    from amazon_chaos.viz import COLORS
+
+    book = nb.notebook("12_floresta_atmosfera")
+    VSPEC = load_vegetation_spec()
+    SPEC = load_spec()
+    SLUGS = ["xingu", "tapajos"]
+    SHORT = {"xingu": "Xingu", "tapajos": "Tapajós"}
+    VARS = {"lai": "LAI", "ndmi": "NDMI"}
+    VAR_COLORS = {"lai": "#2e7d4f", "ndmi": COLORS["precip"]}
+    BASIN_COLORS = {"xingu": "#2e7d4f", "tapajos": COLORS["vpd"]}
+    PRIMARY = VSPEC["families"]["primary"]
+    DESCRIPTORS = NAMES | {"cao_de2": "Cao (E2)", "smap": "S-map (ganho não linear)",
+                           "kantz": "Lyapunov (Kantz)", "wolf": "Lyapunov (Wolf)"}
+    FORCINGS = {"vpd": "VPD", "chuva_32d": "chuva de 32 dias", "chuva_96d": "chuva de 96 dias"}
+    PREDICTORS = {"vegetacao": "só a vegetação", "atmosfera": "só a atmosfera",
+                  "conjunto": "vegetação e atmosfera"}
+    ALPHA = VSPEC["surrogates"]["alpha"]
+    MAIN = VD.RULES["primary_max_missing"]
+
+
+@app.function(hide_code=True)
+@mo.cache
+def results(slug):
+    out = pd.read_parquet(VD.output_dir(load_region(slug), VSPEC) / "resultados.parquet")
+    out = out[out.descriptor != "excluida"].copy()
+    out["grupo"] = np.where(out.lacunas <= MAIN, "principal", "sensibilidade")
+    return out
+
+
+@app.function(hide_code=True)
+@mo.cache
+def gate_table():
+    folder = gate_dir(VSPEC)
+    rates = GT.rejection_rates(pd.read_csv(folder / "descritores.csv"), ALPHA)
+    out = GT.verdict(rates, VSPEC).set_index("descriptor")
+    sm = pd.read_csv(folder / "smap.csv")
+    sm = sm[(sm.horizon == 1) & (sm.noise == max(VSPEC["gate"]["noise"]))]
+    smap_rate = (sm.pvalue <= ALPHA).groupby(sm.control).mean()
+    out.loc["smap"] = {**{f"poder {c}": smap_rate[c] for c in ("henon", "logistic", "lorenz")},
+                       "rejeição ar1": smap_rate["ar1"], "rejeição white": smap_rate["white"],
+                       "rejeição seasonal_trend": smap_rate["seasonal_trend"]}
+    return out
+
+
+@app.function(hide_code=True)
+def stage1_rates():
+    rows = []
+    for slug in SLUGS:
+        r = results(slug)
+        e = r[(r.etapa == 1) & r.descriptor.isin(PRIMARY)]
+        # o LAI se lê nas células principais; o NDMI quase só tem células de sensibilidade
+        for (v, d), g in e.groupby(["variable", "descriptor"]):
+            g = g[g.grupo == "principal"] if v == "lai" else g
+            rows.append({"bacia": slug, "variavel": v, "descritor": d,
+                         "celulas": g.cell_id.nunique(),
+                         "rejeicao": (g.pvalue <= ALPHA).mean(), "z": g.z.median()})
+    return pd.DataFrame(rows)
+
+
+@app.function(hide_code=True)
+@mo.cache
+def association():
+    """Medidas por célula contra a perda antecedente, com os controles geográficos."""
+    rows = []
+    for slug in SLUGS:
+        cfg = load_region(slug)
+        cells = G.cell_table(cfg, SPEC)
+        r = results(slug)
+        for v in VARS:
+            x = r[r.variable == v]
+            m = pd.DataFrame({
+                "ccm_vpd": x[(x.analise == "ccm") & (x.forcante == "vpd")
+                             & (x.sentido == "atmosfera→vegetação")]
+                .set_index("cell_id").eval("rho - rho_nulo"),
+                "ganho_conjunto": x[(x.analise == "previsao") & (x.preditores == "conjunto")
+                                    & (x.modelo == "smap")].set_index("cell_id").ganho,
+                **{f"z_{d}": x[(x.etapa == 1) & (x.descriptor == d)].set_index("cell_id").z
+                   for d in ("pe_entropy", "pe_complexity", "prediction", "cao_de2")}})
+            frame = cells.join(m, how="inner")
+            for measure in m.columns:
+                a = G.associate(frame, "perda_antecedente", measure)
+                rows.append({"bacia": slug, "variavel": v, "medida": measure, **a})
+    return pd.DataFrame(rows)
+
+
+@app.function(hide_code=True)
+@mo.cache
+def fire(slug):
+    folder = FR.folder(load_region(slug), local=True)
+    meta = json.loads((folder / "fogo_execucao.json").read_text())
+    return (pd.read_parquet(folder / "delta.parquet"), pd.read_parquet(folder / "resposta.parquet"),
+            meta, pd.read_parquet(folder / "episodios.parquet"))
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    # 🌳 A floresta como sistema dinâmico
+
+    Os capítulos anteriores olharam para a atmosfera: o clima diário do ERA5 em cada célula,
+    comparado com a perturbação da floresta embaixo dele. Este capítulo inverte o ponto de
+    vista e trata a própria floresta como a variável dinâmica. Em vez de perguntar se o ar
+    sobre as áreas desmatadas evolui de outro jeito, perguntamos como evolui a vegetação
+    vista por satélite, se essa evolução depende da atmosfera e o que acontece com ela
+    depois de um fogo. A mudança de foco tem uma razão prática, que o capítulo da
+    perturbação e dinâmica deixou clara: o ERA5 usa um mapa de vegetação fixo e não
+    acompanha o desmatamento no tempo, enquanto o satélite vê a floresta como ela é em cada
+    semana.
+
+    A análise segue três etapas, fixadas antes de olharmos os dados (D-031). A primeira
+    trata a vegetação sozinha, com os mesmos métodos e o mesmo cuidado com as substitutas do
+    clima diário. A segunda junta a vegetação e a atmosfera e pergunta se uma ajuda a prever
+    a outra e se a relação entre elas muda com o estado do sistema. A terceira acompanha
+    pixels de floresta que queimaram, ao lado de pixels parecidos que não queimaram, e mede
+    quanto a vegetação cai, quanto se recupera e se passa a responder de outro modo à chuva
+    e à secura do ar.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    _n = {s: results(s).groupby("variable").cell_id.nunique() for s in SLUGS}
+    _main = {s: results(s)[results(s).grupo == "principal"].groupby("variable")
+             .cell_id.nunique().reindex(list(VARS), fill_value=0) for s in SLUGS}
+    mo.vstack([
+        mo.md(r"""
+        ## 🛰️ Os dados
+
+        Usamos dois produtos do sensor MODIS em composições de 8 dias, de 2001 a 2024, o que
+        dá 1.104 pontos por série. O índice de área foliar (LAI, do MOD15A2H) mede quantos
+        metros quadrados de folha há sobre cada metro quadrado de chão. O índice de umidade
+        da vegetação (NDMI, calculado com as refletâncias do MOD09A1 no infravermelho próximo
+        e no de ondas curtas) responde à água guardada nas folhas. Em cada célula da
+        subamostra do capítulo dos descritores, sorteada ao acaso entre as células elegíveis,
+        tiramos a média dos pixels de floresta persistente que nunca queimaram, depois de
+        descartar os pixels com nuvem, sombra, aerossol ou ângulo de visada acima de 35°. A
+        série de cada célula é a anomalia padronizada em relação à mesma composição dos outros
+        anos, para que o ciclo do ano não se passe por dinâmica. A floresta persistente é a
+        classe de floresta perene do mapa de cobertura do próprio MODIS (MCD12Q1) em 2001 e
+        em 2024, porque o acesso aos mapas do MapBiomas falhou durante o cálculo.
+
+        As nuvens são o grande limite desses dados. Na estação chuvosa, só cerca de um
+        sexto das observações de refletância passa nos filtros, contra três quartos na seca.
+        Por isso, antes de calcular qualquer resultado, a regra de cobertura foi revista só
+        pela disponibilidade dos dados: uma composição vale quando pelo menos 5% dos pixels
+        da célula são válidos, entram as células com até 35% de composições vazias, e a
+        leitura principal fica nas que têm até 20%. O LAI, que tem o seu próprio algoritmo de
+        recuperação, sustenta a leitura principal; o NDMI fica quase todo no grupo de
+        sensibilidade.
+        """),
+        mo.callout(mo.md(nb.pt("Células analisadas (leitura principal entre parênteses): " +
+                               "; ".join(f"{SHORT[s]}, LAI {_n[s]['lai']} ({_main[s]['lai']}) "
+                                         f"e NDMI {_n[s]['ndmi']} ({_main[s]['ndmi']})"
+                                         for s in SLUGS) + ".")), kind="info"),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    _g = gate_table()
+    _tab = pd.DataFrame({
+        "Descritor": [DESCRIPTORS.get(d, d) for d in _g.index],
+        "Família": ["primária" if d in PRIMARY else "exploratória" for d in _g.index],
+        "Poder (logística, Hénon, Lorenz)": [
+            f"{a:.2f}, {b:.2f}, {c:.2f}" for a, b, c in
+            zip(_g["poder logistic"], _g["poder henon"], _g["poder lorenz"], strict=True)],
+        "Rejeição (branco, AR(1))": [f"{a:.2f}, {b:.2f}" for a, b in
+                                     zip(_g["rejeição white"], _g["rejeição ar1"], strict=True)],
+        "Rejeição (sazonal com tendência)": _g["rejeição seasonal_trend"].round(2).to_numpy(),
+    })
+    mo.vstack([
+        mo.md(r"""
+        ## 🧪 O portão das séries de 8 dias
+
+        Uma série de 1.104 pontos a cada 8 dias não é uma série diária de 12.784 pontos, e os
+        descritores validados no capítulo dos métodos precisavam ser validados de novo no
+        novo tamanho. Repetimos o portão com os mesmos sistemas de resposta conhecida: três
+        caóticos (o mapa logístico, o de Hénon e o sistema de Lorenz) e quatro aleatórios
+        (ruído branco, um processo autorregressivo, uma senoide com ruído e um processo
+        sazonal com tendência), cada um com 1.104 pontos, 20 repetições e 20% de ruído de
+        observação. O poder é a fração das séries caóticas em que o descritor rejeita as
+        substitutas; o tamanho, a fração das aleatórias em que ele rejeita sem motivo. A
+        Tabela 1 mostra o resultado.
+        """),
+        book.table(_tab, "portao",
+                   "Tabela 1. Portão dos descritores nas séries de 8 dias (1.104 pontos, 20% de "
+                   "ruído de observação, 20 repetições): fração de rejeição das substitutas "
+                   "IAAFT nos controles caóticos (poder) e nos aleatórios (tamanho). Família "
+                   "primária: os descritores que entram na leitura, fixados no pré-registro "
+                   "das séries de vegetação.", selection=None),
+        mo.md(r"""
+        Os padrões ordinais, o erro de previsão e o teste de Cao reconhecem os três sistemas
+        caóticos e quase nunca rejeitam nos aleatórios, e o S-map reconhece o Hénon e o
+        Lorenz. A assimetria temporal não vê o Lorenz, que é simétrico no tempo, e a dimensão
+        de correlação perde o poder com só 1.104 pontos. O resultado que mais importa está na
+        última coluna. O expoente de Lyapunov pelo método de Kantz rejeita em todas as séries
+        do processo sazonal com tendência, e o de Rosenstein em 70% delas: numa série curta e
+        sazonal, eles confundem a memória do ano com dinâmica. Por isso a leitura da
+        vegetação fica nos descritores primários, e os outros aparecem só como contexto.
+        """),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+def plot_stage1():
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.6), sharey=True, layout="constrained")
+    shown = [d for d in PRIMARY if d != "smap"]
+    for ax, v in zip(axes, VARS, strict=True):
+        for k, slug in enumerate(SLUGS):
+            r = results(slug)
+            e = r[(r.etapa == 1) & (r.variable == v) & r.descriptor.isin(shown)]
+            e = e[e.grupo == "principal"] if v == "lai" else e
+            data = [e[e.descriptor == d].z.dropna().to_numpy() for d in shown]
+            pos = np.arange(len(shown)) + (k - 0.5) * 0.36
+            parts = ax.boxplot(data, positions=pos, widths=0.3, patch_artist=True,
+                               showfliers=False, medianprops={"color": COLORS["ink"]})
+            for box in parts["boxes"]:
+                box.set(facecolor=BASIN_COLORS[slug], alpha=0.55, edgecolor=COLORS["ink"])
+            ax.plot([], [], "s", color=BASIN_COLORS[slug], alpha=0.55, label=SHORT[slug])
+        ax.axhspan(-1.96, 1.96, color=COLORS["muted"], alpha=0.12)
+        ax.axhline(0, color=COLORS["muted"], lw=1)
+        ax.set_xticks(range(len(shown)), [DESCRIPTORS[d] for d in shown], rotation=20,
+                      ha="right", fontsize=9)
+        group = "células principais" if v == "lai" else "todas as células (sensibilidade)"
+        ax.set_title(f"{VARS[v]} · {group}", fontsize=11)
+    axes[0].set_ylabel("z (dados − substitutas, em desvios)")
+    axes[0].legend(loc="upper left")
+    return fig
+
+
+@app.cell(hide_code=True)
+def _():
+    _r = stage1_rates()
+    _tab = _r.assign(Bacia=_r.bacia.map(SHORT), Variável=_r.variavel.map(VARS),
+                     Descritor=_r.descritor.map(DESCRIPTORS))
+    _tab = _tab.pivot_table(index=["Variável", "Descritor"], columns="Bacia",
+                            values="rejeicao").reset_index()
+    _tab = _tab.rename(columns={s: f"Rejeição, {s}" for s in SHORT.values()})
+    _cells = _r.groupby(["bacia", "variavel"]).celulas.max()
+    _ndmi = {s: results(s)[(results(s).etapa == 1) & (results(s).variable == "ndmi")]
+             for s in SLUGS}
+    _asym = {s: _ndmi[s][_ndmi[s].descriptor == "asymmetry"] for s in SLUGS}
+    mo.vstack([
+        mo.md(r"""
+        ## 1️⃣ A vegetação sozinha
+
+        Em cada célula, cada série foi comparada com 99 substitutas IAAFT, que preservam o
+        espectro e a distribuição de valores da série e apagam qualquer outra estrutura. As
+        substitutas recebem as mesmas lacunas da série observada, preenchidas do mesmo jeito,
+        para que o tratamento das composições vazias não crie diferenças por si mesmo. A
+        Figura 1 mostra, para cada descritor primário, a distribuição entre as células do z,
+        a distância entre o valor dos dados e o das substitutas, medida em desvios das
+        substitutas.
+        """),
+        book.figure(plot_stage1(), "descritores",
+                    "Figura 1. z dos descritores primários (valor observado menos a média das 99 "
+                    "substitutas IAAFT, em desvios-padrão das substitutas) nas células da "
+                    "subamostra, por bacia: LAI nas células com até 20% de composições vazias e "
+                    "NDMI em todas as analisadas (até 35%). Caixas: quartis; faixa cinza: "
+                    "±1,96."),
+        mo.md(nb.pt(r"""
+        Quase todas as caixas ficam dentro da faixa de ±1,96, onde os dados não se
+        distinguem das substitutas. A exceção chama atenção pelo sentido. A entropia de
+        permutação dos dados é maior que a das substitutas, e a complexidade estatística
+        menor, nas duas variáveis e nas duas bacias: a anomalia da vegetação de uma
+        composição para a outra é mais irregular do que um processo linear com o mesmo
+        espectro. Estrutura determinística faria o contrário, deixaria a série mais
+        organizada que as substitutas. O que torna a série mais irregular é o ruído de
+        recuperação do satélite, as pequenas falhas de nuvem e de geometria de visada que
+        sobrevivem aos filtros e mudam de uma composição para a outra. No LAI esse sinal
+        aparece também nas células com menos de 12% de lacunas, e por isso não é um efeito
+        do preenchimento. A Tabela 2 traz a fração de células em que cada descritor rejeita
+        as substitutas no sentido pré-registrado, que no caso dos padrões ordinais é o da
+        série mais organizada.
+        """)),
+        book.table(_tab, "rejeicao",
+                   "Tabela 2. Fração das células em que cada descritor primário rejeita as 99 "
+                   "substitutas IAAFT (α = 0,05, no sentido pré-registrado): LAI nas células com "
+                   "até 20% de lacunas e NDMI em todas as analisadas. Células: " +
+                   "; ".join(f"{SHORT[s]}, LAI {_cells[(s, 'lai')]} e NDMI "
+                             f"{_cells[(s, 'ndmi')]}" for s in SLUGS) + ".",
+                   selection=None, float_format="%.2f"),
+        mo.md(nb.pt(f"""
+        No LAI, a rejeição fica entre 0% e 9%, no nível do acaso, para todos os descritores
+        primários. No NDMI, a assimetria temporal rejeita em
+        {(_asym['tapajos'].pvalue <= ALPHA).sum()} das {len(_asym['tapajos'])} células do
+        Tapajós e em {(_asym['xingu'].pvalue <= ALPHA).sum()} das {len(_asym['xingu'])} do
+        Xingu, e o teste de Cao e o S-map ficam perto de 13% no Tapajós, pouco acima dos 5%
+        esperados ao acaso. Essas rejeições não acompanham a fração de lacunas das células,
+        mas uma assimetria no NDMI tem uma explicação simples, que não é dinâmica: as falhas
+        de nuvem e de aerossol que escapam dos filtros só podem baixar o índice, nunca
+        subir, e isso cria quedas rápidas e voltas lentas. Com padrões ordinais mais
+        irregulares que as substitutas e sem ganho de previsão, a leitura é a mesma do LAI.
+        """)),
+        mo.callout(mo.md(
+            "A vegetação vista pelo MODIS, em composições de 8 dias, não mostra estrutura não "
+            "linear além do que um processo linear com o mesmo espectro explica. A anomalia "
+            "de uma composição para a outra é dominada por ruído de recuperação. As nulas "
+            "realistas, que no clima diário separaram a memória sazonal da não linearidade, "
+            "ficam dispensadas aqui: os dados não rejeitam nem as substitutas lineares."),
+            kind="success"),
+        mo.callout(mo.md(
+            "O expoente de Lyapunov pelos métodos de Kantz e de Rosenstein rejeita as "
+            "substitutas em 79% a 97% das células de NDMI. Não é sinal de caos: são os "
+            "descritores que o portão desqualificou por rejeitarem o processo sazonal com "
+            "tendência, e as suas rejeições acompanham a fração de lacunas das células."),
+            kind="danger"),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+def plot_forecast():
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.4), sharey=True, layout="constrained")
+    for ax, v in zip(axes, VARS, strict=True):
+        for k, slug in enumerate(SLUGS):
+            r = results(slug)
+            f = r[(r.analise == "previsao") & (r.variable == v) & (r.modelo == "smap")]
+            f = f[f.grupo == "principal"] if v == "lai" else f
+            data = [f[f.preditores == p].rmse.dropna().to_numpy() for p in PREDICTORS]
+            pos = np.arange(len(PREDICTORS)) + (k - 0.5) * 0.36
+            parts = ax.boxplot(data, positions=pos, widths=0.3, patch_artist=True,
+                               showfliers=False, medianprops={"color": COLORS["ink"]})
+            for box in parts["boxes"]:
+                box.set(facecolor=BASIN_COLORS[slug], alpha=0.55, edgecolor=COLORS["ink"])
+            ax.plot([], [], "s", color=BASIN_COLORS[slug], alpha=0.55, label=SHORT[slug])
+        ax.axhline(1, color=COLORS["muted"], lw=1)
+        ax.set_xticks(range(len(PREDICTORS)), list(PREDICTORS.values()))
+        ax.set_title(VARS[v], fontsize=11)
+    axes[0].set_ylabel("RMSE da previsão (desvios da anomalia)")
+    axes[0].legend(loc="upper left")
+    return fig
+
+
+@app.function(hide_code=True)
+def ccm_table():
+    rows = []
+    for slug in SLUGS:
+        r = results(slug)
+        c = r[r.analise == "ccm"]
+        for (v, f, s), g in c.groupby(["variable", "forcante", "sentido"]):
+            g = g[g.grupo == "principal"] if v == "lai" else g
+            rows.append({"Bacia": SHORT[slug], "Variável": VARS[v], "Forçante": FORCINGS[f],
+                         "Sentido": s, "Células": len(g),
+                         "Significativas": (g.pvalue <= ALPHA).mean(),
+                         "ρ mediano": g.rho.median(), "ρ nulo mediano": g.rho_nulo.median()})
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _c = ccm_table()
+    _vpd = _c[(_c["Forçante"] == "VPD") & (_c.Sentido == "atmosfera→vegetação")]
+    _state = pd.concat([results(s)[results(s).analise == "estado"].assign(bacia=s)
+                        for s in SLUGS])
+    _state = _state[(_state.grupo == "principal") & (_state.variable == "lai")]
+    _state_max = _state.groupby(["bacia", "forcante"]).rho_estado.median().abs().max()
+    mo.vstack([
+        mo.md(r"""
+        ## 2️⃣ A vegetação e a atmosfera
+
+        Se a floresta e a atmosfera formam um sistema acoplado, o estado de uma deveria
+        ajudar a prever a outra. Para cada célula, alinhamos à data de observação de cada
+        composição o VPD médio dos 8 dias anteriores, do ERA5, e a chuva acumulada em 32 e em
+        96 dias, do CHIRPS, a chuva baseada em observações do capítulo da chuva. Depois
+        previmos a anomalia da vegetação na composição seguinte com três conjuntos de
+        preditores: só o passado da própria vegetação, só o da atmosfera e os dois juntos,
+        tanto com um modelo linear quanto com o S-map, que permite que a resposta dependa do
+        estado. O modelo aprende nos primeiros 60% da série e é avaliado no resto. A Figura 2
+        mostra o erro da previsão com o S-map. Um erro de 1 é o de quem chutasse a média: a
+        previsão não sabe nada.
+        """),
+        book.figure(plot_forecast(), "previsao",
+                    "Figura 2. Erro quadrático médio (RMSE, em desvios da anomalia) da previsão "
+                    "da anomalia da vegetação uma composição à frente pelo S-map, fora da "
+                    "amostra (últimos 40% da série), com três conjuntos de preditores, nas "
+                    "células da subamostra (LAI nas principais, NDMI em todas). Linha: erro de "
+                    "quem prevê a média."),
+        mo.md(r"""
+        O LAI é praticamente imprevisível uma composição à frente: o erro mediano fica entre
+        0,96 e 1,0 com o seu próprio passado, perto do erro de quem chuta a média. O NDMI tem
+        um pouco de memória, com erro mediano entre 0,86 e 0,88. O resultado mais importante
+        é a comparação entre as caixas. Juntar a atmosfera ao passado da vegetação não reduz
+        o erro, pelo contrário, aumenta-o um pouco fora da amostra, e a atmosfera sozinha
+        prevê pior que a média. O mesmo vale para o modelo linear e para o de vizinhos. Se
+        a atmosfera dos 8 dias anteriores empurrasse a vegetação de modo reconhecível, essa
+        comparação mostraria o ganho.
+
+        A previsão responde se a atmosfera ajuda a prever a vegetação; o mapeamento cruzado
+        convergente (CCM) pergunta outra coisa, se a vegetação guarda informação sobre a
+        atmosfera. A ideia vem da reconstrução do espaço de fases. Se o VPD influencia a
+        vegetação, a série da vegetação carrega um rastro do VPD, e a vizinhança de cada
+        ponto no espaço reconstruído da vegetação aponta para valores parecidos do VPD. A
+        habilidade ρ é a correlação entre o VPD estimado desse jeito e o observado. Como o
+        ciclo do ano sozinho já produz uma correlação, cada ρ é comparado com o de 99
+        substitutas que embaralham anos inteiros da atmosfera e mantêm o seu ciclo sazonal.
+        A Tabela 3 traz os resultados nos dois sentidos.
+        """),
+        book.table(_c, "ccm",
+                   "Tabela 3. Mapeamento cruzado convergente (CCM) entre a anomalia da vegetação "
+                   "e a atmosfera, nos dois sentidos: fração das células em que a habilidade ρ "
+                   "supera a de 99 substitutas sazonais (α = 0,05), ρ mediano e ρ mediano das "
+                   "substitutas. O sentido atmosfera→vegetação é estimado pelo espaço de fases "
+                   "da vegetação.", selection=None, float_format="%.2f"),
+        mo.md(nb.pt(f"""
+        O VPD passa as substitutas sazonais em boa parte das células, de
+        {_vpd.Significativas.min():.0%} a {_vpd.Significativas.max():.0%}, mas com uma
+        habilidade minúscula, um ρ mediano de {_vpd['ρ mediano'].min():.2f} a
+        {_vpd['ρ mediano'].max():.2f} contra cerca de 0,02 nas substitutas. A chuva aparece
+        em menos células. E o sentido inverso também passa, em 18% a 47% das células para o
+        VPD, o que é difícil de ler como influência da vegetação sobre o ar
+        em 8 dias. O conjunto aponta para um sinal comum fraco, e não para um acoplamento
+        dinâmico. Uma fonte provável desse sinal é a própria medida: nuvem fina e fumaça da
+        estação seca que escapam dos filtros baixam o LAI e o NDMI recuperados nos mesmos
+        dias em que o VPD está alto, e a correlação passa pelas substitutas porque não é
+        sazonal, é de cada ano.
+
+        Por fim, perguntamos se a resposta da vegetação à atmosfera muda com o estado do
+        sistema, isto é, se a floresta reage mais à secura quando já está seca. Para isso,
+        medimos, no S-map com a vegetação e a atmosfera juntas, a correlação entre a
+        sensibilidade local à atmosfera e o estado da vegetação. Nas células principais de
+        LAI, a mediana fica em {_state.rho_estado.median():+.3f}, e em nenhuma combinação de
+        bacia e forçante ela passa de {_state_max:.2f} em módulo: a resposta não depende do
+        estado. O NDMI, com uma só célula principal, não sustenta essa leitura.
+        """)),
+        mo.callout(mo.md(
+            "A atmosfera dos 8 dias anteriores não melhora a previsão da vegetação, e o sinal "
+            "comum que o CCM detecta é fraco e aparece nos dois sentidos. Com composições de "
+            "8 dias, o acoplamento entre a floresta e o ar não se mostra como dinâmica."),
+            kind="success"),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    _a = association()
+    _tab = pd.DataFrame({
+        "Bacia": _a.bacia.map(SHORT), "Variável": _a.variavel.map(VARS),
+        "Medida": _a.medida.map({"ccm_vpd": "CCM do VPD (ρ − ρ nulo)",
+                                 "ganho_conjunto": "ganho da previsão conjunta",
+                                 "z_pe_entropy": "z da entropia de permutação",
+                                 "z_pe_complexity": "z da complexidade estatística",
+                                 "z_prediction": "z do erro de previsão",
+                                 "z_cao_de2": "z do Cao (E2)"}),
+        "Células": _a.celulas,
+        "ρ parcial [IC 95%]": [f"{p:+.2f} [{lo:+.2f}; {hi:+.2f}]" for p, lo, hi in
+                               zip(_a.rho_parcial, _a.ic_inf, _a.ic_sup, strict=True)]})
+    mo.vstack([
+        mo.md(r"""
+        ## 🌲 A vegetação e a perda antecedente
+
+        A pergunta central do trabalho foi feita ao clima: as células com mais floresta
+        convertida até 2000 têm outra dinâmica? Fazemos a mesma pergunta à vegetação que
+        restou nelas. A Tabela 4 traz a correlação de postos parcial entre a perda
+        antecedente e cada medida das duas primeiras etapas, com os mesmos controles de
+        latitude, água e altitude do capítulo da perturbação e dinâmica, e o intervalo por
+        bootstrap de blocos de 1°.
+        """),
+        book.table(_tab, "perda",
+                   "Tabela 4. Correlação de postos parcial entre a perda antecedente de floresta "
+                   "(até 2000) e as medidas da vegetação por célula (etapas 1 e 2), controlando "
+                   "latitude, fração de água e altitude, com IC 95% por bootstrap de blocos de "
+                   "1°.", selection=None),
+        mo.md(nb.pt(f"""
+        Dos {len(_a)} intervalos, {int((~_a.exclui_zero).sum())} incluem zero. As
+        correlações maiores em módulo, perto de −0,4 no CCM do VPD e no Cao do NDMI do Xingu,
+        vêm das séries com só 29 células, e as do LAI, perto de −0,2 no CCM do VPD nas duas
+        bacias, também não excluem zero com as 56 a 62 células da subamostra. A floresta que
+        restou nas células mais convertidas não tem, nessas medidas, uma dinâmica diferente
+        da floresta das células preservadas. Isso não
+        contradiz os capítulos anteriores: a média dos pixels de floresta persistente de uma
+        célula mede a floresta que ficou, e não a paisagem convertida ao redor dela.
+        """)),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+def plot_delta():
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.6), layout="constrained")
+    months = 8 / 30.44
+    for ax, v in zip(axes, VARS, strict=True):
+        for slug in SLUGS:
+            delta = fire(slug)[0]
+            d = delta[delta.variavel == v].sort_values("k")
+            x = d.k * months
+            ax.fill_between(x, d.ic_inf, d.ic_sup, color=BASIN_COLORS[slug], alpha=0.2, lw=0)
+            ax.plot(x, d.delta, color=BASIN_COLORS[slug], lw=1.4, label=SHORT[slug])
+        ax.axhline(0, color=COLORS["muted"], lw=1)
+        ax.axvline(0, color=COLORS["ink"], lw=1, ls="--")
+        ax.set(title=VARS[v], xlabel="meses desde o mês da queima",
+               ylabel=f"Δ do {VARS[v]} (queimado − controles)")
+    axes[0].legend(loc="lower right")
+    return fig
+
+
+@app.cell(hide_code=True)
+def _():
+    _meta = {s: fire(s)[2] for s in SLUGS}
+    _eps = {s: fire(s)[3] for s in SLUGS}
+    _windows = [(1, 6, "até 1,5 mês"), (7, 23, "2 a 6 meses"), (24, 46, "6 a 12 meses"),
+                (47, 92, "1 a 2 anos"), (93, 138, "2 a 3 anos")]
+    _rows = []
+    for _s in SLUGS:
+        _d = fire(_s)[0]
+        for _v in VARS:
+            _x = _d[_d.variavel == _v].set_index("k")
+            for _a, _b, _name in _windows:
+                _w = _x.loc[_a:_b]
+                _rows.append({"Bacia": SHORT[_s], "Variável": VARS[_v], "Janela": _name,
+                              "Δ médio": round(_w.delta.mean(), 3),
+                              "IC exclui zero": f"{((_w.ic_inf > 0) | (_w.ic_sup < 0)).mean():.0%}"})
+    _tab = pd.DataFrame(_rows)
+    _dry = {s: _eps[s].mes.dt.month.isin([7, 8, 9, 10]).mean() for s in SLUGS}
+    mo.vstack([
+        mo.md(r"""
+        ## 3️⃣ A floresta depois do fogo
+
+        A terceira etapa segue pixels de floresta que queimaram. Um episódio é o primeiro mês
+        de queima, no produto de área queimada MCD64A1, de um pixel de floresta que não
+        queimava havia pelo menos 2 anos, que continua floresta nos 2 anos seguintes e que não
+        queima de novo em 3 anos. Entre os episódios de 2003 a 2021, sorteamos 15 por ano de
+        queima, 285 por bacia. Para cada um, sorteamos 10 pixels de floresta que
+        nunca queimaram na mesma célula do ERA5 e escolhemos os 3 mais parecidos com o pixel
+        queimado nos 2 anos antes da queima, na média e na amplitude do ano do LAI e do NDMI.
+        Assim, o queimado e os seus controles partem do mesmo lugar e passam pelo mesmo
+        tempo.
+
+        A comparação é do tipo antes e depois com controles. Para cada composição k depois da
+        queima, Δ(k) é a mudança do pixel queimado em relação ao seu ano anterior à queima
+        menos a mesma mudança da média dos controles. Uma seca que derrube a vegetação de
+        todos ao mesmo tempo some da diferença; o que resta é o efeito do fogo. O intervalo
+        reamostra as células do ERA5, e não os episódios, porque episódios da mesma célula
+        dividem o mesmo tempo. A Figura 3 mostra Δ(k) nos três anos depois da queima.
+        """),
+        mo.callout(mo.md(nb.pt(
+            "Episódios pareados: " + "; ".join(
+                f"{SHORT[s]}, {_meta[s]['pareados']} de {_meta[s]['episodios']}, em "
+                f"{_eps[s].cell_id.nunique()} células do ERA5, {100 * _dry[s]:.0f}% deles "
+                "entre julho e outubro" for s in SLUGS) + ".")), kind="info"),
+        book.figure(plot_delta(), "delta",
+                    "Figura 3. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao "
+                    "ano anterior à queima, menos a mesma mudança da média dos seus 3 "
+                    "controles pareados, por composição de 8 dias depois do mês da queima, com "
+                    "IC 95% por bootstrap de células do ERA5 (999 reamostragens)."),
+        mo.md(r"""
+        Antes da queima, as curvas oscilam em torno de zero, como deveriam se o pareamento
+        funcionou. A exceção são os dois ou três meses que antecedem o mês da queima, em que
+        o NDMI do pixel que vai queimar já cai um pouco abaixo do dos controles: a floresta
+        que queima é a que está secando mais no fim da estação seca, ou parte das queimas
+        começou antes do mês que o produto registra. A queda é imediata e forte nas duas
+        bacias. Nas primeiras composições, o LAI do pixel
+        queimado cai mais de uma unidade em relação aos controles, perto de um quinto do LAI
+        de uma floresta amazônica, e o NDMI cai cerca de 0,13. Metade da queda do LAI se
+        recupera nos primeiros seis meses, mais rápido no Tapajós que no Xingu, e no fim do
+        primeiro ano resta perto de um quarto dela. Depois disso a curva não volta a zero. Do
+        segundo ao terceiro ano, o LAI dos pixels queimados fica entre 0,15 e 0,20 abaixo do
+        dos controles, e o NDMI cerca de 0,02 abaixo, com intervalos que excluem zero em boa
+        parte das composições. O vaivém da curva dentro de cada ano acompanha a estação.
+        Como quase todas as queimas são de agosto a outubro, cada ano depois da queima passa
+        pela estação seca nos mesmos valores de k, e é nesses trechos que o déficit
+        reaparece: depois do primeiro ano, o LAI dos queimados fica perto de 0,5 abaixo do dos
+        controles em setembro e outubro e perto de zero de março a junho. A floresta
+        danificada perde mais folhas que a intacta justamente quando falta água. A Tabela 5
+        resume as janelas.
+        """),
+        book.table(_tab, "janelas",
+                   "Tabela 5. Δ médio do LAI e do NDMI por janela depois da queima e fração das "
+                   "composições da janela em que o IC 95% exclui zero.", selection=None),
+        mo.callout(mo.md(
+            "O fogo derruba a vegetação da floresta de uma vez, e ela se recupera em boa "
+            "parte no primeiro ano, mas não toda. Três anos depois, os pixels queimados "
+            "ainda têm menos folha e menos água nas folhas que pixels parecidos que não "
+            "queimaram."), kind="success"),
+        mo.callout(mo.md(
+            "Um critério automático de recuperação, fixado no plano, procura a primeira "
+            "composição a partir da qual o intervalo inclui zero por seis composições "
+            "seguidas, e ele aponta 1,2 a 1,5 ano depois da queima. A curva, porém, volta a "
+            "ficar negativa depois desse ponto, e por isso ele não deve ser lido como o fim "
+            "do efeito do fogo."), kind="warn"),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    _terms = {"qd": "nível depois da queima", "v_qd": "persistência (V)",
+              "h_qd": "resposta à chuva de 96 dias (H)", "d_qd": "resposta ao VPD (D)"}
+    _rows = []
+    for _s in SLUGS:
+        _r = fire(_s)[1]
+        _r = _r[_r.termo.isin(list(_terms))]
+        for _x in _r.itertuples():
+            _rows.append({"Bacia": SHORT[_s], "Variável": VARS[_x.variavel],
+                          "Termo": _terms[_x.termo],
+                          "Coeficiente [IC 95%]": f"{_x.coeficiente:+.3f} [{_x.ic_inf:+.3f}; "
+                                                  f"{_x.ic_sup:+.3f}]",
+                          "p": round(_x.p, 3)})
+    _tab = pd.DataFrame(_rows)
+    mo.vstack([
+        mo.md(r"""
+        A queda e a recuperação dizem quanto a floresta muda; resta saber se ela passa a
+        funcionar de outro modo. Para isso, ajustamos um painel com todos os pixels,
+        queimados e controles, em que a anomalia da vegetação na composição seguinte depende
+        da anomalia atual (V), da anomalia da chuva acumulada em 96 dias (H) e da do VPD (D):
+
+        $$V(t+1) = a\,V(t) + b\,H(t) + c\,D(t) + \text{interações com queimado} \times
+        \text{depois},$$
+
+        com efeitos fixos de pixel, que retiram as diferenças permanentes entre os pixels, e
+        erros agrupados por célula do ERA5. Cada termo de interação mede quanto o
+        coeficiente muda no pixel queimado depois da queima, em relação ao que muda nos
+        controles. A Tabela 6 traz as interações.
+        """),
+        book.table(_tab, "painel",
+                   "Tabela 6. Mudança, depois da queima e nos pixels queimados em relação aos "
+                   "controles, do nível, da persistência e da resposta da anomalia da vegetação "
+                   "à chuva acumulada (96 dias, CHIRPS) e ao VPD (ERA5), no painel com efeitos "
+                   "fixos de pixel e erros agrupados por célula do ERA5 (k de −46 a 138, sem a "
+                   "composição da queima).", selection=None),
+        mo.md(r"""
+        Depois do fogo, a floresta queimada fica abaixo dos controles, como a Figura 3 já
+        mostrava, e três coisas mudam no mesmo sentido nas duas bacias. A vegetação fica mais
+        persistente: o peso da anomalia atual sobre a seguinte aumenta entre 0,13 e 0,23. Ela passa
+        a responder mais à chuva acumulada, um efeito claro no Tapajós e marginal no Xingu.
+        E passa a responder mais ao VPD, no sentido de perder folha e água quando o ar está
+        mais seco, um efeito claro no Xingu e marginal no Tapajós. É o comportamento que se
+        espera de uma floresta com o dossel aberto pelo fogo e árvores feridas, que depende
+        mais da água que chega e sofre mais com o ar seco [5], e é coerente com o déficit
+        que reaparece nas estações secas da Figura 3.
+        """),
+        mo.callout(mo.md(
+            "Parte do aumento da persistência pode ser a própria recuperação lenta: enquanto "
+            "a vegetação volta aos poucos, a anomalia de uma composição se parece com a da "
+            "seguinte, e o painel não separa as duas coisas. As mudanças na resposta à chuva "
+            "e ao VPD não têm esse problema, porque medem a reação a forçantes de fora."),
+            kind="warn"),
+        mo.callout(mo.md(
+            "Os episódios e os controles foram sorteados só nas células da subamostra das "
+            "etapas 1 e 2, e a vegetação de cada ponto foi lida nos mesmos dados de área "
+            "(emenda de 02/11 da D-031, decidida antes dos resultados, porque os pedidos de "
+            "pontos da bacia inteira ficaram mais de 40 horas parados na fila do serviço da "
+            "NASA). A subamostra foi sorteada ao acaso, e as três etapas passam a usar as "
+            "mesmas células; o custo é um intervalo mais largo, com perto de 40 células do "
+            "ERA5 como grupos."), kind="warn"),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## 🧭 O que este capítulo acrescenta
+
+    Visto pelo satélite em composições de 8 dias, o estado da floresta amazônica não se
+    comporta como um sistema dinâmico de baixa dimensão. A sua anomalia é dominada por
+    ruído de recuperação, não guarda estrutura além da linear e quase não se deixa prever,
+    nem pelo próprio passado nem pela atmosfera. O sinal comum entre a vegetação e o VPD
+    existe, mas é fraco, aparece nos dois sentidos e é compatível com a contaminação da
+    própria medida. Isso é coerente com o que os capítulos do clima encontraram: um sistema
+    estocástico, em que a não linearidade, se existe, fica abaixo do que esses dados
+    conseguem mostrar.
+
+    O fogo é outra história. Ele deixa uma marca grande, imediata e duradoura, e muda a
+    forma como a floresta queimada responde à chuva e à secura do ar. A perturbação que o
+    clima diário do ERA5 não conseguia registrar no tempo aparece com clareza na
+    vegetação, porque é na vegetação que ela acontece. Para a pergunta socioespacial do
+    trabalho, esse é o elo: as queimas que o capítulo do fogo mostrou concentradas na
+    estação seca e nas frentes de ocupação deixam florestas que, três anos depois, ainda
+    dependem mais da chuva e sofrem mais com o ar seco, justamente as condições que as
+    secas recentes tornaram mais frequentes.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## 📚 Referências
+
+    [1] Myneni, R.; Knyazikhin, Y.; Park, T. MOD15A2H MODIS/Terra Leaf Area Index/FPAR
+    8-Day L4 Global 500m SIN Grid V061. NASA EOSDIS Land Processes DAAC, 2021.
+
+    [2] Vermote, E. MOD09A1 MODIS/Terra Surface Reflectance 8-Day L3 Global 500m SIN Grid
+    V061. NASA EOSDIS Land Processes DAAC, 2021.
+
+    [3] Giglio, L. et al. The Collection 6 MODIS burned area mapping algorithm and product.
+    *Remote Sensing of Environment*, v. 217, p. 72–85, 2018.
+
+    [4] Sugihara, G. et al. Detecting causality in complex ecosystems. *Science*, v. 338,
+    p. 496–500, 2012.
+
+    [5] Brando, P. M. et al. Abrupt increases in Amazonian tree mortality due to
+    drought–fire interactions. *PNAS*, v. 111, p. 6347–6352, 2014.
+    """)
+    return
+
+
+if __name__ == "__main__":
+    app.run()

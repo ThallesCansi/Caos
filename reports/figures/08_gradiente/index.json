@@ -2,11 +2,11 @@
   {
     "name": "correlograma",
     "region": null,
-    "caption": "Figura 8. Correlograma (I de Moran por classe de distância de 0,25°) dos resíduos dos postos, depois de retirados a latitude, a água e a altitude, da perda antecedente e do z do determinismo da temperatura e da entropia de permutação do VPD, nas células elegíveis. Linha pontilhada: 1°, o tamanho dos blocos do bootstrap (D-028).",
+    "caption": "Figura 8. Correlograma (I de Moran por classe de distância de 0,25°) dos resíduos dos postos, depois de retirados a latitude, a água e a altitude, da perda antecedente e do z do DET da temperatura e da entropia de permutação do VPD, nas células elegíveis. Linha pontilhada: 1°, o tamanho dos blocos do bootstrap (D-028).",
     "overleaf": true,
     "png": "reports/figures/08_gradiente/correlograma.png",
     "pdf": "reports/figures/08_gradiente/correlograma.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "dispersao",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/dispersao.png",
     "pdf": "reports/figures/08_gradiente/dispersao.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "longitudinal",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/longitudinal.png",
     "pdf": "reports/figures/08_gradiente/longitudinal.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "modelos",
@@ -33,7 +33,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modelos.png",
     "pdf": "reports/figures/08_gradiente/modelos.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "modis",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/modis.png",
     "pdf": "reports/figures/08_gradiente/modis.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "outras_exposicoes",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/outras_exposicoes.png",
     "pdf": "reports/figures/08_gradiente/outras_exposicoes.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "passagem",
@@ -60,7 +60,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/passagem.png",
     "pdf": "reports/figures/08_gradiente/passagem.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "paisagem",
@@ -69,7 +69,7 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/tapajos/paisagem.png",
     "pdf": "reports/figures/08_gradiente/tapajos/paisagem.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "paisagem",
@@ -78,6 +78,6 @@
     "overleaf": true,
     "png": "reports/figures/08_gradiente/xingu/paisagem.png",
     "pdf": "reports/figures/08_gradiente/xingu/paisagem.pdf",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   }
 ]

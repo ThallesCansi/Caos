@@ -81,7 +81,11 @@ def cell_table(cfg, spec) -> pd.DataFrame:
     dm = pd.DataFrame({f"dm_{v}": dims[(v, "2013_2024")] - dims[(v, "2001_2012")]
                        for v in dims.columns.get_level_values(0).unique()})
     out["perda_1990_2000"] = out.floresta_frac_1990 - out.floresta_frac_2000
-    return out.join(full).join(first).join(observed).join(null).join(delta).join(dm)
+    out = out.join(full).join(first).join(observed).join(null).join(delta).join(dm)
+    # memória e variância sazonais (G2a), quando `era5 seasonality` já rodou
+    if (out_dir(cfg) / "sazonalidade.parquet").exists():
+        out = out.join(pd.read_parquet(out_dir(cfg) / "sazonalidade.parquet"))
+    return out
 
 
 def half_changes(tests: pd.DataFrame) -> pd.DataFrame:
@@ -284,6 +288,33 @@ def effective_n(x, y, latitude, longitude, width=0.5) -> float:
     return float(1 + 1 / var)
 
 
+def effective_n_mean(values, latitude, longitude, width=0.5) -> float:
+    """n efetivo da média de um campo espacial: n² / Σᵢⱼ ρ(dᵢⱼ), entre 1 e n.
+
+    ρ é a autocorrelação média por classe de distância de largura `width` (graus), como em
+    `effective_n`, somada só até a primeira classe em que deixa de ser positiva: com a média
+    retirada, a soma de todas as classes é −n por construção. Serve para a incerteza de uma
+    fração de células (D-029).
+    """
+    v = np.asarray(values, float) - np.mean(values)
+    n = len(v)
+    if n < 2 or not (v @ v) > 0:
+        return float(n)
+    d = _distances(latitude, longitude)
+    np.fill_diagonal(d, -1.0)
+    total, var = float(n), v @ v / n
+    for lo in np.arange(0, d.max() + width, width):
+        w = ((d > lo) & (d <= lo + width)) * 1.0
+        pairs = w.sum()
+        if not pairs:
+            continue
+        rho = (v @ w @ v) / pairs / var
+        if rho <= 0:
+            break
+        total += pairs * rho
+    return float(min(n, max(1.0, n**2 / total)))
+
+
 def spatial_inference(frame, exposure, response, controls=CONTROLS) -> dict:
     """Moran por permutação, n efetivo e p corrigido pela autocorrelação (D-028)."""
     data = frame[[exposure, response, "latitude", "longitude", *controls]].dropna()
@@ -295,10 +326,26 @@ def spatial_inference(frame, exposure, response, controls=CONTROLS) -> dict:
     slope = (rx @ ry) / (rx @ rx)
     moran, moran_p = moran_test(ry - slope * rx, data.latitude, data.longitude)
     n_eff = effective_n(rx, ry, data.latitude, data.longitude)
-    t = r * np.sqrt(max(n_eff - 2, 1e-9) / (1 - r**2))
-    p = float(2 * student_t.sf(abs(t), max(n_eff - 2, 1e-9)))
+    # graus de liberdade: n′ − 2 menos um por controle retirado dos postos (G4)
+    df = max(n_eff - 2 - len(controls), 1e-9)
+    t = r * np.sqrt(df / (1 - r**2))
+    p = float(2 * student_t.sf(abs(t), df))
     return {"n_efetivo": n_eff, "p_n_efetivo": p, "moran_residuos": moran,
             "moran_p": moran_p}
+
+
+BLOCK_SIZES = (1.0, 2.0, 2.5)
+
+
+def block_sensitivity(frame, exposure, response, controls=CONTROLS,
+                      sizes=BLOCK_SIZES) -> dict:
+    """IC e p do bootstrap com blocos de cada tamanho em `sizes` (graus; G4)."""
+    out = {}
+    for size in sizes:
+        a = associate(frame, exposure, response, controls, block=size)
+        out |= {f"ic_inf_{size:g}": a["ic_inf"], f"ic_sup_{size:g}": a["ic_sup"],
+                f"p_blocos_{size:g}": a["p_blocos"]}
+    return out
 
 
 def adjust(p, method: str) -> np.ndarray:

@@ -23,6 +23,7 @@ with app.setup(hide_code=True):
     from amazon_chaos import nb, regions
     from amazon_chaos.config import load_region
     from amazon_chaos.nonlinear import precip as P
+    from amazon_chaos.nonlinear import results as R
     from amazon_chaos.nonlinear.suite import load_spec
     from amazon_chaos.viz import COLORS, map_basins
 
@@ -126,8 +127,10 @@ def _():
     # 🌧️ A chuva vista de duas formas
 
     O capítulo anterior terminou com uma suspeita confirmada. O ERA5 reconstrói o clima com
-    um mapa de vegetação fixo, e por isso não registra o aquecimento que o satélite vê sobre
-    as áreas desmatadas. A pergunta que fica é se essa cegueira vale também para a dinâmica:
+    um mapa de vegetação fixo, e por isso o seu ar não registra o aquecimento que o satélite
+    vê sobre as áreas desmatadas, e a sua superfície registra só uma fração do contraste
+    entre lugares e nada da mudança no tempo. A pergunta que fica é se essa miopia vale
+    também para a dinâmica:
     se houvesse uma marca da perturbação na forma como o tempo evolui de um dia para o
     outro, uma série observada a mostraria onde a reanálise não mostra?
 
@@ -585,6 +588,95 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def rain_split():
+    """Ocorrência × intensidade (G6, D-030): rejeição, z e associação com a perda."""
+    from amazon_chaos.nonlinear import precip_split as PS
+
+    rows = []
+    for slug in SLUGS:
+        cfg = load_region(slug)
+        t = pd.read_parquet(PS.output_dir(cfg, SPEC) / "descritores.parquet")
+        t = t[t.descriptor == "pe_entropy"]
+        e = cells(slug)[cells(slug).elegivel]
+        for source in SOURCES:
+            part = t[t.variable == source].set_index(["cell_id", "teste"])
+            first = part.xs("intensidade", level="teste")
+            measures = {
+                "fração de dias chuvosos": (first.fracao_chuvosos, None),
+                "entropia da ocorrência (palavras de 5 dias)": (first.entropia_ocorrencia,
+                                                                 None),
+                "z da intensidade, nula que mantém a ocorrência":
+                    (first.z, first.pvalue),
+                "z só nos dias chuvosos": (part.xs("chuvosos", level="teste").z,
+                                           part.xs("chuvosos", level="teste").pvalue)}
+            for name, (values, pvalues) in measures.items():
+                frame = e.join(values.rename("y"), how="inner")
+                ok = pvalues.loc[frame.index] if pvalues is not None else None
+                rows.append({"bacia": slug, "fonte": source, "medida": name,
+                             "rejeitam": (ok <= 0.05 + R.TOLERANCE).mean()
+                             if ok is not None else np.nan,
+                             "mediana": frame.y.median(),
+                             **G.associate(frame, "perda_antecedente", "y")})
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _r = rain_split()
+    _tab = pd.DataFrame({
+        "Bacia": _r.bacia.map(SHORT), "Fonte": _r.fonte.map(SOURCES), "Medida": _r.medida,
+        "Rejeitam": [f"{100 * v:.0f}%" if np.isfinite(v) else "—" for v in _r.rejeitam],
+        "Mediana": _r.mediana.round(2),
+        "ρ parcial com a perda": [ci(r, a, b) for r, a, b in zip(
+            _r.rho_parcial, _r.ic_inf, _r.ic_sup, strict=True)]})
+    mo.vstack([
+        mo.md(r"""
+        ## 🌦️ Quantos dias chove ou como chove? (comparativo)
+
+        A entropia de permutação olha a série inteira, e na maior parte dos dias não chove.
+        Uma diferença entre células pode vir, portanto, de duas coisas bem diferentes: de
+        quantos dias são secos e de como eles se agrupam, que chamamos de ocorrência, ou da
+        ordem das quantidades nos dias em que chove, que chamamos de intensidade. Para
+        separar as duas, fixamos antes do cálculo (D-030) três medidas por célula, com dia
+        chuvoso a partir de 1 mm. A ocorrência é descrita pela fração de dias chuvosos e
+        pela entropia das sequências de cinco dias secos ou chuvosos, que vale 1 quando os
+        dias são independentes e metade deles chove. A intensidade é testada com uma nula
+        própria: em cada uma de 39 séries, os dias chuvosos ficam onde estão e as
+        quantidades são sorteadas entre eles. Se a entropia observada for menor que a
+        dessas séries, a ordem das quantidades tem estrutura além da ocorrência. Por fim,
+        a mesma comparação só na sequência dos dias chuvosos, contra 39 permutações dela.
+        A Tabela 5 resume as três.
+        """),
+        book.table(_tab, "ocorrencia",
+                   "Tabela 5. Comparativo (D-030). Ocorrência (fração de dias com chuva ≥ 1 mm "
+                   "e entropia das palavras binárias de 5 dias, normalizada) e intensidade da "
+                   "chuva (z da entropia de permutação contra 39 nulas que mantêm os dias "
+                   "chuvosos e sorteiam as quantidades, e contra 39 permutações dos dias "
+                   "chuvosos), 2001–2024: fração das células com p ≤ 0,05, mediana nas células "
+                   "e correlação parcial com a perda antecedente (controles do capítulo 8, IC "
+                   "95% por blocos de 1°).", selection=None),
+        mo.md(r"""
+        As duas fontes divergem também aqui. No ERA5, a ordem das quantidades tem estrutura
+        muito além da ocorrência em todas as células, e mesmo só nos dias chuvosos ela
+        rejeita a permutação em quase todas: a chuva do modelo varia de forma suave de um
+        dia para o outro, como se espera de uma chuva calculada em grandes pontos de grade.
+        No CHIRPS, a estrutura além da ocorrência aparece em cerca de um terço das células,
+        com $z$ perto de −1, e quase nada nos dias chuvosos.
+
+        A diferença decisiva está na associação com a perturbação. No CHIRPS, a ocorrência
+        não acompanha a perda antecedente, mas a organização das intensidades sim, nas duas
+        bacias: quanto maior a perda, mais a ordem das quantidades se afasta da nula que só
+        mantém os dias de chuva. No ERA5, é o contrário: as células mais perturbadas têm
+        menos dias chuvosos, e a organização das intensidades não muda. A associação do
+        CHIRPS da Tabela 2 não vem, portanto, de haver mais dias secos nas células
+        convertidas, e sim de como a chuva se reparte entre os dias em que chove.
+        """),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
@@ -606,10 +698,11 @@ def _():
     ao longo do tempo nenhuma das fontes mostra efeito do desmatamento recente. A terceira é
     que só no Xingu o sinal se separa da secura e da vegetação natural.
 
-    Com essas cautelas, o capítulo fecha o argumento do trabalho por outro caminho. O
-    desmatamento não só aquece a superfície, como o satélite mostra no capítulo 08; ele
-    também se associa, ao menos no Xingu, a uma organização diferente da chuva de um dia
-    para o outro, que a reanálise não reproduz. Uma resposta firme sobre o efeito da
+    Com essas cautelas, o capítulo fecha o argumento do trabalho por outro caminho. A
+    conversão da floresta não só aquece a superfície, como o satélite mostra no capítulo 8;
+    a perda antecedente também se associa, entre lugares e com mais clareza no Xingu, a uma
+    organização diferente das quantidades de chuva de um dia para o outro, que não se
+    reduz ao número de dias secos e que a reanálise não reproduz. Uma resposta firme sobre o efeito da
     perturbação na dinâmica do clima precisa de séries diárias que acompanhem a paisagem,
     e o ERA5 não é uma delas.
     """)

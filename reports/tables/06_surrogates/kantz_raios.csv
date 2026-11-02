@@ -1,0 +1,17 @@
+Bacia,Variável,Raio (quantil das distâncias),z na bacia,p na bacia,Células que rejeitam
+Tapajós,temperatura,1%,6.2,0.01,98%
+Tapajós,temperatura,2%,5.1,0.01,100%
+Tapajós,temperatura,5%,3.2,0.01,98%
+Tapajós,temperatura,10%,1.2,0.26,63%
+Tapajós,déficit de pressão de vapor,1%,2.1,0.04,55%
+Tapajós,déficit de pressão de vapor,2%,2.4,0.02,56%
+Tapajós,déficit de pressão de vapor,5%,0.3,0.75,35%
+Tapajós,déficit de pressão de vapor,10%,-1.5,0.14,19%
+Xingu,temperatura,1%,3.6,0.01,97%
+Xingu,temperatura,2%,4.4,0.01,98%
+Xingu,temperatura,5%,3.6,0.01,97%
+Xingu,temperatura,10%,2.5,0.02,78%
+Xingu,déficit de pressão de vapor,1%,5.5,0.01,70%
+Xingu,déficit de pressão de vapor,2%,5.0,0.01,72%
+Xingu,déficit de pressão de vapor,5%,2.4,0.01,70%
+Xingu,déficit de pressão de vapor,10%,0.5,0.57,72%

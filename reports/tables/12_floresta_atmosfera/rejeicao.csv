@@ -1,0 +1,13 @@
+Variável,Descritor,"Rejeição, Tapajós","Rejeição, Xingu"
+LAI,Assimetria temporal,0.03389830508474576,0.046511627906976744
+LAI,Cao (E2),0.03389830508474576,0.09302325581395349
+LAI,Complexidade estatística,0.0,0.0
+LAI,Entropia de permutação,0.0,0.0
+LAI,Erro de previsão não linear,0.0847457627118644,0.023255813953488372
+LAI,S-map (ganho não linear),0.01694915254237288,0.06976744186046512
+NDMI,Assimetria temporal,0.1794871794871795,0.13793103448275862
+NDMI,Cao (E2),0.1282051282051282,0.13793103448275862
+NDMI,Complexidade estatística,0.0,0.0
+NDMI,Entropia de permutação,0.0,0.0
+NDMI,Erro de previsão não linear,0.0,0.0
+NDMI,S-map (ganho não linear),0.1282051282051282,0.0

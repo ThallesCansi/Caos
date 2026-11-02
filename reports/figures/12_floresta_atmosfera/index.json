@@ -1,0 +1,29 @@
+[
+  {
+    "name": "delta",
+    "region": null,
+    "caption": "Figura 3. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao ano anterior à queima, menos a mesma mudança da média dos seus 3 controles pareados, por composição de 8 dias depois do mês da queima, com IC 95% por bootstrap de células do ERA5 (999 reamostragens).",
+    "overleaf": true,
+    "png": "reports/figures/12_floresta_atmosfera/delta.png",
+    "pdf": "reports/figures/12_floresta_atmosfera/delta.pdf",
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "descritores",
+    "region": null,
+    "caption": "Figura 1. z dos descritores primários (valor observado menos a média das 99 substitutas IAAFT, em desvios-padrão das substitutas) nas células da subamostra, por bacia: LAI nas células com até 20% de composições vazias e NDMI em todas as analisadas (até 35%). Caixas: quartis; faixa cinza: ±1,96.",
+    "overleaf": true,
+    "png": "reports/figures/12_floresta_atmosfera/descritores.png",
+    "pdf": "reports/figures/12_floresta_atmosfera/descritores.pdf",
+    "commit": "180e485+modificado"
+  },
+  {
+    "name": "previsao",
+    "region": null,
+    "caption": "Figura 2. Erro quadrático médio (RMSE, em desvios da anomalia) da previsão da anomalia da vegetação uma composição à frente pelo S-map, fora da amostra (últimos 40% da série), com três conjuntos de preditores, nas células da subamostra (LAI nas principais, NDMI em todas). Linha: erro de quem prevê a média.",
+    "overleaf": true,
+    "png": "reports/figures/12_floresta_atmosfera/previsao.png",
+    "pdf": "reports/figures/12_floresta_atmosfera/previsao.pdf",
+    "commit": "180e485+modificado"
+  }
+]

@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/atrasos_ordinais.csv",
     "tex": "reports/tables/07_descritores/atrasos_ordinais.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "atrasos_tau",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/atrasos_tau.csv",
     "tex": "reports/tables/07_descritores/atrasos_tau.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "ews_resumo",
@@ -24,16 +24,16 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/ews_resumo.csv",
     "tex": "reports/tables/07_descritores/ews_resumo.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "natureza_nulas_realistas",
     "region": null,
-    "caption": "Tabela 5. Comparativo (D-027). Fração das células com p ≤ 0,05 contra as substitutas em 2001–2024 e limite superior do IC 95% da taxa de rejeição na nula realista mais permissiva (capítulo 5). ▲: acima do limite. *: na subamostra de D-024. S-map: teste de Diebold–Mariano do ganho sobre a previsão linear, horizonte de 1 dia.",
+    "caption": "Tabela 5. Comparativo (D-027, emendado na D-029). Fração das células com p ≤ 0,05 contra as substitutas em 2001–2024, por variável, ao lado do limite superior do IC 95% da taxa de rejeição na nula realista mais permissiva ajustada à mesma variável (capítulo 5). n′: número efetivo de células independentes. ▲: acima do limite mesmo com o IC da fração; △: acima só pontualmente; ≈: a nula rejeita em mais de 95% e a comparação não informa. *: na subamostra de D-024. S-map: teste de Diebold–Mariano do ganho sobre a previsão linear, horizonte de 1 dia. Limite e leitura por célula: a mesma regra com as quatro nulas ajustadas a cada célula da subamostra (39 substitutas por série), Xingu / Tapajós; ·: dentro do limite; –: estimador sem nula por célula.",
     "overleaf": true,
     "csv": "reports/tables/07_descritores/natureza_nulas_realistas.csv",
     "tex": "reports/tables/07_descritores/natureza_nulas_realistas.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "rejeicao_bh",
@@ -42,7 +42,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/rejeicao_bh.csv",
     "tex": "reports/tables/07_descritores/rejeicao_bh.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "rejeicao_bh_janelas",
@@ -51,7 +51,7 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/rejeicao_bh_janelas.csv",
     "tex": "reports/tables/07_descritores/rejeicao_bh_janelas.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   },
   {
     "name": "sensibilidade_lote",
@@ -60,6 +60,6 @@
     "overleaf": true,
     "csv": "reports/tables/07_descritores/sensibilidade_lote.csv",
     "tex": "reports/tables/07_descritores/sensibilidade_lote.tex",
-    "commit": "96ec2f2+modificado"
+    "commit": "180e485+modificado"
   }
 ]

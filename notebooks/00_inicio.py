@@ -23,6 +23,40 @@ with app.setup(hide_code=True):
     from amazon_chaos.config import list_regions, load_region
 
     book = nb.notebook("00_inicio")
+    SYNTHESIS = pd.DataFrame([
+        ("1. Validade dos métodos", "Os descritores reconhecem caos em sistemas conhecidos",
+         "Portão pré-registrado; nulas realistas (DET, LAM e Lyapunov também rejeitam nelas; "
+         "Cao não)", "05"),
+        ("2. Estrutura", "Processo estocástico com memória sazonal; não linearidade fraca na "
+         "temperatura (assimetria, D2)", "Substitutas IAAFT; nulas realistas por variável "
+         "(D-029); Cao; S-map; nulas ajustadas nas células", "06, 07"),
+        ("2. Estrutura", "No VPD, a rejeição vem em boa parte da memória sazonal",
+         "Nula de memória sazonal rejeita em 92–98%", "05, 07"),
+        ("3. Paisagem", "Recorrências mais curtas (DET) na temperatura onde a perda "
+         "antecedente é maior, nas duas bacias", "Holm (blocos de 1°, 2°, 2,5°); n efetivo "
+         "com Holm no Tapajós; vegetação do ERA5; sazonalidade; placebo", "08"),
+        ("3. Paisagem", "Padrões ordinais do VPD mais próximos do aleatório",
+         "Holm com blocos de 1° e, no Xingu, de 2,5°; cai com a sazonalidade nos controles; "
+         "não resiste ao n efetivo com Holm", "08"),
+        ("3. Paisagem", "Nenhuma mudança maior onde a floresta foi perdida depois de 2000",
+         "Longitudinal; células com o mesmo m", "08"),
+        ("4. Detectabilidade", "MODIS: superfície 6–7 °C mais quente nas células convertidas "
+         "e aquecimento maior onde houve perda", "Céu limpo; Cerrado natural; número de "
+         "composições", "04, 08"),
+        ("4. Detectabilidade", "ERA5: o ar não vê; a superfície vê 1/3 (Xingu) e 1/5 "
+         "(Tapajós) do contraste entre lugares e nada no tempo", "Mesma grandeza e horário "
+         "(10h30); vegetação do ERA5", "08"),
+        ("4. Detectabilidade", "Chuva do CHIRPS: intensidades organizadas de outro modo nas "
+         "células convertidas", "Secura; dither; ocorrência × intensidade", "09"),
+        ("Território", "Fogo das áreas preservadas exige tempo seco; o das convertidas não",
+         "Controles de datas reais; bootstrap de anos e de anos × blocos", "10"),
+        ("Floresta", "A vegetação do MODIS em 8 dias não tem estrutura não linear, e a "
+         "atmosfera não a prevê", "Portão de 8 dias; IAAFT com as mesmas lacunas; CCM com "
+         "substitutas sazonais", "12"),
+        ("Floresta", "O fogo derruba o LAI e o NDMI, deixa um déficit de estação seca por 3 "
+         "anos e torna a floresta mais sensível à chuva e ao VPD", "Controles pareados antes "
+         "e depois; IC por células do ERA5; painel com efeitos fixos", "12"),
+    ], columns=["Nível", "Resultado", "Resiste a", "Capítulo"])
     CHAPTERS = [
         ("01_laboratorio", "🌀 Laboratório de sistemas dinâmicos"),
         ("02_regioes", "🗺️ As bacias do Xingu e do Tapajós"),
@@ -35,6 +69,7 @@ with app.setup(hide_code=True):
         ("09_chuva", "🌧️ A chuva vista de duas formas"),
         ("10_fogo", "🔥 O tempo antes do fogo"),
         ("11_territorio", "🗺️ O território"),
+        ("12_floresta_atmosfera", "🌿 A floresta como sistema dinâmico"),
     ]
 
 
@@ -93,6 +128,9 @@ def _():
       P --> F[🔥 O tempo<br/>antes do fogo]
       G --> T[🗺️ Território<br/>áreas protegidas]
       F --> T
+      P --> FL[🌿 Floresta<br/>vegetação e fogo]
+      C --> FL
+      FL --> T
     """)
     return
 
@@ -119,12 +157,14 @@ def _():
 
     Os dois caminhos se encontram no capítulo dos descritores, em que os métodos validados
     são aplicados às 1.541 células, e no da perturbação e dinâmica, em que essa estrutura é
-    comparada com o desmatamento e o fogo de cada célula. Três capítulos completam a
+    comparada com o desmatamento e o fogo de cada célula. Quatro capítulos completam a
     resposta. O da chuva repete a análise numa chuva baseada em observações, para saber se
     o que a reanálise não mostra aparece em outro registro; o do fogo pergunta que tempo
     antecede o início dos incêndios em paisagens preservadas e convertidas; e o do
     território lê os mesmos números à luz das Terras Indígenas e das Unidades de
-    Conservação, a ponte para a análise socioespacial do trabalho.
+    Conservação, a ponte para a análise socioespacial do trabalho. O último inverte o
+    ponto de vista: trata a própria floresta, vista por satélite a cada 8 dias, como a
+    variável dinâmica, sozinha, junto com a atmosfera e depois do fogo.
     """)
     return
 
@@ -187,42 +227,47 @@ def _():
         mo.md(r"""
         ## 🔑 O que encontramos, em uma página
 
-        A pergunta tem três partes, e os dados respondem a cada uma com um grau diferente de
-        firmeza. A primeira é sobre a natureza da dinâmica. As séries diárias de temperatura
-        e de déficit de pressão de vapor das duas bacias se afastam de um processo linear:
-        recorrências mais organizadas, padrões ordinais menos uniformes e uma assimetria
-        entre subida e descida que as substitutas não reproduzem. Mas um portão mais
-        exigente, com processos estocásticos sem caos e com memória sazonal ou variância
-        condicional, mostra que parte dessas rejeições não distingue o clima de um processo
-        aleatório com essas propriedades; só a dimensão de correlação, a assimetria e os
-        padrões ordinais do VPD vão além delas. O teste de Cao, o único que separa caos de
-        ruído nesse portão, mostra que o valor seguinte quase não depende do passado
-        reconstruído, e a previsão não linear não supera a linear de modo apreciável. O
-        clima diário dessas bacias é um processo estocástico com não linearidade fraca, e não
-        um caos de baixa dimensão escondido no ruído. Os sinais precoces de transição também
-        não aparecem: a variância cresce, mas a memória não cresce junto.
+        Os resultados se organizam em quatro níveis, e cada um só faz sentido depois do
+        anterior. O primeiro é a validade dos métodos. Os descritores reconhecem o caos nos
+        sistemas conhecidos, mas vários deles, como o expoente de Lyapunov e as recorrências
+        mais longas da análise de recorrência (DET e LAM), também rejeitam a hipótese linear
+        em processos aleatórios com memória que muda ao longo do ano ou com variância
+        condicional. Só o teste de Cao separa com segurança caos de ruído nesses casos.
+        Rejeitar as substitutas, portanto, não basta para falar em dinâmica determinística.
 
-        A segunda parte é a relação com a perturbação. Entre células comparáveis em latitude,
-        água e relevo, as que tinham mais floresta convertida até 2000 têm padrões ordinais
-        do VPD mais próximos do aleatório e menos determinismo na temperatura, nas duas
-        bacias; no Xingu, a associação também aparece em outros descritores, e no Tapajós
-        os padrões ordinais da temperatura não acompanham a perturbação. São associações
-        moderadas: descontada a semelhança entre células vizinhas, só esses pares que se
-        repetem nas duas bacias ficam de pé, e boa parte da diferença passa pelo mapa de
-        vegetação fixo que o próprio ERA5 usa. Uma exposição-placebo, o desmatamento que
-        ainda não tinha acontecido, não reproduz essas associações. E as células que mais
-        perderam floresta depois de 2000 não mudaram de dinâmica mais que as outras.
+        O segundo nível é a estrutura do clima diário. As séries de temperatura e de déficit
+        de pressão de vapor das duas bacias se afastam de um processo linear, mas o teste de
+        Cao mostra que o valor seguinte quase não depende do passado reconstruído, e a
+        previsão não linear ganha menos de 1% sobre a linear. É um processo estocástico com
+        memória sazonal. A temperatura guarda uma não linearidade fraca que nenhuma das
+        nulas realistas reproduz, sobretudo na assimetria entre subida e descida e na
+        dimensão de correlação; no VPD, quase tudo o que parecia estrutura é reproduzido pela
+        memória sazonal. Os sinais precoces de transição não aparecem: a variância cresce,
+        mas a memória não cresce junto.
 
-        A terceira parte é sobre o que é preciso para ver uma marca, e aqui a resposta é a
-        mais firme. A temperatura da superfície medida por satélite mostra as células com
-        mais floresta convertida de 6 a 7 °C mais quentes que as preservadas, de dia, na
-        estação seca, e as que mais perderam floresta entre 2001 e 2012 esquentando quatro a
-        cinco vezes mais que as outras. O ERA5 não registra esse aquecimento ao longo do
-        tempo, nem na temperatura do ar nem na da própria superfície no horário do satélite,
-        e entre células registra só uma fração dele. Na chuva, a série baseada em observações
-        mostra, no Xingu, uma organização diária diferente nas células convertidas que a
-        chuva da reanálise não reproduz. O desmatamento muda a superfície e, ao que tudo
-        indica, o tempo local; a reanálise é que não acompanha essa mudança.
+        O terceiro nível é a paisagem. Entre células comparáveis em latitude, água e relevo,
+        as que tinham mais floresta convertida até 2000 têm padrões ordinais do VPD mais
+        próximos do aleatório e recorrências mais curtas na temperatura, nas duas bacias. A
+        força dessa evidência depende de como se desconta a semelhança entre células
+        vizinhas: com Holm, 9 dos 16 testes resistem com blocos de 1°, 5 com blocos de 2,5°
+        e só o DET da temperatura no Tapajós com o tamanho efetivo da amostra. A associação
+        ordinal é, em grande parte, uma diferença na memória sazonal das células, e parte da
+        diferença passa pelo mapa de vegetação fixo do ERA5; a do DET da temperatura resiste
+        a esses dois controles. No Xingu, uma exposição-placebo, a perda que ainda não tinha
+        acontecido, não reproduz as associações; no Tapajós, ela informa pouco. E as células
+        que mais perderam floresta depois de 2000 não mudaram de dinâmica mais que as outras.
+
+        O quarto nível é a detectabilidade, e aqui a resposta é a mais firme. A temperatura
+        da superfície medida por satélite mostra as células com mais floresta convertida de 6
+        a 7 °C mais quentes que as preservadas, de dia, na estação seca, e as que mais
+        perderam floresta entre 2001 e 2012 esquentando quatro a cinco vezes mais que as
+        outras. O ar do ERA5 não registra nada disso. A superfície do ERA5 registra um terço
+        do contraste entre lugares no Xingu, e só pelo mapa de vegetação, e um quinto no
+        Tapajós; ao longo do tempo, nada. O ERA5 não é cego, é míope, e isso explica por que
+        o contraste entre células aparece e a mudança no tempo não. Na chuva, a série
+        baseada em observações mostra, nas células convertidas, uma organização diferente
+        das quantidades de um dia para o outro, que não se reduz ao número de dias secos e
+        que a chuva da reanálise não reproduz.
 
         Os dois capítulos finais olham para o território. Na estação seca, o fogo das áreas
         preservadas começa com tempo anormalmente seco, e o das convertidas com o tempo de
@@ -230,13 +275,27 @@ def _():
         gradiente de perturbação que os capítulos quantitativos mediram é, no mapa, em boa
         parte a fronteira entre as Terras Indígenas e Unidades de Conservação e a terra
         aberta à conversão.
+
+        O último capítulo olha para a própria floresta. A vegetação vista pelo satélite a
+        cada 8 dias não mostra estrutura não linear além da de um processo linear com o
+        mesmo espectro, quase não se deixa prever e não fica mais previsível quando se junta
+        a atmosfera; o sinal comum com a secura do ar é fraco e aparece nos dois sentidos. O
+        fogo, ao contrário, deixa uma marca grande e duradoura: derruba a vegetação de uma
+        vez, ela se recupera em boa parte no primeiro ano, e três anos depois ainda perde
+        mais folhas que a floresta intacta em cada estação seca e responde mais à chuva e ao
+        VPD. A Tabela 1 resume o que resiste a quê.
         """),
+        book.table(SYNTHESIS, "sintese",
+                   "Tabela 1. O que resiste a quê. Os resultados principais em quatro níveis, "
+                   "com as checagens a que cada um foi submetido e onde estão.",
+                   selection=None),
         mo.callout(mo.md(
-            "Os dados mostram que o clima diário da Amazônia é estocástico, com não "
-            "linearidade fraca, sem caos de baixa dimensão; que essa dinâmica se associa "
-            "moderadamente à conversão da floresta, em boa parte pelo que o próprio modelo "
-            "registra; e que o desmatamento aquece fortemente a superfície, algo que a "
-            "reanálise não acompanha. Eles não permitem dizer, com uma reanálise de "
+            "Os dados mostram que o clima diário da Amazônia é estocástico, com memória "
+            "sazonal e não linearidade fraca, sem caos de baixa dimensão; que essa dinâmica "
+            "se associa moderadamente à conversão da floresta, em boa parte pela "
+            "sazonalidade e pelo que o próprio modelo registra; e que o desmatamento aquece "
+            "fortemente a superfície, algo que a reanálise vê só em parte entre lugares e "
+            "não acompanha no tempo. Eles não permitem dizer, com uma reanálise de "
             "vegetação fixa, se o desmatamento recente alterou a dinâmica diária do clima, "
             "nem falar em caos induzido pelo desmatamento."),
             kind="success"),

@@ -112,15 +112,45 @@ def _lag1(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.corrcoef(a[ok], b[ok])[0, 1])
 
 
+def fit_garch(residuals: np.ndarray) -> dict[str, float]:
+    """α e β de um GARCH(1,1) gaussiano por máxima verossimilhança (G2b).
+
+    Com alvo de variância (ω = (1 − α − β)·var), a verossimilhança só depende de α e β;
+    otimizada por L-BFGS-B em α ∈ [0, 0,5], β ∈ [0, 0,999] e α + β < 0,999.
+    """
+    from scipy.optimize import minimize
+
+    e = np.asarray(residuals, float)
+    e = e[np.isfinite(e)]
+    var = e.var()
+
+    def nll(theta):
+        a, b = theta
+        if a + b >= 0.999:
+            return 1e12
+        omega = (1 - a - b) * var
+        h = np.empty_like(e)
+        h[0] = var
+        for t in range(1, len(e)):
+            h[t] = omega + a * e[t - 1] ** 2 + b * h[t - 1]
+        return 0.5 * np.sum(np.log(h) + e**2 / h)
+
+    best = min((minimize(nll, start, method="L-BFGS-B", bounds=[(0, 0.5), (0, 0.999)])
+                for start in ([0.05, 0.90], [0.10, 0.85], [0.15, 0.5])), key=lambda r: r.fun)
+    return {"alpha": float(best.x[0]), "beta": float(best.x[1])}
+
+
 def fit_realistic(raw: pd.Series, normal=("1991-01-01", "2020-12-31"),
-                  trend_period=("2001-01-01", "2024-12-31"), half_window: int = 15) -> dict:
+                  trend_period=("2001-01-01", "2024-12-31"), half_window: int = 15,
+                  garch: bool = False) -> dict:
     """Parâmetros das quatro nulas, por um procedimento fixo, numa série diária bruta.
 
     φ(dia do ano): autocorrelação de passo 1 da anomalia padronizada em janela circular de
     ±`half_window` dias, na normal; φ fixo: a mesma sem janela; desvio sazonal: o da anomalia
     bruta (`standardized_anomalies`); tendência: inclinação por mínimos quadrados da anomalia
     bruta em `trend_period`, por dia; SETAR: mínimos quadrados em cada regime (z_{t−1} ≤ 0
-    e > 0) da anomalia padronizada na normal.
+    e > 0) da anomalia padronizada na normal. Com `garch`, também α e β do GARCH
+    (`fit_garch`) nos resíduos do AR(1) de φ fixo; sem ele, a simulação usa `GARCH`.
     """
     from amazon_chaos.regional import anomalies, standardized_anomalies
 
@@ -141,8 +171,11 @@ def fit_realistic(raw: pd.Series, normal=("1991-01-01", "2020-12-31"),
         x, y = prev[regime], now[regime]
         b, a = np.polyfit(x, y, 1)
         setar.append({"a": float(a), "b": float(b), "s": float(np.std(y - (a + b * x)))})
-    return {"phi_doy": phi_doy.tolist(), "phi": _lag1(prev, now), "sd_doy": sd.tolist(),
-            "trend_per_day": slope, "setar": setar}
+    out = {"phi_doy": phi_doy.tolist(), "phi": _lag1(prev, now), "sd_doy": sd.tolist(),
+           "trend_per_day": slope, "setar": setar}
+    if garch:
+        out["garch"] = fit_garch(now - out["phi"] * prev)
+    return out
 
 
 def simulate_realistic(kind: str, params: dict, seed: int, start="1990-01-01",
@@ -164,7 +197,8 @@ def simulate_realistic(kind: str, params: dict, seed: int, start="1990-01-01",
             for t in range(1, n):
                 z[t] = phi * z[t - 1] + np.sqrt(1 - phi**2) * eps[t]
         else:
-            alpha, beta = GARCH["alpha"], GARCH["beta"]
+            g = params.get("garch") or GARCH
+            alpha, beta = g["alpha"], g["beta"]
             omega = (1 - alpha - beta) * (1 - phi**2)
             h, e = 1 - phi**2, 0.0
             for t in range(1, n):
