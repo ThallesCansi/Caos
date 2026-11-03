@@ -59,6 +59,10 @@ uv run marimo export html notebooks/03_clima.py -o reports/html/03_clima.html
 
 O modo WebAssembly do molab não funciona com estes cadernos: várias dependências (rasterio, geopandas com GDAL) não existem no navegador.
 
+## Animações
+
+Clipes curtos e mudos, em 1920×1080, para a defesa e as palestras, gravados em `reports/animacoes/` (fora do Git) por `make animacoes CLIPES="…" QUALIDADE=final`; `make animacoes` sem nomes lista os clipes. São timelapses de mapa das duas bacias (anomalia mensal da temperatura, fogo mês a mês, desmatamento do PRODES, o ano médio da chuva), a máquina de substitutas em matplotlib e três peças em Manim (duas trajetórias, a bifurcação, de Lorenz ao Xingu). O código está em `src/amazon_chaos/animacoes/` e depende do grupo opcional `animacao` (`uv sync --group animacao`). O Manim roda num ambiente conda do conda-forge, porque o `pycairo` não tem wheel para Linux; a CLI chama esse Python sozinha (`MANIM_PYTHON`, por padrão `~/miniconda3/envs/manim/bin/python`).
+
 ## Começo rápido
 
 ```bash

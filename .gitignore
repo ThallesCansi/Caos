@@ -58,6 +58,7 @@ reports/tmp/
 reports/figures/**/*.pdf
 reports/overleaf/
 reports/apresentacao/
+reports/animacoes/
 
 # Slurm / execução no HPC
 logs/

@@ -161,6 +161,9 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+animacao = [
+    { name = "imageio-ffmpeg" },
+]
 dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -194,6 +197,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+animacao = [{ name = "imageio-ffmpeg", specifier = ">=0.5" }]
 dev = [
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-cov", specifier = ">=5" },
@@ -801,6 +805,21 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cd/63/9496c57188a2ee585e0f1db071d75089a11e98aa86eb99d9d7618fc1edce/idna-3.18.tar.gz", hash = "sha256:ffb385a7e039654cef1ab9ef32c6fafe283c0c0467bba1d9029738ce4a14a848", size = 196711, upload-time = "2026-06-02T14:34:07.794Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/5e/d4e9f1a599fb8e573b7b87160658329fbf28d19eac2718f51fc3def3aa5a/idna-3.18-py3-none-any.whl", hash = "sha256:7f952cbe720b688055e3f87de14f5c3e5fdaa8bc3928985c4077ca689de849a2", size = 65455, upload-time = "2026-06-02T14:34:06.319Z" },
+]
+
+[[package]]
+name = "imageio-ffmpeg"
+version = "0.8.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/c5/2ca1479972cc5f0526d673050ba829518c6db33d9a0d0749892209fdf81d/imageio_ffmpeg-0.8.0.tar.gz", hash = "sha256:0385d9bab7dc7d7141af7d0f160059e05f0d874116faf9ce91f6fcfd66e938f2", size = 26957, upload-time = "2026-11-02T08:50:19.789Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d4/05/0826fb1538dd3ff10ceb120eccc70fe209b178619678a7a7697bd37bf988/imageio_ffmpeg-0.8.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:3c1fdef145531268307c7e995a86b95a460dbb33b406dd34bc7488645d54040b", size = 26974211, upload-time = "2026-11-02T08:49:57.515Z" },
+    { url = "https://files.pythonhosted.org/packages/79/d0/8cab3df2c711ca2af0af8b895ece01b71d6c5fdaeb6d5957a5972c2ae333/imageio_ffmpeg-0.8.0-py3-none-macosx_12_0_arm64.whl", hash = "sha256:9dc65cb8650afdb5b8d6a8c251dbcb6c230a07b041e39326e03cb62bab3e992f", size = 22625305, upload-time = "2026-11-02T08:50:00.466Z" },
+    { url = "https://files.pythonhosted.org/packages/76/c7/635ae65f108c100d9dcca0cd118a7aa71d3438ca1e39fd22132ca541d8a1/imageio_ffmpeg-0.8.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:8108995ecb08351b8a4c6f5575cc05d83d79bc9bb1ace236ca09d40e7fa0cdea", size = 60956460, upload-time = "2026-11-02T08:50:03.995Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/32/76b35d13629e6ac5a992bb1d6d40468e8f0422e252736c7e5785b2581e30/imageio_ffmpeg-0.8.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:543c8c5d316fc48575dfb5d44adba84a473d9c5a0e482b7fac5988f24a9cb17b", size = 67998232, upload-time = "2026-11-02T08:50:07.785Z" },
+    { url = "https://files.pythonhosted.org/packages/53/ca/4ed8e95e14984613c5691c2a725ea59693379d069f7b230b47f83f32fd44/imageio_ffmpeg-0.8.0-py3-none-win32.whl", hash = "sha256:c6f71602aa2de990eb964b25923ffc4c248af868449a062d17ecd7f841d458fd", size = 19652527, upload-time = "2026-11-02T08:50:11.045Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/df/4a55891802fb1e745c2852cd958e3d104dfbb46cf4b45f859d4f5006320b/imageio_ffmpeg-0.8.0-py3-none-win_amd64.whl", hash = "sha256:478a7fbcaeb69b6caceb901cde5768e80d05de6b7f75fd57ae9fe93801de7ba0", size = 38893313, upload-time = "2026-11-02T08:50:14.128Z" },
+    { url = "https://files.pythonhosted.org/packages/97/97/634d84105b18eabefc56533199db7ee0e1fcb8d7d076246c5917bdd7aef1/imageio_ffmpeg-0.8.0-py3-none-win_arm64.whl", hash = "sha256:9c195547e08f7f154505ec74ad0bbfdecf43b714c13202d766d7e514ce5ea366", size = 37499512, upload-time = "2026-11-02T08:50:17.416Z" },
 ]
 
 [[package]]
