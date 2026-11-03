@@ -1,0 +1,553 @@
+# Roteiro da apresentação (make apresentacao).
+#
+# Cada slide tem um `tipo`: capa, frase, secao, figura ou tabela. As figuras vêm pela chave
+# capitulo/[regiao/]nome dos índices em reports/figures; os destaques são frações da imagem
+# (x da esquerda, y do topo), e `figura` diz em qual delas, quando há duas. A única marcação
+# do texto é *itálico*; parágrafos separados por linha em branco.
+titulo: Caos na floresta–atmosfera amazônica
+autores: Caio Ruas e Thalles Cansi
+
+slides:
+
+  # ── abertura ──────────────────────────────────────────────────────────────
+
+  - tipo: capa
+    sobre: TCC · Ilum Escola de Ciência (CNPEM) · 2026
+    titulo: Uma análise do sistema floresta–atmosfera amazônica sob a ótica da teoria do caos
+    subtitulo: A perturbação da floresta deixa marca na forma como o clima local evolui de um dia para o outro? E as ferramentas da teoria do caos conseguem revelá-la?
+    autores: Caio Ruas e Thalles Cansi
+    orientacao: Orientação de Vinicius Wasques
+    faixa:
+      figura: 03_clima/listras
+      recorte: [0.0525, 0.048, 0.9925, 0.454]
+    notas: >-
+      A faixa no rodapé são as listras de temperatura do Xingu, de 1990 a 2024, que
+      aparecem de novo na primeira parte. Objetivo da conversa: mostrar os resultados e
+      decidir juntos o que entra no manuscrito.
+
+  - tipo: frase
+    rotulo: A pergunta, fixada antes de olhar os dados
+    titulo: As regiões com mais desmatamento e fogo têm uma dinâmica climática diária diferente da de regiões preservadas comparáveis?
+    texto: Depois de controlar a sazonalidade, o ruído, a autocorrelação e a geografia.
+    itens:
+      - titulo: Natureza
+        texto: Que tipo de dinâmica o clima diário local tem. Caos de baixa dimensão, ou outra coisa?
+      - titulo: Relação
+        texto: Se ela difere entre lugares mais e menos perturbados, e se muda onde a floresta é perdida.
+      - titulo: Detectabilidade
+        texto: Que tipo de registro é preciso para que essa marca apareça.
+    notas: >-
+      A floresta e a atmosfera formam um sistema acoplado; sistemas acoplados não lineares
+      podem ter equilíbrios múltiplos, oscilações e caos. O debate sobre um limiar de não
+      retorno se apoia em modelos e sinais indiretos. A nossa pergunta é se a perturbação já
+      deixa marca não na média, mas no encadeamento dos dias. Ela se desdobra em três.
+
+  # ── I. o lugar e os dados ─────────────────────────────────────────────────
+
+  - tipo: secao
+    numero: I
+    titulo: O lugar e os dados
+    rodape: I · O lugar e os dados
+    texto: Duas bacias vizinhas, 1.541 células de cerca de 28 km, 35 anos de clima diário e uma medida independente de quanto cada célula foi desmatada e queimada.
+    fundo: 02_regioes/xingu/mapa
+
+  - tipo: figura
+    titulo: As bacias do Xingu e do Tapajós
+    mensagem: Vão da floresta contínua do norte à fronteira agrícola do sul; no sul, o clima é mais seco, mais sazonal, o relevo mais alto e a floresta mais convertida.
+    figuras: [02_regioes/xingu/mapa, 02_regioes/tapajos/mapa]
+    explicacao: |
+      Cada painel mostra a bacia no Brasil e nos estados, à esquerda, e no detalhe, à direita, com o limite oficial em vermelho, a grade de células do ERA5 que a intersectam, as Terras Indígenas em laranja, as Unidades de Conservação federais em verde, os rios e as cidades.
+
+      O Xingu tem 779 células e é quase todo amazônico; mais da metade da sua área está em Terras Indígenas ou Unidades de Conservação, um grande corredor protegido no médio curso. O Tapajós tem 762 células, uma fatia maior de Cerrado, perto de um quinto, e menos área protegida; a BR-163 organiza boa parte da sua ocupação.
+
+      O ponto a guardar é a coincidência no sul: é ao mesmo tempo mais seco, mais alto, mais sazonal e mais desmatado. Essa coincidência é o principal obstáculo que a análise precisa contornar, e é por isso que toda comparação entre células controla a latitude, a água e o relevo.
+    notas: >-
+      Duas bacias com áreas e números de células quase iguais e a mesma faixa de latitudes.
+      Diferem no Cerrado (maior no Tapajós) e na área protegida (maior no Xingu). Os limites
+      são atuais e servem de contexto; não medem a cobertura florestal.
+
+  - tipo: figura
+    titulo: A grade e as células da comparação
+    mensagem: A regra fixada no pré-registro tira só a moldura da bacia; 668 células do Xingu e 652 do Tapajós entram na comparação.
+    figuras: [02_regioes/xingu/grade]
+    explicacao: |
+      O primeiro mapa é a fração de cada célula do ERA5, de 0,25° de lado, que fica dentro da bacia; o segundo, a fração em terra segundo o MapBiomas; o terceiro, as células que entram na comparação entre perturbação e dinâmica, as que têm pelo menos metade da área dentro da bacia e metade em terra.
+
+      As células parciais formam uma moldura estreita, e quase nenhuma célula é dominada por água na escala de 28 km. Todas as células, inclusive as da moldura, entram nas médias da bacia, com o peso da área que têm dentro dela; só a comparação célula a célula usa a seleção.
+
+      Não há como afirmar nada sobre escalas menores que a célula com os dados do ERA5: essa é a resolução do trabalho.
+    notas: Xingu como exemplo; a do Tapajós é parecida e está no apêndice (tecla G).
+
+  - tipo: figura
+    titulo: 35 anos de aquecimento
+    mensagem: A passagem do azul para o vermelho é quase monótona e simultânea nas duas bacias; os anos mais quentes estão todos na segunda metade, com 2024 no topo.
+    figuras: [03_clima/listras]
+    explicacao: |
+      Cada barra é um ano, de 1990 a 2024, e a cor é a anomalia da temperatura média da bacia em relação à normal de 1991–2020: azul para os anos mais frios, vermelho para os mais quentes, com a mesma escala nas duas faixas, à maneira das listras de Ed Hawkins.
+
+      Em números, as duas bacias esquentaram de 0,3 a 0,4 °C por década, com as máximas subindo mais depressa, o ar ficou mais seco e a chuva diminuiu. Os anos de El Niño de 2015–2016 e 2023–2024 foram os mais quentes do registro.
+
+      Para a análise não linear, essa tendência não é removida: ela é parte do clima. O capítulo das substitutas mostra que retirá-la não muda as conclusões.
+    destaques:
+      - {x: 0.27, y: 0.25, texto: "1998, um ano de El Niño, já destoa no começo do registro."}
+      - {x: 0.76, y: 0.25, texto: "2015–2016, o El Niño mais forte do período."}
+      - {x: 0.97, y: 0.25, texto: "2023–2024, os anos mais quentes, nas duas bacias."}
+    notas: As tendências foram estimadas por Theil–Sen com Mann–Kendall corrigido por Hamed e Rao (capítulo 3).
+
+  - tipo: figura
+    titulo: O ano típico
+    mensagem: Uma estação chuvosa longa, de outubro a maio, e uma seca bem marcada, de junho a setembro, em que a chuva cai a poucas dezenas de milímetros por mês.
+    figuras: [03_clima/xingu/climograma]
+    explicacao: |
+      As barras são a chuva de cada mês na normal de 1991–2020, com hastes do décimo ao nonagésimo percentil entre os anos; as barras claras marcam os meses com menos de 100 mm, um limiar operacional comum em estudos amazônicos, abaixo do qual a floresta tende a transpirar mais água do que recebe. As linhas são as temperaturas média, mínima e máxima.
+
+      A temperatura média varia pouco no ano, de dois a três graus, e chega ao máximo em agosto e setembro, no fim da seca, quando o céu limpo e o solo seco deixam a superfície esquentar.
+
+      Esse ciclo anual é a estrutura mais forte das séries, e é trivialmente previsível. Por isso todos os métodos trabalham com a anomalia padronizada: de cada dia se tira a normal daquele dia do calendário e se divide pelo desvio típico daquele dia, o que tira a estação da média e também da variância.
+    notas: >-
+      A padronização pela variância é o passo menos óbvio e o mais importante: sem ela, uma
+      agitação que volta todo ano no mesmo mês seria lida como padrão dinâmico.
+
+  - tipo: figura
+    titulo: Onde está a perturbação
+    mensagem: O desmatamento recente avança para o norte e para dentro da floresta; o fogo acompanha o desmatamento, e os grandes blocos protegidos quase não queimaram em quarenta anos.
+    figuras: [04_perturbacao/mapas]
+    explicacao: |
+      São oito medidas por célula, nas duas bacias lado a lado: o desmatamento acumulado até 2024 e o de 2013 a 2024 (PRODES), os alertas de corte raso e de degradação de 2016 a 2024 (DETER), a densidade de focos de fogo nas duas décadas (BDQueimadas), o número de anos com fogo e a fração queimada ao menos uma vez de 1985 a 2024 (MapBiomas Fogo).
+
+      O desmatamento recente não está mais no sul, que já estava aberto, mas na frente que avança para o norte, com destaque para o leste do Tapajós ao longo da BR-163. Os alertas de degradação se espalham pelas bordas das áreas abertas, onde a floresta é explorada e queimada antes de ser derrubada.
+
+      O fogo é a ferramenta usada para limpar a área derrubada e renovar o pasto. As áreas de Cerrado do extremo sul queimam com frequência, como é próprio dessa vegetação, sem aparecer no PRODES. As quatro fontes concordam entre si (capítulo 4).
+    notas: As frações são sobre a área terrestre e limitadas a 1 nos mapas.
+
+  - tipo: figura
+    titulo: A perturbação no tempo
+    mensagem: O desmatamento caiu depressa no fim da década de 2000 e voltou a subir a partir de 2019; o fogo volta a crescer nos anos de seca.
+    figuras: [04_perturbacao/series_anuais]
+    explicacao: |
+      À esquerda, os focos de fogo ativo por ano, de 2003 a 2024, no satélite de referência do BDQueimadas; à direita, o desmatamento anual do PRODES, de 2008 a 2024, somados sobre cada bacia.
+
+      As duas bacias contam juntas a história conhecida da Amazônia brasileira: a queda com o plano federal de controle, o monitoramento por satélite e as restrições de crédito, o mínimo no início da década de 2010, a volta a partir de 2019 e o novo recuo em 2023 e 2024. Os focos crescem nos anos de seca, como 2005, 2010 e 2024.
+
+      Fogo e clima não são independentes. Por isso a medida principal do trabalho é a perturbação anterior à janela de análise, a perda antecedente, e não a que ocorreu durante ela, que pode ser em parte consequência do próprio clima que queremos explicar.
+    notas: A perda antecedente é a fração da área terrestre da célula que não era floresta em 2000.
+
+  # ── II. as ferramentas ────────────────────────────────────────────────────
+
+  - tipo: secao
+    numero: II
+    titulo: As ferramentas do caos
+    rodape: II · As ferramentas
+    texto: O que é caos, como medi-lo numa série temporal, e por que um número positivo não basta.
+    fundo: 01_laboratorio/bifurcacao_lyapunov
+
+  - tipo: figura
+    titulo: Sensibilidade às condições iniciais
+    mensagem: Duas trajetórias que partem a 10⁻⁸ uma da outra se separam exponencialmente; a inclinação dessa separação é o expoente de Lyapunov.
+    figuras: [01_laboratorio/sensibilidade_rosenstein]
+    explicacao: |
+      O sistema é um mapa com memória, um modelo de brinquedo com realimentação sigmoide, no regime caótico (μ = 11,5). À esquerda, duas trajetórias com estados iniciais separados por 10⁻⁸: por uns 50 passos elas são indistinguíveis, depois seguem caminhos sem relação.
+
+      No centro, a distância entre elas em escala logarítmica cresce em linha reta, isto é, exponencialmente, como ‖δₙ‖ ≈ ‖δ₀‖ e^{λ₁n}, até saturar no tamanho do atrator. O número λ₁ é o maior expoente de Lyapunov.
+
+      À direita está o que se faz com dados reais, em que não se conhece a equação: o método de Rosenstein procura, na própria série, pares de estados vizinhos e acompanha a média do logaritmo da distância entre eles. A inclinação do trecho reto, 0,290, recupera o expoente da equação.
+    destaques:
+      - {x: 0.215, y: 0.55, texto: "Por volta do passo 60, as duas trajetórias deixam de coincidir."}
+      - {x: 0.50, y: 0.55, texto: "Em escala log, a separação cresce em linha reta: crescimento exponencial."}
+      - {x: 0.76, y: 0.66, texto: "Rosenstein, só com a série: a inclinação ajustada nos passos 1 a 8 é o expoente."}
+    notas: É a figura que define o vocabulário. O resto da apresentação mostra por que esse número, sozinho, engana.
+
+  - tipo: figura
+    titulo: Da ordem ao caos, e de volta à ordem
+    mensagem: Uma cascata de duplicações de período leva ao caos por volta de μ ≈ 10,9, e é ali que o expoente de Lyapunov fica positivo.
+    figuras: [01_laboratorio/bifurcacao_lyapunov]
+    explicacao: |
+      Em cima, o diagrama de bifurcação: para cada valor do parâmetro μ, os valores de longo prazo de x. Um ponto fixo aparece como uma linha, um ciclo de período 2 como duas, e o caos como uma faixa que se preenche. Embaixo, o expoente de Lyapunov para os mesmos μ, com os intervalos em que ele é positivo sombreados.
+
+      O ponto fixo se divide em dois, depois em quatro e em oito, até o regime caótico. Dentro do caos há janelas periódicas, faixas quase vazias, como o ciclo de período 5 perto de μ = 11,95 e o de período 7 perto de 13,2, onde λ₁ mergulha abaixo de zero. A partir de μ ≈ 13,45, um ciclo de período 3 se instala e resiste a um intervalo largo, porque um dos seus pontos cai onde a sigmoide já saturou.
+
+      A lição para os dados é que caos é uma propriedade precisa, ligada a λ₁ > 0 numa dinâmica determinística, e não um sinônimo de irregularidade.
+    notas: Figura didática do capítulo 1; candidata ao capítulo de fundamentos do manuscrito.
+
+  - tipo: figura
+    titulo: Recorrências
+    mensagem: Diagonais curtas são a marca do determinismo; uma substituta com o mesmo espectro e um AR(1) têm outra textura, embora também deem um Rosenstein positivo.
+    figuras: [01_laboratorio/recorrencia]
+    explicacao: |
+      Cada painel é uma matriz de 400 por 400 instantes; um ponto escuro em (j, i) quer dizer que os estados reconstruídos nesses dois instantes estão próximos. A diagonal principal é sempre escura, e a informação está fora dela.
+
+      Na série caótica, à esquerda, aparecem muitos segmentos curtos paralelos à diagonal: o sistema volta a regiões já visitadas e as percorre de modo parecido por alguns passos. Na substituta, no centro, com exatamente a mesma autocorrelação, a textura vira um quadriculado de blocos: há retornos, mas sem refazer o caminho. No AR(1), à direita, manchas maiores, de uma série que demora a esquecer onde estava.
+
+      O DET, a fração dos pontos recorrentes que formam diagonais, e o LAM, o mesmo com linhas verticais, resumem essas texturas. A taxa de recorrência é fixada de antemão, e o que se compara é a estrutura.
+    notas: Introduz as substitutas (preservam o espectro, sorteiam as fases) e os descritores de recorrência.
+
+  - tipo: figura
+    titulo: Por que desconfiar de um número positivo
+    mensagem: Com sazonalidade e ruído, o trecho linear encurta; um AR(1), sem caos nenhum, também devolve uma inclinação positiva.
+    figuras: [01_laboratorio/contaminacao]
+    explicacao: |
+      Em cima, 300 passos de três séries; embaixo, a curva de Rosenstein de cada uma, com a mesma reta ajustada nos passos 1 a 8 e, no título, a inclinação e o R², que mede quão retilíneo é o trecho ajustado.
+
+      A série caótica limpa dá uma subida retilínea longa, com R² de 1,00. Com uma oscilação sazonal e ruído de observação, a curva começa mais alta e o trecho linear encurta. O AR(1), o modelo mais simples de uma série com memória, dá inclinação 0,169: entre dois vizinhos, o primeiro sorteio de ruído já os separa, a curva salta e satura, e a reta ajustada sobre o salto sobe.
+
+      O formato denuncia a diferença, um salto e não uma subida gradual, mas o formato de uma curva não é um teste. Daí a regra que vale para o resto do trabalho: nenhum descritor é olhado sozinho; todos são comparados, célula por célula, com séries substitutas.
+    destaques:
+      - {x: 0.18, y: 0.70, texto: "Caos limpo: uma reta longa, R² = 1,00."}
+      - {x: 0.40, y: 0.79, texto: "Com sazonalidade e ruído, a curva começa alta e o trecho reto encurta."}
+      - {x: 0.73, y: 0.67, texto: "AR(1): um salto nos primeiros passos, e mesmo assim uma inclinação positiva."}
+    notas: Muitas séries climáticas se parecem mais com o AR(1) do que com um atrator caótico; ele é o adversário que qualquer indicador precisa vencer.
+
+  # ── nível 1. validade ─────────────────────────────────────────────────────
+
+  - tipo: secao
+    numero: III
+    titulo: Os métodos diante de casos conhecidos
+    rodape: Nível 1 · Validade dos métodos
+    texto: Nível 1 de 4. Antes de olhar a Amazônia, os oito descritores foram testados em sistemas em que a resposta é conhecida, com um critério fixado antes de rodar.
+    fundo: 05_validacao_metodos/taxas_rejeicao
+
+  - tipo: figura
+    titulo: O portão pré-registrado
+    mensagem: No caso mais difícil, 8.766 passos e ruído 0,2, os oito descritores passam; o seno e o AR(1) sazonal já mostram a armadilha da sazonalidade.
+    figuras: [05_validacao_metodos/taxas_rejeicao]
+    explicacao: |
+      Cada célula da grade é a fração das repetições em que um descritor rejeitou a hipótese nula das substitutas IAAFT num controle. À esquerda da linha preta estão os controles caóticos (logístico, Hénon, Lorenz), em que se quer rejeitar; à direita, os sem caos, em que se quer não rejeitar.
+
+      O critério exigia rejeitar em pelo menos 80% das repetições em dois dos três caóticos e em no máximo 20% no ruído branco e no AR(1). Todos passam. A assimetria temporal nunca rejeita no Lorenz, porque a coordenada x do Lorenz é simétrica no tempo: um descritor só enxerga o tipo de estrutura que mede.
+
+      Duas colunas pedem atenção. No seno com ruído, DET e LAM rejeitam em 50% e 70%: um ciclo regular é o que a recorrência detecta, embora não seja caos. No AR(1) sazonal com tendência, o Lyapunov rejeita sempre e o DET em 80%.
+    notas: Com 2.048 passos, D2 perde poder e o Lyapunov rejeita o AR(1) em 30%; com 24 anos de dados esses problemas somem, por isso o critério é aplicado no caso mais longo.
+
+  - tipo: figura
+    titulo: Um portão mais exigente
+    mensagem: Nulas estocásticas com a memória e a variância do clima enganam DET, LAM e Lyapunov; só o teste de Cao separa caos de ruído.
+    figuras: [05_validacao_metodos/portao_realista]
+    explicacao: |
+      Este é um comparativo da revisão crítica (D-027), fixado antes do cálculo. As linhas são os controles do portão e quatro processos estocásticos sem caos, ajustados às séries das bacias: um AR(1) cuja memória varia com o dia do ano, um AR(1) com tendência, um modelo de dois regimes (SETAR) e um AR(1) com variância condicional (GARCH), 80 séries cada. As colunas trazem os oito descritores e três estimadores novos: Wolf, Kantz, o D_E2 de Cao e o ganho do S-map.
+
+      O AR(1) com memória sazonal faz o DET rejeitar em 81% das séries; o GARCH engana o DET, o LAM e os Lyapunov quase sempre. Os descritores detectam, portanto, qualquer afastamento da hipótese linear e estacionária, inclusive os que o clima tem sem ser caótico.
+
+      Dois resultados se sustentam: o erro de previsão quase nunca rejeita nas nulas, e o D_E2 de Cao rejeita em todos os caóticos e em no máximo 8% das séries de cada nula realista. O ganho do S-map é minúsculo, abaixo de 0,3% do erro, contra 37% a 57% nos sistemas caóticos.
+    notas: Este portão não substitui o pré-registrado; mede a taxa de falso positivo com nulas mais próximas do clima. É ele que muda a leitura do nível 2.
+
+  # ── nível 2. estrutura ────────────────────────────────────────────────────
+
+  - tipo: secao
+    numero: IV
+    titulo: Que dinâmica o clima diário tem
+    rodape: Nível 2 · Estrutura
+    texto: Nível 2 de 4. As séries das bacias e das células contra as suas substitutas.
+    fundo: 06_surrogates/nulas
+
+  - tipo: figura
+    titulo: Uma série contra 199 substitutas
+    mensagem: Na temperatura do Xingu, a recorrência, a assimetria e o D2 ficam muito longe das substitutas; o Lyapunov fica dentro da nuvem, e a previsão, do lado oposto ao do caos.
+    figuras: [06_surrogates/nulas]
+    explicacao: |
+      Cada painel é um descritor. As barras são a distribuição dele em 199 substitutas IAAFT da série média da bacia, que preservam o espectro e a distribuição e destroem o resto; a linha preta é o valor da série observada, e o canto traz o escore z e o p de Monte Carlo.
+
+      Há três grupos. O DET e o LAM ficam cerca de 10 desvios acima, a assimetria temporal quase 10 abaixo e o D2 a 5 abaixo: rejeições inequívocas. A entropia de permutação e a complexidade ficam na borda da nuvem, com |z| perto de 2. O Lyapunov fica dentro dela.
+
+      E o erro de previsão fica fora, mas do lado errado para o caos: a série é mais difícil de prever um dia à frente do que as suas substitutas lineares. Num atrator de baixa dimensão, os vizinhos seguem caminhos parecidos e a previsão melhora; aqui ela piora.
+    destaques:
+      - {x: 0.234, y: 0.28, texto: "DET: z = +10,7, muito acima de qualquer substituta."}
+      - {x: 0.525, y: 0.77, texto: "Assimetria temporal: z = −9,8, uma série que não é igual de frente para trás."}
+      - {x: 0.90, y: 0.77, texto: "Lyapunov: z = +1,1, indistinguível das substitutas."}
+      - {x: 0.976, y: 0.28, texto: "Erro de previsão: maior que o das substitutas, o contrário do esperado no caos."}
+    notas: Lembrar que o portão realista mostrou que DET mais alto também aparece com memória sazonal.
+
+  - tipo: figura
+    titulo: As rejeições resistem às variantes do teste
+    mensagem: DET, LAM e D2 rejeitam em todas as combinações; contra a FT os escores são maiores, e a diferença mede o que vinha só da forma da distribuição.
+    figuras: [06_surrogates/ft_iaaft]
+    explicacao: |
+      Cada ponto é o escore z de um descritor contra 199 substitutas de um tipo: FT (círculos vazios), IAAFT (losangos) e IAAFT depois de retirar a tendência (cruzes), nas duas bacias e nas duas variáveis. A faixa cinza marca |z| < 1,96; o eixo é logarítmico simétrico.
+
+      As rejeições fortes têm |z| entre 5 e 23. Na assimetria da temperatura do Tapajós, o escore cai de −21,5 contra a FT para −11,3 contra a IAAFT: metade da evidência era a cauda fria da distribuição, e não a ordem dos dias. Por isso o pré-registro adota a IAAFT, mais exigente.
+
+      Os escores com e sem tendência ficam muito próximos, e nenhuma conclusão muda. O Lyapunov não rejeita em nenhuma combinação.
+    notas: Tabela 2 do capítulo 6 traz o p corrigido por Holm.
+
+  - tipo: figura
+    titulo: Célula por célula
+    mensagem: Praticamente todas as células rejeitam a hipótese linear na recorrência, no D2 e na assimetria da temperatura; em nenhuma a dinâmica é mais previsível que nas substitutas.
+    figuras: [07_descritores/rejeicao_global]
+    explicacao: |
+      As barras são a fração das células com p ≤ 0,05 contra 39 substitutas IAAFT, por descritor, variável e bacia, com intervalo por bootstrap em blocos de 1°. A linha tracejada em 5% é o que se esperaria se não houvesse estrutura não linear nenhuma.
+
+      Três grupos: DET, LAM, D2 e a assimetria da temperatura estão no teto; a entropia e a complexidade ficam no meio, mais altas no VPD; o erro de previsão fica em zero. O Lyapunov, exploratório, tem frações intermediárias que não são interpretadas, porque a validação o viu rejeitar em até 60% das séries só com variância sazonal.
+
+      A leitura, combinada com o portão realista: o clima diário das bacias é um processo estocástico com memória sazonal e não linearidade fraca, sem caos de baixa dimensão. A temperatura guarda uma não linearidade, a assimetria e o D2, que nenhuma nula realista reproduz; no VPD, a rejeição vem em boa parte da memória sazonal, que rejeita em 92% a 98% das séries.
+    notas: Este é o resultado de natureza do trabalho. A leitura por variável é a da reanálise de 30/10 (D-029).
+
+  - tipo: figura
+    titulo: O expoente de Lyapunov nos dados
+    mensagem: O expoente é positivo em todas as células, perto de 0,3 por dia, mas as substitutas lineares dão o mesmo valor.
+    figuras: [07_descritores/lyapunov]
+    explicacao: |
+      Cada ponto é uma célula: no eixo horizontal, a média do expoente nas suas 39 substitutas; no vertical, o expoente observado, para a temperatura e o VPD, nas duas bacias. A cor é a dimensão de imersão m, e o tracejado é a diagonal em que observado e substitutas coincidem.
+
+      Lido sozinho, um expoente de 0,3 por dia diria que duas situações do tempo quase iguais se afastam pela metade a cada dois ou três dias. Mas os pontos caem sobre a diagonal: o valor é fixado pelo ruído e pela reconstrução, não pela dinâmica.
+
+      Os dois grupos, em torno de 0,30 e 0,37, não são dois regimes de clima: são as duas dimensões de imersão que a regra escolheu, m = 6 e m = 5. Onde o expoente se afasta das substitutas, fica um pouco abaixo delas, e nenhuma diferença resiste à correção para múltiplos testes.
+    notas: Era um dos objetivos do projeto estimar o Lyapunov nas séries reais. Esta figura é a resposta, e é a ilustração mais direta da primeira regra de leitura.
+
+  # ── nível 3. paisagem ─────────────────────────────────────────────────────
+
+  - tipo: secao
+    numero: V
+    titulo: Perturbação e dinâmica
+    rodape: Nível 3 · Paisagem
+    texto: Nível 3 de 4. As células mais perturbadas têm uma dinâmica diferente das preservadas? Entre lugares, e dentro de cada lugar ao longo do tempo.
+    fundo: 08_gradiente/dispersao
+
+  - tipo: figura
+    titulo: A perturbação e o que o ERA5 enxerga
+    mensagem: A perda antiga se concentra no sul; a recente avança pelas bordas e pelo centro, e o mapa de vegetação do ERA5, fixo desde os anos 1990, não a acompanha.
+    figuras: [08_gradiente/xingu/paisagem]
+    explicacao: |
+      Cada quadradinho é uma célula do ERA5, e a cor diz que fração dela perdeu a floresta. O primeiro mapa é a perda antecedente, a fração sem floresta em 2000; o segundo, o desmatamento de 2000 a 2024, numa escala que vai só até metade da célula; o terceiro, a fração de vegetação alta que o próprio ERA5 usa para calcular as trocas de calor e água com a superfície.
+
+      Esse mapa do modelo vem de imagens de satélite do início da década de 1990 e é mantido fixo em toda a reanálise. Ele reproduz parte da perda antecedente, que já existia quando foi feito, mas não o desmatamento posterior: o modelo continua tratando como floresta áreas que viraram pasto.
+
+      Essa é a limitação central do trabalho, medida com os dados do próprio modelo, e ela orienta a leitura de tudo o que vem depois.
+    destaques:
+      - {x: 0.13, y: 0.86, texto: "O sul da bacia, já convertido antes de 2000, em parte Cerrado."}
+      - {x: 0.46, y: 0.33, texto: "O arco de perda recente no centro-norte."}
+      - {x: 0.80, y: 0.40, texto: "O mesmo lugar no ERA5: quase tudo continua floresta."}
+    notas: Xingu como exemplo; o Tapajós está no apêndice.
+
+  - tipo: figura
+    titulo: Comparando células
+    mensagem: Boa parte da correlação bruta é geografia; depois de retirar latitude, água e relevo, a inclinação diminui, mas em vários pares não desaparece.
+    figuras: [08_gradiente/dispersao]
+    explicacao: |
+      Cada ponto é uma célula elegível do Xingu. À esquerda, a perda antecedente contra o z da complexidade do VPD, com a cor pela latitude; à direita, a mesma relação depois de retirar, dos postos das duas variáveis, a parte explicada pela latitude, pela fração de água e pela altitude. É a correlação de Spearman parcial, que não supõe relação linear.
+
+      À esquerda, as cores formam faixas: as células do extremo sul, roxas, concentram ao mesmo tempo a perturbação e os valores extremos do descritor. À direita, a ordenação por cor quase se desfaz, e a reta, mais suave, continua inclinada.
+
+      Um grupo de células do extremo norte, amarelas, perto da foz, fica bem abaixo do esperado; a correlação de postos não se deixa dominar por ele, e a reamostragem por blocos espaciais leva em conta que essas células são vizinhas.
+    destaques:
+      - {x: 0.47, y: 0.83, texto: "O extremo sul: muita perturbação e valores extremos ao mesmo tempo, é geografia."}
+      - {x: 0.85, y: 0.52, texto: "Depois dos controles, a inclinação diminui, mas não some."}
+      - {x: 0.85, y: 0.74, texto: "As células da foz, amarelas, destoam; a inferência por blocos as trata como vizinhas."}
+    notas: A pergunta que sobra é a que interessa — entre células na mesma latitude, com a mesma água e no mesmo relevo, as mais convertidas diferem das preservadas?
+
+  - tipo: figura
+    titulo: O resultado principal e duas objeções
+    mensagem: Recorrências mais curtas na temperatura e padrões ordinais do VPD mais próximos do aleatório onde a perda é maior; parte da diferença passa pelo mapa de vegetação do ERA5.
+    figuras: [08_gradiente/modelos]
+    explicacao: |
+      Cada linha é um descritor primário, por variável e bacia, e cada ponto a correlação parcial com a perturbação, com intervalo de 95% por blocos de 1°. Os pontos escuros são o modelo pré-registrado; os vermelhos trocam a exposição pela conversão agropecuária e controlam a vegetação natural; os verdes acrescentam aos controles a vegetação alta fixa do ERA5.
+
+      Nas duas bacias, quanto maior a perda até 2000, menor o DET da temperatura e maior a entropia do VPD. As associações são moderadas, entre 0,2 e 0,46 em módulo. Com Holm, 9 dos 16 testes resistem com blocos de 1°; com o tamanho efetivo da amostra, que cai de cerca de 650 células para 22 a 213, só o DET da temperatura no Tapajós resiste.
+
+      A conversão agropecuária deixa quase tudo igual: não é um artefato do Cerrado. A vegetação do ERA5 muda a figura: no Tapajós, a associação do VPD praticamente some e a do DET cai à metade. Parte do que o ERA5 registra é o próprio mapa de vegetação do modelo.
+    notas: >-
+      DET aqui mede só a duração das recorrências, não determinismo (o portão realista mostrou
+      que memória sazonal o reproduz). A associação ordinal do VPD é em boa parte geografia da
+      sazonalidade (D-030). Evidência confirmatória mais firme: DET da temperatura.
+
+  - tipo: figura
+    titulo: Dentro de cada célula, ao longo do tempo
+    mensagem: As células que mais desmataram entre 2001 e 2012 não mudaram de dinâmica mais que as outras.
+    figuras: [08_gradiente/longitudinal]
+    explicacao: |
+      À esquerda, cada célula do Xingu com a perda de floresta de 2001 a 2012 no eixo horizontal e a mudança do DET da temperatura entre as décadas 2001–2012 e 2013–2024 no vertical. Toda característica fixa do lugar se cancela nessa diferença. À direita, a correlação parcial para todos os descritores, nas duas bacias, com todas as células (pontos cheios) e só com as que mantiveram a dimensão de imersão (vazios).
+
+      As três faixas horizontais da esquerda não são clima: são as células em que a dimensão m mudou de uma década para a outra, e o DET salta quando m muda. Dentro de cada faixa, a nuvem não se inclina.
+
+      À direita, todos os intervalos incluem zero ou ficam colados a ele. É exatamente o que se espera se o ERA5 não enxerga o desmatamento posterior ao seu mapa de vegetação: o resultado não prova que o desmatamento não altere a dinâmica; prova que, no ERA5, essa alteração não aparece.
+    destaques:
+      - {x: 0.15, y: 0.19, texto: "As células em que m aumentou: um salto de método, não de clima."}
+      - {x: 0.225, y: 0.46, texto: "Com m igual, a nuvem não se inclina com a perda."}
+      - {x: 0.79, y: 0.51, texto: "Todos os intervalos cruzam o zero, nas duas bacias."}
+    notas: As mudanças comuns a todas as células combinam com causas regionais, como a década mais quente e os El Niño.
+
+  # ── nível 4. detectabilidade ──────────────────────────────────────────────
+
+  - tipo: secao
+    numero: VI
+    titulo: O que cada registro consegue ver
+    rodape: Nível 4 · Detectabilidade
+    texto: Nível 4 de 4, e a resposta mais firme. O satélite, a reanálise e a chuva observada diante da mesma floresta perdida.
+    fundo: 04_perturbacao/temperatura_superficie
+
+  - tipo: figura
+    titulo: A temperatura vista do espaço
+    mensagem: De dia, na estação seca, a superfície medida pelo MODIS é quase um negativo do mapa da floresta; a máxima do ar no ERA5 não tem traço do desmatamento.
+    figuras: [04_perturbacao/temperatura_superficie]
+    explicacao: |
+      Três mapas das duas bacias juntas, Tapajós à esquerda e Xingu à direita. O primeiro é a temperatura da superfície de dia na estação seca, medida pelo MODIS por volta das 10h30, em pixels de 1 km, de 2001 a 2024; o segundo, a mesma superfície à noite; o terceiro, a máxima do ar a 2 m no ERA5, também na estação seca.
+
+      De dia, a superfície é mais quente exatamente onde a floresta foi convertida, ao longo das estradas e no sul, e a borda das áreas protegidas aparece como um degrau de vários graus. À noite as diferenças entre floresta e áreas abertas quase somem, e o que aparece é o planalto do sul, frio pela altitude e pelo ar seco.
+
+      O ERA5 tem um desenho próprio, com as máximas mais altas no centro-oeste do Tapajós, em plena floresta, e as mais baixas no planalto do sudoeste. Nenhum traço do desmatamento.
+    destaques:
+      - {x: 0.135, y: 0.77, texto: "O sul convertido, o mais quente de dia."}
+      - {x: 0.19, y: 0.39, texto: "A floresta contínua e protegida, vários graus mais fresca."}
+      - {x: 0.38, y: 0.84, texto: "À noite, o que aparece é o planalto frio do sul, e não o desmatamento."}
+      - {x: 0.765, y: 0.52, texto: "O ERA5: máximas altas em plena floresta, sem o desenho do desmatamento."}
+    notas: O MODIS serve para verificar o ERA5, não para substituí-lo — a série é falhada demais para a análise não linear diária.
+
+  - tipo: figura
+    titulo: O satélite vê, o ar do ERA5 não
+    mensagem: As células mais convertidas são de 6 a 7 °C mais quentes na superfície e esquentaram 1,3 a 1,4 °C a mais entre as décadas; o ar do ERA5 fica igual em todas.
+    figuras: [08_gradiente/modis]
+    explicacao: |
+      Cada ponto é um décimo das células, ordenadas pela perturbação. À esquerda, entre células: a temperatura média de 2001 a 2024 na estação seca, como anomalia em relação à média da bacia, contra a perda antecedente. À direita, ao longo do tempo: o aquecimento de cada décimo entre 2001–2012 e 2013–2024, contra a perda de floresta de 2001 a 2012. Linhas cheias são a superfície do MODIS; tracejadas, a máxima do ar no ERA5.
+
+      O satélite vê uma diferença enorme, que cresce de modo contínuo com a perda, sem limiar, e que não vem do Cerrado: só nas células sem vegetação natural aberta, a correlação parcial fica em 0,77 a 0,81. É o efeito conhecido da troca de floresta por pasto, menos transpiração e mais energia aquecendo o chão.
+
+      O ar do ERA5 fica igual em todos os décimos, e no Tapajós chega a ser mais fresco nas células mais perturbadas, as do planalto. No tempo, o ERA5 mostra o mesmo aquecimento regional em todas as células; o MODIS, cerca de 1,5 °C nas que mais perderam floresta.
+    destaques:
+      - {x: 0.44, y: 0.13, texto: "MODIS, Xingu: o décimo mais convertido, mais de 4 °C acima da média da bacia."}
+      - {x: 0.35, y: 0.57, texto: "ERA5, ar a 2 m: plano, em todas as células."}
+      - {x: 0.97, y: 0.16, texto: "MODIS no tempo: as células que mais desmataram esquentaram mais."}
+      - {x: 0.85, y: 0.54, texto: "ERA5 no tempo: o mesmo aquecimento regional, com ou sem perda."}
+    notas: Na estação seca quase todas as composições de 8 dias são aproveitáveis; controlar o número de composições deixa a associação em 0,80 no Xingu e 0,71 no Tapajós.
+
+  - tipo: figura
+    titulo: O ERA5 não é cego, é míope
+    mensagem: Na mesma grandeza e no mesmo horário, a superfície do ERA5 vê um terço do contraste entre lugares no Xingu e um quinto no Tapajós, e nada da mudança no tempo.
+    figuras: [08_gradiente/passagem]
+    explicacao: |
+      Esta é a comparação mais justa, um comparativo fixado antes do cálculo (D-027). Do ERA5 vieram a temperatura de pele, a da própria superfície do modelo, e a do ar, interpoladas para as 10h30 solares, o horário de passagem do satélite, em todos os dias e só nos de céu limpo. Uma bacia em cada linha; à esquerda, entre células; à direita, ao longo do tempo.
+
+      Entre células, a pele do ERA5 sobe com a perda, ao contrário do ar, mas muito menos que o MODIS: do décimo menos ao mais perturbado, cerca de 2,4 °C no Xingu e 1,2 °C no Tapajós, contra 6 a 7 °C no satélite. Restringir ao céu limpo não aproxima as fontes. No Xingu, o que o modelo registra é o desmatamento anterior a 2000, que já estava no seu mapa de vegetação.
+
+      Ao longo do tempo, nenhuma medida do ERA5 acompanha o aquecimento a mais que o satélite vê. Isso explica por que o contraste entre células aparece na dinâmica e a mudança no tempo não.
+    destaques:
+      - {x: 0.44, y: 0.07, texto: "MODIS, entre células, no Xingu."}
+      - {x: 0.44, y: 0.22, texto: "A pele do ERA5 sobe, mas bem menos."}
+      - {x: 0.44, y: 0.365, texto: "O ar do ERA5 às 10h30 chega a ficar mais fresco, pela altitude do sul."}
+      - {x: 0.97, y: 0.30, texto: "No tempo, o ERA5 fica no aquecimento regional; só o MODIS sobe com a perda."}
+    notas: A correlação parcial da pele do ERA5 fica perto de 0,3, um terço da do MODIS.
+
+  - tipo: figura
+    titulo: A chuva vista de duas formas
+    mensagem: Na chuva observada do CHIRPS, as células mais convertidas têm sequências diárias mais organizadas; na chuva do ERA5, nenhuma associação.
+    figuras: [09_chuva/associacao]
+    explicacao: |
+      Cada linha é um descritor ordinal da chuva diária de 2001 a 2024, em cada bacia, e cada ponto a correlação parcial com a perda antecedente, com os mesmos controles e intervalos por blocos de 1°. Cinza é o ERA5; azul, o CHIRPS, uma chuva baseada em observações. Pontos cheios são o valor observado do descritor; vazios, o z contra as substitutas.
+
+      No ERA5, nada se distingue de zero. No CHIRPS, as células com mais perda têm entropia de permutação menor e complexidade maior, nas duas bacias: padrões de cinco dias mais repetidos. A associação é clara no valor observado, 0,38 em módulo no Xingu e 0,21 no Tapajós, e mais fraca no z.
+
+      A explicação mais simples, que as células convertidas só tenham mais dias secos, foi afastada: a diferença resiste ao controle da secura, ao dither das substitutas e à separação entre ocorrência e intensidade. É a intensidade que se organiza de outro modo.
+    notas: Ao longo do tempo, nenhuma das duas fontes mostra mudança maior nas células desmatadas.
+
+  # ── além do clima ─────────────────────────────────────────────────────────
+
+  - tipo: secao
+    numero: VII
+    titulo: O fogo, o território e a própria floresta
+    rodape: VII · Fogo, território e floresta
+    texto: O tempo antes do fogo, as áreas protegidas no mapa e a vegetação do MODIS tratada ela mesma como sistema dinâmico.
+    fundo: 12_floresta_atmosfera/delta
+
+  - tipo: figura
+    titulo: O tempo antes do fogo
+    mensagem: Na estação seca, o fogo das áreas preservadas exige tempo anormalmente seco; o das convertidas começa com o tempo de um dia qualquer.
+    figuras: [10_fogo/percentis]
+    explicacao: |
+      Para cada início de episódio de fogo, comparamos o tempo dos dias anteriores com o de datas de controle na mesma célula, a até 15 dias no calendário, em anos sem fogo. O ponto é o percentil médio do evento entre os seus controles, por bacia, estação e terço de perda antecedente. A linha em 0,5 é um dia típico; à direita, mais VPD, mais calor ou mais dias secos que o normal.
+
+      Na estação chuvosa, o padrão é o mesmo em todas as paisagens: o fogo só começa depois de uma janela seca, com o VPD da semana anterior entre os percentis 0,59 e 0,64.
+
+      Na estação seca, as paisagens se separam. Nas preservadas, o fogo continua exigindo tempo seco, VPD perto de 0,59. Nas convertidas, o percentil fica perto de 0,5 em todas as medidas, como se espera de queimas agendadas pelo uso da terra.
+    notas: Pergunta secundária (D-025). Intervalos por bootstrap de anos e de anos × blocos.
+
+  - tipo: figura
+    titulo: O território
+    mensagem: O gradiente de perturbação é, no mapa, em boa parte a fronteira entre as Terras Indígenas e Unidades de Conservação e a terra aberta à conversão.
+    figuras: [11_territorio/mapas]
+    explicacao: |
+      À esquerda, a perda de floresta de 2000 a 2024; à direita, a temperatura diurna da superfície na estação seca, como anomalia, com os limites das Terras Indígenas em linha contínua e das Unidades de Conservação federais em tracejado.
+
+      Os limites são visíveis a olho nu. Dentro deles, a perda de floresta de 2000 a 2024 é praticamente nula, a densidade de focos de fogo é de 30 a 55 vezes menor que fora no Xingu e cerca de 6 vezes menor no Tapajós, e a superfície fica de 3 a 4,4 °C mais fresca. A máxima do ar no ERA5 é a mesma, cerca de 33 °C, dentro e fora.
+
+      O capítulo é uma ponte para a leitura socioespacial, e não uma conclusão causal: não pergunta se proteger reduz o desmatamento, mas como as áreas protegidas aparecem em cada resultado.
+    notas: Exceção na Tabela 1 do capítulo 11 — as TIs do sul do Tapajós (Paresí, Nambikwara, Bakairí) têm perda antecedente mediana de 10%, que é Cerrado, não desmatamento.
+
+  - tipo: figura
+    titulo: A floresta não se deixa prever pela atmosfera
+    mensagem: O LAI é praticamente imprevisível uma composição à frente; juntar a atmosfera ao passado da vegetação não reduz o erro.
+    figuras: [12_floresta_atmosfera/previsao]
+    explicacao: |
+      A vegetação do MODIS, em composições de 8 dias, tratada como sistema dinâmico (D-031). Cada caixa é a distribuição, entre as células, do erro da previsão da anomalia da vegetação uma composição à frente pelo S-map, fora da amostra, com três conjuntos de preditores: o passado da própria vegetação, o da atmosfera (VPD do ERA5 e chuva do CHIRPS) e os dois juntos. A linha em 1 é o erro de quem prevê a média.
+
+      O LAI fica entre 0,96 e 1,0 com o seu próprio passado; o NDMI tem um pouco de memória, entre 0,86 e 0,88. Juntar a atmosfera aumenta um pouco o erro, e a atmosfera sozinha prevê pior que a média. O mesmo vale para o modelo linear.
+
+      A vegetação também não tem estrutura não linear além da de um processo linear com o mesmo espectro, e o mapeamento cruzado convergente encontra um sinal comum com o VPD fraco e nos dois sentidos.
+    notas: As substitutas da vegetação recebem as mesmas lacunas da série observada; o CCM é comparado com substitutas que embaralham anos inteiros da atmosfera.
+
+  - tipo: figura
+    titulo: A floresta depois do fogo
+    mensagem: O fogo derruba o LAI e o NDMI de uma vez; boa parte se recupera no primeiro ano, e o déficit reaparece em cada estação seca por pelo menos três anos.
+    figuras: [12_floresta_atmosfera/delta]
+    explicacao: |
+      Cada curva é Δ(k): a mudança do pixel queimado em relação ao seu ano anterior à queima, menos a mesma mudança da média de três pixels de floresta nunca queimados da mesma célula, escolhidos por serem parecidos com ele antes do fogo. Uma seca que derrube todos ao mesmo tempo some da diferença. São 285 episódios por bacia, com intervalo por bootstrap das células do ERA5.
+
+      Antes da queima, as curvas oscilam em torno de zero, como devem se o pareamento funcionou. No mês da queima, o LAI cai mais de uma unidade, perto de um quinto do LAI de uma floresta amazônica, e o NDMI cerca de 0,13. Metade da queda do LAI se recupera em seis meses.
+
+      Depois a curva não volta a zero. Como quase todas as queimas são de agosto a outubro, cada ano depois passa pela estação seca nos mesmos meses, e é ali que o déficit reaparece: perto de 0,5 de LAI em setembro e outubro. A floresta danificada perde mais folhas justamente quando falta água.
+    destaques:
+      - {x: 0.178, y: 0.75, texto: "A queda imediata: mais de uma unidade de LAI."}
+      - {x: 0.27, y: 0.36, texto: "Metade se recupera nos primeiros seis meses."}
+      - {x: 0.38, y: 0.49, texto: "Dois anos depois, na estação seca, o déficit reaparece."}
+      - {x: 0.66, y: 0.36, texto: "O NDMI já cai um pouco antes do mês registrado da queima."}
+    notas: O painel com efeitos fixos mostra ainda que a floresta queimada fica mais sensível à chuva e ao VPD.
+
+  # ── síntese ───────────────────────────────────────────────────────────────
+
+  - tipo: secao
+    numero: VIII
+    titulo: O que resiste a quê
+    rodape: VIII · Síntese
+    texto: Os resultados principais em quatro níveis, com as checagens a que cada um foi submetido.
+
+  - tipo: tabela
+    titulo: O que resiste a quê, níveis 1 a 3
+    mensagem: A natureza das séries e a relação com a paisagem.
+    tabela: reports/tables/00_inicio/sintese.csv
+    linhas: [0, 6]
+    notas: Tabela 1 do caderno 00.
+
+  - tipo: tabela
+    titulo: O que resiste a quê, detectabilidade e além
+    mensagem: O que cada registro vê, o fogo e a própria floresta.
+    tabela: reports/tables/00_inicio/sintese.csv
+    linhas: [6, 12]
+
+  - tipo: frase
+    rotulo: A resposta
+    titulo: O clima diário da Amazônia é estocástico, com memória sazonal e não linearidade fraca, sem caos de baixa dimensão.
+    texto: >-
+      Essa dinâmica se associa moderadamente à conversão da floresta, em boa parte pela
+      sazonalidade e pelo que o próprio modelo registra; e o desmatamento aquece fortemente a
+      superfície, algo que a reanálise vê só em parte entre lugares e não acompanha no tempo.
+      Os dados não permitem dizer, com uma reanálise de vegetação fixa, se o desmatamento
+      recente alterou a dinâmica diária do clima, nem falar em caos induzido pelo
+      desmatamento.
+    notas: Texto do quadro de conclusão do caderno 00. O resultado principal é o do pré-registro; as extensões da revisão crítica são comparativos.
+
+  - tipo: frase
+    rotulo: Limitações e próximos passos
+    titulo: O que o trabalho não consegue dizer, e o que viria depois
+    itens:
+      - titulo: O instrumento
+        texto: A vegetação fixa do ERA5, a assimilação e efeitos não locais; τ = 1 pela regra 1/e e janela de Theiler de cerca de 10 dias; z sobre 39 substitutas por célula.
+      - titulo: As hipóteses nulas
+        texto: A IAAFT é estacionária; o portão aceita 20% de falso positivo; o LST do MODIS e o ar do ERA5 são grandezas diferentes, em parte resolvido pela pele do ERA5.
+      - titulo: Depois do TCC
+        texto: PCMCI, teste 0–1, sinais precoces na vegetação (NDVI ou VOD), séries horárias, estações e torres, métricas de borda da paisagem e análise multivariada em todas as células.
+    notas: Da lista F3 e F4 do plano. Ver com o orientador o que entra como limitação no texto.
+
+  - tipo: frase
+    rotulo: Para a conversa
+    titulo: O que entra no manuscrito?
+    texto: >-
+      A galeria, na tecla G, reúne as 75 figuras do trabalho, cada uma com a sua legenda e o
+      slide em que aparece. As que estão nestes slides são a nossa proposta para o texto
+      principal; as demais podem ir para os apêndices ou ficar só nos cadernos.
+    notas: Abrir a galeria (G) e percorrer capítulo a capítulo.

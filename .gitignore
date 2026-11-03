@@ -57,6 +57,7 @@ reports/html/
 reports/tmp/
 reports/figures/**/*.pdf
 reports/overleaf/
+reports/apresentacao/
 
 # Slurm / execução no HPC
 logs/
