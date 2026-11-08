@@ -3,8 +3,7 @@
 `make site` monta `site/` com uma galeria de cartões (as capas de `make capas`), a versão
 de leitura de cada capítulo (os HTML de `make notebooks`, com todas as figuras) e o pacote
 de visualização (`amazon_chaos.bundle`). `make publicar` envia `site/` para o ramo
-`gh-pages`, servido pelo GitHub Pages. A apresentação dos resultados (`make apresentacao`),
-se tiver sido montada, vai junto em `site/apresentacao/`.
+`gh-pages`, servido pelo GitHub Pages.
 """
 
 from __future__ import annotations
@@ -73,7 +72,7 @@ footer a {{ color: inherit; }}
 Vinicius Wasques: a dinâmica não linear do clima diário em 1.541 células das bacias do
 Xingu e do Tapajós, comparada com o desmatamento e o fogo. Cada capítulo pode ser lido
 aqui, com todas as figuras, ou aberto no molab para mexer nos controles e no código.</p>
-<nav><a href="{repo}">Código no GitHub</a><a href="dados/caos-dados.zip">Pacote de dados (59 MB)</a>{slides}</nav>
+<nav><a href="{repo}">Código no GitHub</a><a href="dados/caos-dados.zip">Pacote de dados (59 MB)</a></nav>
 </div></header>
 <main><div class="largura grade">
 {cards}
@@ -116,13 +115,8 @@ def build(root: Path | None = None) -> Path:
         cards.append(CARD.format(name=name, number=name[:2], title=html.escape(title),
                                  subtitle=html.escape(subtitle),
                                  molab=MOLAB.format(name=name)))
-    slides = root / "reports/apresentacao"
-    shutil.rmtree(site / "apresentacao", ignore_errors=True)
-    link = ""
-    if (slides / "index.html").exists():
-        shutil.copytree(slides, site / "apresentacao")
-        link = '<a href="apresentacao/">Apresentação dos resultados</a>'
-    (site / "index.html").write_text(PAGE.format(cards="\n".join(cards), repo=REPO, slides=link),
+    shutil.rmtree(site / "apresentacao", ignore_errors=True)  # slides de versões antigas
+    (site / "index.html").write_text(PAGE.format(cards="\n".join(cards), repo=REPO),
                                      encoding="utf-8")
     (site / ".nojekyll").write_text("")
     return site

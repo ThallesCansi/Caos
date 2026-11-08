@@ -1,105 +1,171 @@
+<div align="center">
+
+<img src="reports/figures/03_clima/listras.png" alt="Anomalia anual da temperatura nas bacias do Xingu e do Tapajós, de 1990 a 2024: faixas azuis nos anos frios e vermelhas nos quentes, cada vez mais vermelhas no fim do período" width="100%">
+
 # Caos na floresta–atmosfera amazônica
 
-Código do TCC **"Uma Análise do Sistema Floresta-Atmosfera Amazônica sob a ótica da Teoria do Caos"** (Ilum/CNPEM, 2026), de Caio Ruas e Thalles Cansi, com orientação de Vinicius Wasques.
+**A perda da floresta deixa marca na forma como o clima local evolui de um dia para o outro?<br>E as ferramentas da teoria do caos conseguem enxergar essa marca?**
 
-> A perturbação da floresta amazônica, por desmatamento e fogo, deixa marca na dinâmica do clima local, isto é, na forma como ele evolui de um dia para o outro? E as ferramentas da teoria do caos conseguem revelá-la?
+[![Galeria dos cadernos](https://img.shields.io/badge/ler_os_cadernos-galeria-2f5d3a?style=for-the-badge)](https://thallescansi.github.io/Caos/)
+[![CI](https://img.shields.io/github/actions/workflow/status/ThallesCansi/Caos/ci.yml?branch=main&style=for-the-badge&label=testes)](https://github.com/ThallesCansi/Caos/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11+-3776ab?style=for-the-badge&logo=python&logoColor=white)](pyproject.toml)
+[![Licença MIT](https://img.shields.io/badge/licença-MIT-8a8a8a?style=for-the-badge)](LICENSE)
 
-A pergunta se desdobra em três: que tipo de dinâmica o clima diário local tem (natureza), se ela difere entre lugares mais e menos perturbados e muda onde a floresta é perdida (relação), e que tipo de registro é preciso para que essa marca apareça (detectabilidade). A reanálise ERA5 é o instrumento principal; a temperatura da superfície medida pelo MODIS e a chuva diária do CHIRPS são as checagens observacionais (D-019, D-021).
+Trabalho de Conclusão de Curso · Ilum Escola de Ciência (CNPEM) · 2026<br>
+**Caio Ruas** e **Thalles Cansi**, com orientação de **Vinicius Wasques**
 
-Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Período: 2001–2024, com o arquivo 1990–2000 para sensibilidade. Método: reconstrução do espaço de fases, Lyapunov, RQA, D2, entropia de permutação e sinais precoces, sempre contra controles sintéticos e séries substitutas. Os detalhes estão em [docs/metodologia.md](docs/metodologia.md).
+</div>
 
-O pré-registro (D-010), o gate congelado `1c2fb37657` e o lote `81333bb007` são o resultado principal. As extensões da revisão crítica de 29/10/2026 (D-027: grade de atrasos, mínima e máxima, temperatura + umidade, Wolf e Kantz, temperatura de pele do ERA5, gate com nulas realistas, S-map, Cao e dither da chuva) são comparativos, apresentados ao lado do resultado principal nos capítulos em que cabem, sem substituí-lo. A reanálise de 30/10/2026 corrigiu a leitura das nulas realistas, que passa a ser por variável (D-029), e acrescentou a sazonalidade como explicação alternativa, blocos espaciais maiores, nulas ajustadas nas células, a auditoria dos comparativos e a separação entre ocorrência e intensidade da chuva (D-030).
+<sub>As faixas acima são a anomalia anual da temperatura do ar nas duas bacias estudadas, de 1990 (à esquerda) a 2024 (à direita): azul nos anos mais frios que o normal, vermelho nos mais quentes.</sub>
 
-A metodologia de 31/10/2026 (D-031) acrescenta a floresta como variável dinâmica: a vegetação do MODIS (LAI e NDMI, composições de 8 dias) sozinha, junto com a atmosfera e depois do fogo, com o seu próprio portão e pré-registro (`configs/analysis/vegetation.yaml`). A D-032 (07/11/2026) amplia a comparação com a atmosfera para horizontes de 8 a 64 dias, estados compactos com atrasos escolhidos no treino, modelos lineares e não lineares e a direção inversa, com validação em blocos cronológicos e anos permutados como controle.
+---
 
-### O que os resultados dizem
+## Sobre o projeto
 
-Em quatro níveis, como no resumo do caderno `00_inicio` (Tabela 1, "o que resiste a quê"):
+A Amazônia não é só um cenário onde o clima acontece: a floresta participa dele, devolvendo umidade ao ar, sombreando o solo e resfriando a superfície. Quando ela é derrubada ou queimada, é razoável esperar que o tempo local mude, não apenas na média, mas no seu **ritmo**, isto é, na maneira como um dia leva ao seguinte.
 
-1. **Validade dos métodos.** Os descritores reconhecem caos em sistemas conhecidos, mas DET, LAM e Lyapunov também rejeitam a hipótese linear em processos estocásticos com memória sazonal ou variância condicional; só o teste de Cao separa caos de ruído (cadernos 05 e 07).
-2. **Estrutura.** O clima diário das bacias é um processo estocástico com memória sazonal e não linearidade fraca, sem caos de baixa dimensão. A temperatura guarda uma não linearidade que nenhuma nula realista reproduz (assimetria e D2); no VPD, a rejeição vem em boa parte da memória sazonal (cadernos 06 e 07).
-3. **Paisagem.** Entre células, a perda antecedente se associa a recorrências mais curtas (DET) na temperatura e a padrões ordinais do VPD mais próximos do aleatório. A evidência confirmatória mais firme é a do DET da temperatura; a associação ordinal é em boa parte geografia da sazonalidade. Ao longo do tempo, nada (caderno 08).
-4. **Detectabilidade.** O MODIS vê a superfície de 6 a 7 °C mais quente nas células convertidas; o ar do ERA5 não vê, e a sua superfície vê só uma fração do contraste entre lugares e nada da mudança no tempo. A chuva do CHIRPS mostra intensidades organizadas de outro modo nas células convertidas (cadernos 08 e 09).
+A teoria do caos oferece ferramentas feitas justamente para descrever esse ritmo: reconstruir o "espaço de estados" de uma série, medir o quanto trajetórias próximas se afastam, contar quantas vezes o sistema volta a estados parecidos. Este trabalho aplica essas ferramentas a 35 anos de clima diário em **1.541 pontos** das bacias do **Xingu** e do **Tapajós**, e compara o resultado com mapas de desmatamento e fogo.
 
-E na própria floresta (caderno 12): a vegetação do MODIS em 8 dias não tem estrutura não linear nem se deixa prever pela atmosfera; o fogo derruba o LAI e o NDMI e deixa uma diferença de estado que persiste por pelo menos 3 anos, além dos placebos (D-033); há indício, sem passar a correção de testes múltiplos, de que a floresta queimada sofra mais com o ar seco.
+A pergunta se divide em três partes:
 
-## Cadernos (Marimo)
+| | Pergunta | Em outras palavras |
+|:-:|---|---|
+| 🌀 | **Natureza** | O clima diário da região é caótico, aleatório ou algo entre os dois? |
+| 🌳 | **Relação** | Essa dinâmica é diferente onde a floresta foi perdida? |
+| 🛰️ | **Detectabilidade** | Que tipo de dado é preciso para que essa diferença apareça? |
 
-Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzidos e gera as figuras da monografia. Os mapas mostram as duas bacias juntas; as figuras de uma só série têm um seletor de bacia, e as versões impressas das duas são gravadas.
+<div align="center">
+<img src="reports/figures/04_perturbacao/mapas.png" alt="Oito mapas das bacias do Xingu e do Tapajós mostrando desmatamento acumulado, desmatamento recente, alertas do DETER, focos de calor e área queimada, concentrados no sul e no leste das bacias" width="92%">
+<br><sub>Desmatamento e fogo em cada ponto da grade, segundo quatro fontes independentes (PRODES, DETER, BDQueimadas e MapBiomas).</sub>
+</div>
 
-| Caderno | Capítulo | Estado |
-|---|---|---|
-| `00_inicio` | apresentação, percurso, legenda das caixas e resumo dos resultados | pronto |
-| `01_laboratorio` | sistemas dinâmicos conhecidos (teoria, interativo) | pronto |
-| `02_regioes` | as bacias, a grade ERA5 e as células da comparação | pronto |
-| `03_clima` | o clima de 1990–2024 e a anomalia padronizada | pronto |
-| `04_perturbacao` | desmatamento e fogo por célula, concordância entre fontes, MODIS | pronto |
-| `05_validacao_metodos` | o portão: descritores em controles sintéticos, e o portão mais exigente com nulas realistas, Wolf, Kantz, Cao e S-map (D-027) | pronto |
-| `06_surrogates` | substitutas FT/IAAFT nas séries das bacias, Wolf, Kantz e Cao, e temperatura + umidade contra substitutas multivariadas (D-016, D-027, D-030) | pronto |
-| `07_descritores` | descritores por célula, robustez, EWS, a grade de atrasos e a natureza diante das nulas realistas, por variável (D-024, D-027, D-029) | pronto |
-| `08_gradiente` | perturbação × dinâmica, multiplicidade, inferência espacial (blocos de 1° a 2,5°, n efetivo) e placebo, robustez, checagem MODIS com a temperatura de pele do ERA5 no horário do satélite, comparativos e a sazonalidade como explicação alternativa (D-014, D-015, D-018, D-022, D-027, D-028, D-030) | pronto |
-| `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação, o dither das substitutas e a ocorrência × intensidade (D-021, D-023, D-027, D-030) | pronto |
-| `10_fogo` | o tempo antes do início dos episódios de fogo, com o contraste direto entre paisagens e bootstrap de anos × blocos (pergunta secundária, D-025, D-030) | pronto |
-| `11_territorio` | Terras Indígenas e Unidades de Conservação diante do clima e do fogo (D-026) | pronto |
-| `12_floresta_atmosfera` | a vegetação do MODIS (LAI e NDMI, 8 dias) como sistema dinâmico: portão de 8 dias, descritores, previsão e CCM com a atmosfera, horizontes de 8 a 64 dias com estado compacto e direção inversa (D-032), associação com a perda, a floresta depois do fogo (D-031) e a memória do fogo: déficit, resíduo, sensibilidade e seca antecedente (D-033) | pronto |
+## O que descobrimos
 
-O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
+> [!NOTE]
+> Um resumo em linguagem simples. Cada afirmação é detalhada, com figuras e testes, no caderno indicado.
 
-```bash
-uv run marimo edit notebooks/03_clima.py                                  # editar
-uv run marimo export html notebooks/03_clima.py -o reports/html/03_clima.html
+1. **As ferramentas do caos precisam de cuidado.** Elas reconhecem caos em sistemas conhecidos, mas também "veem caos" em ruído que tem memória, como as estações do ano. Só alguns testes separam um caso do outro. *(cadernos 01 e 05)*
+2. **O clima diário da região não é caótico no sentido clássico.** Ele se comporta como um processo aleatório com memória sazonal e uma não linearidade fraca, mas real na temperatura. *(cadernos 06 e 07)*
+3. **Onde a floresta foi perdida, a temperatura diária se repete por períodos mais curtos.** A marca existe na comparação entre lugares, mas não aparece ao longo do tempo num mesmo lugar. *(caderno 08)*
+4. **O tipo de dado decide o que se vê.** O satélite mede a superfície 6 a 7 °C mais quente onde a floresta virou pasto; a reanálise climática, que usa um mapa de vegetação fixo, quase não percebe a diferença. *(cadernos 08 e 09)*
+5. **A floresta guarda memória do fogo.** Depois de queimada, a vegetação perde folhagem e umidade, e a diferença persiste por pelo menos três anos. *(caderno 12)*
+
+## Como ler os cadernos
+
+O trabalho está organizado em **13 cadernos interativos** ([Marimo](https://marimo.io)), escritos como capítulos: texto corrido, figuras explicadas e, quando faz sentido, controles para mexer nos parâmetros. Há três formas de acessá-los, da mais simples à mais completa.
+
+| | Como | Para quem |
+|:-:|---|---|
+| 📖 | **[Ler na galeria](https://thallescansi.github.io/Caos/)**: cada capítulo como página web, com todas as figuras. Nada a instalar. | quem quer conhecer o trabalho |
+| 🧪 | **Abrir no molab**: o botão "Abrir no molab" em cada cartão da galeria roda o caderno na nuvem (escolha o modo *Server*). | quem quer mexer nos controles e no código |
+| 💻 | **Rodar localmente**: `uvx marimo edit --sandbox notebooks/00_inicio.py` instala tudo sozinho e baixa os dados processados (59 MB). | quem quer explorar a fundo |
+
+> [!TIP]
+> Comece pelo **00 · Apresentação**: ele traz a pergunta, o percurso e o resumo dos resultados, e aponta qual capítulo aprofunda cada ponto.
+
+### Os capítulos
+
+| | Caderno | Do que trata |
+|:-:|---|---|
+| **00** | [Apresentação](notebooks/00_inicio.py) | A pergunta, o percurso e o que encontramos |
+| | ***Fundamentos*** | |
+| **01** | [Laboratório de sistemas dinâmicos](notebooks/01_laboratorio.py) | Equilíbrios, bifurcações e caos em modelos conhecidos |
+| **02** | [As bacias do Xingu e do Tapajós](notebooks/02_regioes.py) | O recorte, a grade e os pontos estudados |
+| **03** | [O clima de 1990 a 2024](notebooks/03_clima.py) | Ritmo do ano, geografia e tendências |
+| **04** | [Desmatamento e fogo, célula por célula](notebooks/04_perturbacao.py) | Quatro fontes e o que elas medem |
+| | ***Método*** | |
+| **05** | [Os métodos diante de casos conhecidos](notebooks/05_validacao_metodos.py) | O "portão": as ferramentas só entram se passarem em testes controlados |
+| **06** | [Séries substitutas](notebooks/06_surrogates.py) | Como seria o clima sem não linearidade |
+| **07** | [Descritores não lineares](notebooks/07_descritores.py) | 1.541 pontos, oito medidas de dinâmica |
+| | ***Resultados*** | |
+| **08** | [Perturbação e dinâmica](notebooks/08_gradiente.py) | O que a reanálise vê e o que o satélite vê |
+| **09** | [A chuva vista de duas formas](notebooks/09_chuva.py) | Reanálise e satélite diante da perda da floresta |
+| **10** | [O tempo antes do fogo](notebooks/10_fogo.py) | Quando o fogo segue o tempo seco e quando segue o calendário |
+| **11** | [O território](notebooks/11_territorio.py) | Terras Indígenas e Unidades de Conservação diante do clima e do fogo |
+| **12** | [A floresta como sistema dinâmico](notebooks/12_floresta_atmosfera.py) | A vegetação sozinha, com a atmosfera e depois do fogo |
+
+## Como o trabalho foi feito
+
+```mermaid
+flowchart LR
+    A["🛰️ Dados<br><sub>ERA5 · MODIS · CHIRPS<br>PRODES · MapBiomas</sub>"] --> B["📈 Séries diárias<br><sub>uma por ponto<br>da grade</sub>"]
+    B --> C["🚦 Portão<br><sub>os métodos provados<br>em casos conhecidos</sub>"]
+    C --> D["🔀 Substitutas<br><sub>versões sem<br>não linearidade</sub>"]
+    D --> E["🌀 Descritores<br><sub>Lyapunov · recorrência<br>entropia · dimensão</sub>"]
+    E --> F["🌳 Comparação<br><sub>com desmatamento<br>e fogo</sub>"]
 ```
 
-## Ver e rodar sem os dados brutos
+A espinha dorsal é a **reanálise ERA5**, que fornece temperatura, umidade e chuva dia a dia, sem falhas, desde 1990, numa grade de cerca de 28 km. As observações de satélite (temperatura da superfície e vegetação do MODIS, chuva do CHIRPS) servem de checagem independente.
 
-- **Ler:** a galeria em <https://thallescansi.github.io/Caos/> traz cada capítulo com todas as figuras.
-- **Rodar no molab:** cada cartão tem um botão "Abrir no molab"; escolha o modo **Server**. O cabeçalho de cada caderno instala a biblioteca direto deste repositório, e, fora dele, a biblioteca baixa sozinha o pacote de visualização (configurações e dados processados, 59 MB).
-- **Rodar localmente sem clonar os dados:** `uvx marimo edit --sandbox notebooks/03_clima.py`.
-- **Atualizar a galeria:** `make notebooks && make publicar` (refaz capas, pacote de dados e página no ramo `gh-pages`).
+Três cuidados atravessam todo o trabalho:
 
-O modo WebAssembly do molab não funciona com estes cadernos: várias dependências (rasterio, geopandas com GDAL) não existem no navegador.
+- **Nenhuma ferramenta é usada às cegas.** Antes de olhar para a Amazônia, cada medida é testada em sistemas cuja resposta já se conhece, caóticos e aleatórios.
+- **Todo sinal é comparado com o acaso.** Cada série real é confrontada com centenas de "séries substitutas", que têm o mesmo ritmo sazonal e a mesma memória, mas nenhuma não linearidade.
+- **As regras foram fixadas antes dos resultados.** Parâmetros e testes foram pré-registrados e congelados num commit; resultados negativos também são relatados.
 
-## Animações
+> [!IMPORTANT]
+> Um expoente de Lyapunov positivo **não é prova de caos**, e caos não é o mesmo que "ponto de não retorno" da floresta. O trabalho mede **associações**, e a conclusão depende sempre dos controles.
 
-Clipes curtos e mudos, em 1920×1080, para a defesa e as palestras, gravados em `reports/animacoes/` (fora do Git) por `make animacoes CLIPES="…" QUALIDADE=final`; `make animacoes` sem nomes lista os clipes. São timelapses de mapa das duas bacias (anomalia mensal da temperatura, fogo mês a mês, desmatamento do PRODES, o ano médio da chuva), a máquina de substitutas em matplotlib e três peças em Manim (duas trajetórias, a bifurcação, de Lorenz ao Xingu). O código está em `src/amazon_chaos/animacoes/` e depende do grupo opcional `animacao` (`uv sync --group animacao`). O Manim roda num ambiente conda do conda-forge, porque o `pycairo` não tem wheel para Linux; a CLI chama esse Python sozinha (`MANIM_PYTHON`, por padrão `~/miniconda3/envs/manim/bin/python`).
+Para os detalhes do método: [docs/metodologia.md](docs/metodologia.md). Para as decisões tomadas ao longo do caminho e suas justificativas: [docs/decisoes.md](docs/decisoes.md).
 
-## Começo rápido
-
-```bash
-make sync                        # ambiente exatamente como no uv.lock
-make test && make check          # testes, ruff e marimo check
-uv run marimo edit notebooks/    # abrir os cadernos
-make notebooks                   # executar todos e exportar HTML (reports/html/)
-make overleaf                    # figuras e tabelas finais em reports/overleaf/
-```
-
-Os dados não estão no Git (veja [docs/dados.md](docs/dados.md)). Toda aquisição passa pelo CLI, com manifesto e SHA-256; os cadernos **nunca** baixam nada:
-
-```bash
-uv run amazon-chaos region list                 # regiões em configs/regions/
-uv run amazon-chaos region prepare tapajos      # limite, grade e cartografia
-uv run amazon-chaos era5 --help                 # plan · download · edh · process · summarize
-```
-
-O ERA5 de 1990–2024 é baixado no HPC pelo Earth Data Hub (`sbatch --export=ALL,REGION=<slug> scripts/hpc/era5.sbatch`) e trazido com `make pull REGION=<slug>`. Uma região nova se cria com um YAML. Tudo isso está em [docs/hpc.md](docs/hpc.md).
-
-## Estrutura
+## Onde está cada coisa
 
 ```text
-configs/      regiões, variáveis e análise pré-registrada (YAML)
-data/         dados locais, fora do Git
-docs/         metodologia, dados, decisões, HPC; entregas/ (projeto aprovado, relatório parcial)
-notebooks/    cadernos Marimo
-reports/      figuras e tabelas finais; registro de experimentos
-scripts/hpc/  jobs Slurm, setup e sincronização com o HPC
-src/          biblioteca amazon_chaos (io, preprocess, features, nonlinear)
-tests/        testes das transformações e dos métodos
+Caos/
+├── notebooks/          os 13 capítulos (cadernos Marimo)          ← comece aqui
+├── src/amazon_chaos/   a biblioteca com todo o código das análises
+├── docs/               metodologia, decisões, fontes de dados e guia do HPC
+├── configs/            regiões, variáveis e parâmetros pré-registrados (YAML)
+├── reports/            figuras e tabelas geradas pelos cadernos
+├── tests/              testes automáticos dos métodos e das transformações
+├── scripts/hpc/        jobs que rodaram as análises pesadas no cluster
+└── data/               dados locais (fora do Git; veja docs/dados.md)
 ```
 
-## Regra interpretativa
+<details>
+<summary><b>O código mais relevante, módulo por módulo</b></summary>
+<br>
 
-`λ_max > 0` **não é prova isolada de caos**, e muito menos de tipping point. A conclusão depende da qualidade da série, dos controles sintéticos, das substitutas, da sensibilidade aos parâmetros e da consistência espacial. Resultados negativos são relatados ([guardrails](docs/metodologia.md#3-guardrails)).
+| Onde | O que faz |
+|---|---|
+| [`nonlinear/embedding.py`](src/amazon_chaos/nonlinear/embedding.py) | reconstrução do espaço de estados (atraso e dimensão) |
+| [`nonlinear/lyapunov.py`](src/amazon_chaos/nonlinear/lyapunov.py) · [`estimators.py`](src/amazon_chaos/nonlinear/estimators.py) | expoente de Lyapunov (Rosenstein; Wolf e Kantz como comparação) e teste de Cao |
+| [`nonlinear/recurrence.py`](src/amazon_chaos/nonlinear/recurrence.py) | análise de quantificação de recorrência (RQA) |
+| [`nonlinear/ordinal.py`](src/amazon_chaos/nonlinear/ordinal.py) | entropia de permutação e complexidade ordinal |
+| [`nonlinear/dimension.py`](src/amazon_chaos/nonlinear/dimension.py) | dimensão de correlação (D2) |
+| [`nonlinear/surrogates.py`](src/amazon_chaos/nonlinear/surrogates.py) | séries substitutas (FT e IAAFT) |
+| [`nonlinear/synthetic.py`](src/amazon_chaos/nonlinear/synthetic.py) · [`gate.py`](src/amazon_chaos/nonlinear/gate.py) | sistemas de controle e o portão dos métodos |
+| [`nonlinear/ews.py`](src/amazon_chaos/nonlinear/ews.py) | sinais precoces de transição |
+| [`gradient.py`](src/amazon_chaos/gradient.py) | a comparação entre perturbação e dinâmica (caderno 08) |
+| [`features/`](src/amazon_chaos/features/) | desmatamento, fogo, sazonalidade e vegetação por ponto da grade |
+| [`io/`](src/amazon_chaos/io/) · [`preprocess/`](src/amazon_chaos/preprocess/) | aquisição dos dados e construção das séries diárias |
+
+</details>
+
+<details>
+<summary><b>Reproduzir o projeto</b></summary>
+<br>
+
+O ambiente é gerenciado pelo [uv](https://docs.astral.sh/uv/). Os comandos principais estão no `Makefile` (`make` sem argumentos lista todos):
+
+```bash
+make sync          # instala o ambiente exatamente como no uv.lock
+make test          # roda os testes
+make notebooks     # executa todos os cadernos e exporta as versões HTML
+```
+
+Os dados brutos não estão no repositório. Eles são baixados pela linha de comando do projeto (`uv run amazon-chaos --help`), sempre com manifesto e verificação de integridade, e os cálculos mais pesados rodaram num cluster. O caminho completo está em [docs/dados.md](docs/dados.md) e [docs/hpc.md](docs/hpc.md).
+
+</details>
+
+## Dados
+
+ERA5 (Copernicus Climate Change Service / ECMWF) · MODIS (NASA LP DAAC) · CHIRPS (UCSB Climate Hazards Center) · PRODES, DETER e BDQueimadas (INPE) · MapBiomas · Bacias hidrográficas BHB250 (IBGE/ANA) · FUNAI e ICMBio.
+
+## Como citar
+
+Se este trabalho for útil para você, cite-o pelos metadados em [CITATION.cff](CITATION.cff) (o GitHub gera a referência no botão *Cite this repository*).
 
 ## Licença
 
-Código sob licença MIT. As bases de terceiros seguem os termos das instituições responsáveis.
+O código está sob a [licença MIT](LICENSE). As bases de dados de terceiros seguem os termos das instituições responsáveis.

@@ -48,7 +48,6 @@ reports/
   figures/<caderno>/<região>/  figuras PNG (300 dpi) e PDF
   tables/<caderno>/            CSV e .tex
   overleaf/                    cópia com nomes estáveis para a monografia
-  registro_experimentos.csv    uma linha por execução relevante
 ```
 
 Experimentos: `xingu-era5-1990-2024` e `tapajos-bacia-era5-1990-2024`.

@@ -1,6 +1,6 @@
 # Registro de decisões
 
-Decisões arquiteturais e científicas estáveis. Execuções de análise ficam em `reports/registro_experimentos.csv`.
+Decisões arquiteturais e científicas estáveis. Cada execução de análise grava a sua proveniência (`execucao.json`, manifestos e SHA-256) junto dos resultados.
 
 ## D-001 — Marimo como ambiente interativo principal
 
@@ -102,7 +102,7 @@ A caixa antiga (`configs/regions/tapajos_caixa.yaml`, `tapajos-era5-1990-2024`) 
 
 **Status:** aceito em 20/10/2026.
 
-**Motivo:** o projeto aprovado (`docs/entregas/projeto_aprovado.pdf`) define PRODES e DETER (TerraBrasilis) e BDQueimadas como bases de distúrbio, com o MapBiomas como complemento. O Google Earth Engine tem cota mensal de computação, por isso todas as fontes são baixadas uma vez pelo CLI, com manifesto, e agregadas por célula localmente ou no HPC. O MapBiomas é lido dos COGs públicos. O `earthengine-api` fica num grupo opcional (`gee`), só para reproduzir as séries regionais antigas.
+**Motivo:** o projeto aprovado do TCC define PRODES e DETER (TerraBrasilis) e BDQueimadas como bases de distúrbio, com o MapBiomas como complemento. O Google Earth Engine tem cota mensal de computação, por isso todas as fontes são baixadas uma vez pelo CLI, com manifesto, e agregadas por célula localmente ou no HPC. O MapBiomas é lido dos COGs públicos. O `earthengine-api` fica num grupo opcional (`gee`), só para reproduzir as séries regionais antigas.
 
 
 ## D-013 — Resolução das substitutas e análise complementar da rejeição
