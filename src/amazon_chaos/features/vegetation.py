@@ -96,6 +96,22 @@ def reflectance_ok(state, qc, view_zenith) -> np.ndarray:
     return clear & bands & (np.asarray(view_zenith, dtype=float) <= MAX_VIEW_ZENITH)
 
 
+STRICT_VIEW_ZENITH = 20.0  # graus (qualidade estrita da D-033)
+
+
+def lai_ok_strict(qc) -> np.ndarray:
+    """Qualidade estrita (D-033): sem nuvem e só o algoritmo principal sem saturação
+    (bits 5–7 = 0)."""
+    return (_bits(qc, 3, 2) == 0) & (_bits(qc, 5, 3) == 0)
+
+
+def reflectance_ok_strict(state, qc, view_zenith) -> np.ndarray:
+    """Qualidade estrita (D-033): o filtro da D-031 com aerossol só climatológico ou baixo
+    (bits 6–7 ≤ 01) e visada ≤ 20°."""
+    return (reflectance_ok(state, qc, view_zenith) & (_bits(state, 6, 2) <= 1)
+            & (np.asarray(view_zenith, dtype=float) <= STRICT_VIEW_ZENITH))
+
+
 def ndmi(nir, swir) -> np.ndarray:
     nir, swir = np.asarray(nir, dtype=float), np.asarray(swir, dtype=float)
     with np.errstate(invalid="ignore", divide="ignore"):

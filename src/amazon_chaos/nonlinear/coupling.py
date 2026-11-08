@@ -272,3 +272,199 @@ def response_change(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame({"termo": cols, "coeficiente": fit.params.to_numpy(),
                          "ic_inf": ci[0].to_numpy(), "ic_sup": ci[1].to_numpy(),
                          "p": fit.pvalues.to_numpy()})
+
+
+# ── memória e sensibilidade depois do fogo (D-033) ───────────────────────────
+
+STEP_YEARS = 8 / 365.25
+PRE_MEAN = (-46, -1)
+PRE_SEASONAL = (-92, -1)
+POST_BINS = ((1, 6), (7, 23), (24, 46), (47, 92), (93, 138))
+TERMS = ("dif", "h", "d", "P_dif", "P_h", "P_d")
+
+
+def baseline_change(diff: pd.DataFrame, *, seasonal: bool = False) -> pd.DataFrame:
+    """Δₑ(k) = δₑ(k) − linha de base anterior ao fogo. `diff`: episodio, data, k, dif.
+    Base: média de δ em k ∈ [−46, −1] ou, com `seasonal`, a média no mesmo mês do
+    calendário em k ∈ [−92, −1]. Devolve episodio, data, k, delta (= Δ)."""
+    f = diff.copy()
+    if seasonal:
+        f["mes_cal"] = pd.to_datetime(f.data).dt.month
+        pre = f[f.k.between(*PRE_SEASONAL)]
+        base = pre.groupby(["episodio", "mes_cal"]).dif.mean().rename("base")
+        f = f.join(base, on=["episodio", "mes_cal"])
+    else:
+        base = f[f.k.between(*PRE_MEAN)].groupby("episodio").dif.mean()
+        f["base"] = f.episodio.map(base)
+    f["delta"] = f.dif - f.base
+    return f[["episodio", "data", "k", "delta"]].dropna(subset=["delta"])
+
+
+def memory_metrics(change: pd.DataFrame, *, post=(1, 138), first=(1, 46),
+                   residual=(47, 138), min_post: float = 0.3,
+                   min_residual: float = 0.3) -> pd.DataFrame:
+    """Por episódio: déficit acumulado A = −Δt Σ min(Δ, 0) (calculado com a média dos k
+    válidos vezes o número de composições), o líquido A_liq (sem o min), o do primeiro ano
+    A1 e a diferença residual R (média de Δ nos anos 2 e 3)."""
+    def window(d, lo, hi):
+        return d[(d.index >= lo) & (d.index <= hi)].dropna()
+
+    rows = []
+    for episode, g in change.groupby("episodio"):
+        d = g.set_index("k").delta
+        row = {"episodio": episode}
+        n = post[1] - post[0] + 1
+        p = window(d, *post)
+        if len(p) >= min_post * n:
+            row["A"] = -STEP_YEARS * n * np.minimum(p, 0).mean()
+            row["A_liq"] = -STEP_YEARS * n * p.mean()
+        n1 = first[1] - first[0] + 1
+        f1 = window(d, *first)
+        if len(f1) >= min_post * n1:
+            row["A1"] = -STEP_YEARS * n1 * np.minimum(f1, 0).mean()
+        r = window(d, *residual)
+        if len(r) >= min_residual * (residual[1] - residual[0] + 1):
+            row["R"] = r.mean()
+        rows.append(row)
+    return pd.DataFrame(rows).reindex(columns=["episodio", "A", "A_liq", "A1", "R"])
+
+
+def cluster_draws(clusters: np.ndarray, n: int, seed: int):
+    """Índices de `n` reamostras de grupos inteiros (com o número da cópia de cada grupo)."""
+    labels, codes = np.unique(np.asarray(clusters), return_inverse=True)
+    members = [np.flatnonzero(codes == c) for c in range(len(labels))]
+    rng = np.random.default_rng(seed)
+    for _ in range(n):
+        pick = rng.integers(0, len(labels), len(labels))
+        parts = [members[c] for c in pick]
+        yield (np.concatenate(parts),
+               np.concatenate([np.full(len(p), j) for j, p in enumerate(parts)]))
+
+
+def _two_sided(values) -> float:
+    v = np.asarray(values, float)
+    v = v[np.isfinite(v)]
+    if not len(v):
+        return np.nan
+    tail = min((v <= 0).sum(), (v >= 0).sum())
+    return float(min(1.0, 2 * (tail + 1) / (len(v) + 1)))
+
+
+def cluster_mean(values, clusters, *, n: int = 999, seed: int = 20261107) -> dict:
+    """Média com IC 95% e p bilateral por bootstrap de grupos (células ERA5)."""
+    v = np.asarray(values, float)
+    c = np.asarray(clusters)
+    ok = np.isfinite(v)
+    v, c = v[ok], c[ok]
+    if len(v) < 3:
+        return {"media": np.nan, "ic_inf": np.nan, "ic_sup": np.nan, "p": np.nan, "n": len(v)}
+    boot = [v[rows].mean() for rows, _ in cluster_draws(c, n, seed)]
+    return {"media": float(v.mean()), "ic_inf": float(np.quantile(boot, 0.025)),
+            "ic_sup": float(np.quantile(boot, 0.975)), "p": _two_sided(boot), "n": len(v),
+            "grupos": len(np.unique(c))}
+
+
+def sensitivity_design(frame: pd.DataFrame, *, post_start: int = 1, window=(-92, 138),
+                       bins=POST_BINS):
+    """Transições válidas e a matriz do modelo de sensibilidade (D-033, item 3).
+
+    `frame`: episodio, cell_id, data, k, dif, h, d, uma linha por composição. Só entram
+    transições entre composições consecutivas (k → k + 1) do mesmo lado da queima; as
+    composições com 0 < k < `post_start` ficam de fora (variante depois do primeiro ano)."""
+    f = frame[frame.k.between(*window)].sort_values(["episodio", "k"]).reset_index(drop=True)
+    nxt = f.groupby("episodio")[["k", "dif"]].shift(-1)
+
+    def side(k):
+        k = np.asarray(k, float)
+        return np.where(k < 0, -1, np.where(k >= post_start, 1, 0))
+
+    ok = ((nxt.k == f.k + 1) & np.isfinite(nxt.dif) & np.isfinite(f.dif)
+          & np.isfinite(f.h) & np.isfinite(f.d))
+    ok &= (side(f.k) == side(nxt.k)) & (side(f.k) != 0)
+    f, y = f[ok], nxt.dif[ok]
+    post = (f.k >= post_start).astype(float)
+    x = {"dif": f.dif, "h": f.h, "d": f.d, "P_dif": post * f.dif, "P_h": post * f.h,
+         "P_d": post * f.d}
+    for lo, hi in bins:
+        if hi >= post_start:
+            x[f"k_{lo}_{hi}"] = f.k.between(max(lo, post_start), hi).astype(float)
+    month = pd.to_datetime(f.data).dt.month
+    for m in range(2, 13):
+        x[f"mes_{m}"] = (month == m).astype(float)
+        x[f"P_mes_{m}"] = post * (month == m)
+    return (pd.DataFrame(x).astype(float), y.astype(float), f.episodio.to_numpy(),
+            f.cell_id.to_numpy())
+
+
+def _within(x: np.ndarray, y: np.ndarray, groups: np.ndarray):
+    codes = pd.factorize(groups)[0]
+    counts = np.bincount(codes)
+    mx = np.vstack([np.bincount(codes, weights=x[:, j]) for j in range(x.shape[1])]).T
+    my = np.bincount(codes, weights=y)
+    return x - (mx / counts[:, None])[codes], y - (my / counts)[codes]
+
+
+def _ols(x, y):
+    keep = np.abs(x).sum(axis=0) > 1e-9
+    beta = np.full(x.shape[1], np.nan)
+    beta[keep] = np.linalg.lstsq(x[:, keep], y, rcond=None)[0]
+    return beta
+
+
+def sensitivity_model(frame: pd.DataFrame, *, n_boot: int = 499, seed: int = 20261107,
+                      terms=TERMS, **design) -> pd.DataFrame:
+    """δ(t+1) com efeitos fixos de episódio, erro agrupado por célula ERA5 e IC por bootstrap
+    das células (episódios repetidos contam como distintos)."""
+    import statsmodels.api as sm
+
+    x, y, episodes, cells = sensitivity_design(frame, **design)
+    names = list(x.columns)
+    xd, yd = _within(x.to_numpy(), y.to_numpy(), episodes)
+    keep = np.abs(xd).sum(axis=0) > 1e-9
+    fit = sm.OLS(yd, xd[:, keep]).fit(cov_type="cluster",
+                                      cov_kwds={"groups": pd.factorize(cells)[0]})
+    kept = [n for n, k in zip(names, keep, strict=True) if k]
+    beta = dict(zip(kept, fit.params, strict=True))
+    se = dict(zip(kept, fit.bse, strict=True))
+    pv = dict(zip(kept, fit.pvalues, strict=True))
+    xa, ya = x.to_numpy(), y.to_numpy()
+    codes = pd.factorize(episodes)[0]
+    boot = []
+    for rows, copy in cluster_draws(cells, n_boot, seed):
+        bx, by = _within(xa[rows], ya[rows], codes[rows] * (copy.max() + 1) + copy)
+        boot.append(_ols(bx, by))
+    boot = np.array(boot)
+    out = []
+    for t in terms:
+        if t not in beta:
+            continue
+        b = boot[:, names.index(t)]
+        out.append({"termo": t, "coeficiente": beta[t], "ep_agrupado": se[t],
+                    "p_agrupado": pv[t], "ic_inf": float(np.nanquantile(b, 0.025)),
+                    "ic_sup": float(np.nanquantile(b, 0.975)), "p": _two_sided(b),
+                    "transicoes": len(y), "episodios": len(np.unique(episodes)),
+                    "celulas": len(np.unique(cells))})
+    return pd.DataFrame(out)
+
+
+def drought_model(table: pd.DataFrame, outcome: str, exposure: str, *,
+                  categorical=("bacia", "ano"), numeric=("estacao_seca", "v_pre"),
+                  cluster: str = "cell_id", n_boot: int = 999,
+                  seed: int = 20261107) -> dict:
+    """outcome = α + β·exposição padronizada + controles; IC e p por bootstrap de células."""
+    cols = [outcome, exposure, *numeric, *categorical, cluster]
+    t = table[[c for c in cols if c in table]].dropna()
+    z = (t[exposure] - t[exposure].mean()) / t[exposure].std()
+    parts = [pd.Series(1.0, index=t.index, name="const"), z.rename("exposicao")]
+    parts += [t[c].astype(float) for c in numeric if c in t]
+    for c in categorical:
+        if c in t and t[c].nunique() > 1:
+            parts.append(pd.get_dummies(t[c], prefix=c, drop_first=True, dtype=float))
+    x = pd.concat(parts, axis=1).to_numpy()
+    y = t[outcome].to_numpy(float)
+    beta = _ols(x, y)[1]
+    boot = [_ols(x[rows], y[rows])[1] for rows, _ in cluster_draws(t[cluster], n_boot, seed)]
+    return {"desfecho": outcome, "exposicao": exposure, "beta": float(beta),
+            "ic_inf": float(np.nanquantile(boot, 0.025)),
+            "ic_sup": float(np.nanquantile(boot, 0.975)), "p": _two_sided(boot),
+            "episodios": len(t), "celulas": t[cluster].nunique()}
