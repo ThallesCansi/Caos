@@ -21,7 +21,7 @@ Em quatro níveis, como no resumo do caderno `00_inicio` (Tabela 1, "o que resis
 3. **Paisagem.** Entre células, a perda antecedente se associa a recorrências mais curtas (DET) na temperatura e a padrões ordinais do VPD mais próximos do aleatório. A evidência confirmatória mais firme é a do DET da temperatura; a associação ordinal é em boa parte geografia da sazonalidade. Ao longo do tempo, nada (caderno 08).
 4. **Detectabilidade.** O MODIS vê a superfície de 6 a 7 °C mais quente nas células convertidas; o ar do ERA5 não vê, e a sua superfície vê só uma fração do contraste entre lugares e nada da mudança no tempo. A chuva do CHIRPS mostra intensidades organizadas de outro modo nas células convertidas (cadernos 08 e 09).
 
-E na própria floresta (caderno 12): a vegetação do MODIS em 8 dias não tem estrutura não linear nem se deixa prever pela atmosfera; o fogo derruba o LAI e o NDMI, deixa um déficit que reaparece em cada estação seca por pelo menos 3 anos e torna a floresta queimada mais sensível à chuva e ao VPD.
+E na própria floresta (caderno 12): a vegetação do MODIS em 8 dias não tem estrutura não linear nem se deixa prever pela atmosfera; o fogo derruba o LAI e o NDMI e deixa uma diferença de estado que persiste por pelo menos 3 anos, além dos placebos (D-033); há indício, sem passar a correção de testes múltiplos, de que a floresta queimada sofra mais com o ar seco.
 
 ## Cadernos (Marimo)
 
@@ -41,7 +41,7 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação, o dither das substitutas e a ocorrência × intensidade (D-021, D-023, D-027, D-030) | pronto |
 | `10_fogo` | o tempo antes do início dos episódios de fogo, com o contraste direto entre paisagens e bootstrap de anos × blocos (pergunta secundária, D-025, D-030) | pronto |
 | `11_territorio` | Terras Indígenas e Unidades de Conservação diante do clima e do fogo (D-026) | pronto |
-| `12_floresta_atmosfera` | a vegetação do MODIS (LAI e NDMI, 8 dias) como sistema dinâmico: portão de 8 dias, descritores, previsão e CCM com a atmosfera, horizontes de 8 a 64 dias com estado compacto e direção inversa (D-032), associação com a perda e a floresta depois do fogo (D-031) | pronto |
+| `12_floresta_atmosfera` | a vegetação do MODIS (LAI e NDMI, 8 dias) como sistema dinâmico: portão de 8 dias, descritores, previsão e CCM com a atmosfera, horizontes de 8 a 64 dias com estado compacto e direção inversa (D-032), associação com a perda, a floresta depois do fogo (D-031) e a memória do fogo: déficit, resíduo, sensibilidade e seca antecedente (D-033) | pronto |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 

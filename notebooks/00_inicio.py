@@ -54,9 +54,10 @@ with app.setup(hide_code=True):
          "atmosfera não a prevê em horizontes de 8 a 64 dias", "Portão de 8 dias; IAAFT com "
          "as mesmas lacunas; CCM com substitutas sazonais; estado compacto com atrasos, "
          "validação em blocos e anos permutados (D-032)", "12"),
-        ("Floresta", "O fogo derruba o LAI e o NDMI, deixa um déficit de estação seca por 3 "
-         "anos e torna a floresta mais sensível à chuva e ao VPD", "Controles pareados antes "
-         "e depois; IC por células do ERA5; painel com efeitos fixos", "12"),
+        ("Floresta", "O fogo derruba o LAI e o NDMI e deixa uma diferença de estado por 3 "
+         "anos; indício (sem passar Holm) de resposta maior ao VPD", "Controles pareados "
+         "antes e depois; dia da queima; placebos de data e de unidade; base sazonal; "
+         "controles sorteados (D-033)", "12"),
     ], columns=["Nível", "Resultado", "Resiste a", "Capítulo"])
     CHAPTERS = [
         ("01_laboratorio", "🌀 Laboratório de sistemas dinâmicos"),
@@ -284,9 +285,11 @@ def _():
         até dois meses da chuva e do VPD, num desenho que veria um ganho de 2%; o sinal
         comum com a secura do ar é fraco e aparece nos dois sentidos. O
         fogo, ao contrário, deixa uma marca grande e duradoura: derruba a vegetação de uma
-        vez, ela se recupera em boa parte no primeiro ano, e três anos depois ainda perde
-        mais folhas que a floresta intacta em cada estação seca e responde mais à chuva e ao
-        VPD. A Tabela 1 resume o que resiste a quê.
+        vez, ela se recupera em boa parte no primeiro ano, e três anos depois ainda tem
+        menos folha que a floresta intacta, além do que os placebos explicam; há indício de
+        que passe a sofrer mais com o ar seco, com o mesmo tamanho nas duas bacias, mas
+        pequeno demais para passar a correção de testes múltiplos. A Tabela 1 resume o que
+        resiste a quê.
         """),
         book.table(SYNTHESIS, "sintese",
                    "Tabela 1. O que resiste a quê. Os resultados principais em quatro níveis, "

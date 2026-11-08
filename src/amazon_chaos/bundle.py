@@ -35,6 +35,10 @@ PER_EXPERIMENT = ["summary_1990_2024.nc", "basin_grid.geojson", "era5_estatico.n
                   "vegetacao/8cbbd4c044/resultados.parquet",
                   # caderno 12 (D-032): horizontes, estado compacto e direção inversa
                   "vegetacao/escalas_a531f9f155/resultados.parquet",
+                  # caderno 12 (D-033): memória e sensibilidade depois do fogo
+                  *(f"vegetacao/fogo_subamostra/memoria/{f}" for f in
+                    ("curvas.parquet", "metricas.parquet", "sensibilidade.parquet",
+                     "painel_corrigido.parquet", "execucao.json")),
                   *(f"vegetacao/fogo_subamostra/{f}" for f in
                     ("delta.parquet", "resposta.parquet", "episodios.parquet",
                      "fogo_execucao.json"))]

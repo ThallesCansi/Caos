@@ -794,8 +794,9 @@ def _():
         pela estação seca nos mesmos valores de k, e é nesses trechos que o déficit
         reaparece: depois do primeiro ano, o LAI dos queimados fica perto de 0,5 abaixo do dos
         controles em setembro e outubro e perto de zero de março a junho. A floresta
-        danificada perde mais folhas que a intacta justamente quando falta água. A Tabela 7
-        resume as janelas.
+        danificada perde mais folhas que a intacta justamente quando falta água, embora uma
+        parte pequena desse vaivém já existisse antes do fogo, como a seção seguinte mostra.
+        A Tabela 7 resume as janelas.
         """),
         book.table(_tab, "janelas",
                    "Tabela 7. Δ médio do LAI e do NDMI por janela depois da queima e fração das "
@@ -866,7 +867,8 @@ def _():
             "Parte do aumento da persistência pode ser a própria recuperação lenta: enquanto "
             "a vegetação volta aos poucos, a anomalia de uma composição se parece com a da "
             "seguinte, e o painel não separa as duas coisas. As mudanças na resposta à chuva "
-            "e ao VPD não têm esse problema, porque medem a reação a forçantes de fora."),
+            "e ao VPD medem a reação a forçantes de fora, mas também podem herdar o ciclo "
+            "sazonal da recuperação; a próxima seção as refaz com esse ciclo retirado."),
             kind="warn"),
         mo.callout(mo.md(
             "Os episódios e os controles foram sorteados só nas células da subamostra das "
@@ -876,6 +878,255 @@ def _():
             "NASA). A subamostra foi sorteada ao acaso, e as três etapas passam a usar as "
             "mesmas células; o custo é um intervalo mais largo, com perto de 40 células do "
             "ERA5 como grupos."), kind="warn"),
+    ])
+    return
+
+
+@app.function(hide_code=True)
+@mo.cache
+def memory(slug):
+    """Resultados da D-033 (memória e sensibilidade depois do fogo)."""
+    d = FR.memory_dir(load_region(slug))
+    return {n: pd.read_parquet(d / f"{n}.parquet")
+            for n in ("curvas", "metricas", "sensibilidade", "painel_corrigido")}
+
+
+@app.function(hide_code=True)
+def plot_memory():
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.6), sharey=True, layout="constrained")
+    months = 8 / 30.44
+    lines = {("principal", "sazonal"): ("fogo, base sazonal", COLORS["ink"], "-"),
+             ("principal", "media_pre"): ("fogo, base média", COLORS["vpd"], "--"),
+             ("placebo_unidade", "sazonal"): ("placebo de unidade", COLORS["muted"], "-"),
+             ("placebo_data", "sazonal"): ("placebo de data", COLORS["precip"], "-")}
+    for ax, slug in zip(axes, SLUGS, strict=True):
+        c = memory(slug)["curvas"]
+        c = c[c.variavel == "lai"]
+        for (variant, base), (name, color, ls) in lines.items():
+            d = c[(c.variante == variant) & (c.linha_base == base)].sort_values("k")
+            if variant != "principal" or base == "sazonal":
+                ax.fill_between(d.k * months, d.ic_inf, d.ic_sup, color=color, alpha=0.18,
+                                lw=0)
+            ax.plot(d.k * months, d.delta, color=color, ls=ls, lw=1.3, label=name)
+        ax.axhline(0, color=COLORS["muted"], lw=1)
+        ax.axvline(0, color=COLORS["ink"], lw=1, ls=":")
+        ax.set(title=SHORT[slug], xlabel="meses desde a composição da queima")
+    axes[0].set_ylabel("Δ do LAI (queimado − controles)")
+    axes[0].legend(loc="lower right", fontsize=9)
+    return fig
+
+
+@app.function(hide_code=True)
+@mo.cache
+def memory_table():
+    from amazon_chaos.nonlinear import coupling as C
+
+    cases = [("principal", "media_pre", "fogo, base média"),
+             ("principal", "sazonal", "fogo, base sazonal"),
+             ("placebo_unidade", "sazonal", "placebo de unidade")]
+    rows = []
+    for slug in SLUGS:
+        m = memory(slug)["metricas"]
+        for v in VARS:
+            for variant, base, name in cases:
+                g = m[(m.variavel == v) & (m.variante == variant) & (m.linha_base == base)]
+                row = {"Bacia": SHORT[slug], "Variável": VARS[v], "Caso": name}
+                for col, label in (("A", "A (3 anos)"), ("A1", "A₁ (1º ano)"),
+                                   ("R", "R (anos 2 e 3)")):
+                    r = C.cluster_mean(g[col], g.cell_id, n=999)
+                    row[label] = (f"{r['media']:+.2f} [{r['ic_inf']:+.2f}; "
+                                  f"{r['ic_sup']:+.2f}]" if v == "lai" else
+                                  f"{r['media']:+.3f} [{r['ic_inf']:+.3f}; "
+                                  f"{r['ic_sup']:+.3f}]")
+                rows.append(row)
+    return pd.DataFrame(rows)
+
+
+@app.function(hide_code=True)
+def sensitivity_table():
+    from statsmodels.stats.multitest import multipletests
+
+    names = {"principal": "principal", "depois_1o_ano": "depois do 1º ano",
+             "margem": "margem (sem k = ±1)", "regra_antiga": "regra antiga do tempo",
+             "sorteados": "3 candidatos sorteados", "chuva_32d": "chuva de 32 dias",
+             "placebo_data": "placebo de data", "placebo_unidade": "placebo de unidade"}
+    rows = []
+    for slug in SLUGS:
+        s = memory(slug)["sensibilidade"]
+        s = s[(s.variavel == "lai") & s.variante.isin(list(names))]
+        for variant, label in names.items():
+            g = s[s.variante == variant].set_index("termo")
+            row = {"Bacia": SHORT[slug], "Variante": label}
+            for t, col in (("P_d", "θ_D (VPD)"), ("P_h", "θ_H (chuva)"),
+                           ("P_dif", "φ_P (persistência)")):
+                row[col] = (f"{g.loc[t, 'coeficiente']:+.3f} [{g.loc[t, 'ic_inf']:+.3f}; "
+                            f"{g.loc[t, 'ic_sup']:+.3f}]")
+                row[f"p {col.split()[0]}"] = g.loc[t, "p"]
+            rows.append(row)
+    out = pd.DataFrame(rows)
+    main = out.Variante == "principal"
+    p = np.r_[out.loc[main, "p θ_D"], out.loc[main, "p θ_H"]]
+    holm = multipletests(p, method="holm")[1]
+    out["Holm θ_D"] = np.nan
+    out["Holm θ_H"] = np.nan
+    out.loc[main, "Holm θ_D"] = holm[:main.sum()]
+    out.loc[main, "Holm θ_H"] = holm[main.sum():]
+    return out.drop(columns=["p φ_P"])
+
+
+@app.function(hide_code=True)
+@mo.cache
+def drought_table():
+    from amazon_chaos.nonlinear import coupling as C
+
+    m = pd.concat([memory(s)["metricas"] for s in SLUGS])
+    m = m[(m.variante == "principal") & (m.linha_base == "media_pre") & (m.variavel == "lai")]
+    rows = []
+    for out, label in (("A", "A (3 anos)"), ("A1", "A₁ (1º ano)"), ("R", "R (anos 2 e 3)")):
+        for exp, name in (("seca_vpd", "VPD dos 60 dias antes"),
+                          ("seca_chuva", "chuva dos 96 dias antes")):
+            r = C.drought_model(m, out, exp)
+            rows.append({"Desfecho": label, "Seca antecedente": name,
+                         "β por desvio [IC 95%]": f"{r['beta']:+.3f} [{r['ic_inf']:+.3f}; "
+                                                  f"{r['ic_sup']:+.3f}]",
+                         "p": r["p"], "Episódios": r["episodios"]})
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _s = sensitivity_table()
+    _main = _s[_s.Variante == "principal"].set_index("Bacia")
+    mo.vstack([
+        mo.md(r"""
+        ## 🔥 A memória do fogo
+
+        A Figura 4 e o painel deixam duas perguntas em aberto. O fogo só baixa a vegetação
+        por um tempo, ou deixa uma diferença que fica? E a floresta queimada passa a
+        responder de outro modo às mesmas condições do tempo, ou só parte de um nível mais
+        baixo? Para respondê-las (D-033), primeiro corrigimos dois detalhes da análise
+        anterior. O produto de área queimada informa o dia da queima em cada pixel, e não só
+        o mês; contar o tempo a partir da composição que contém esse dia, em vez da primeira
+        composição do mês, desloca a queima de até três composições em mais da metade dos
+        episódios. E, no painel, a transição da última composição antes do fogo para a
+        seguinte carregava a própria queima como resposta. Refeito com as duas correções, o
+        painel da Tabela 8 praticamente não muda.
+
+        Depois trocamos o ponto de vista. Em vez de seguir cada pixel, seguimos a diferença
+        entre o pixel queimado e a média dos seus controles, δ(t), que tira de uma vez tudo o
+        que a vizinhança tem em comum, inclusive o tempo, já que todos estão na mesma célula
+        do ERA5. Δ(k) é a mudança dessa diferença em relação ao período antes do fogo. Aqui
+        apareceu um cuidado novo. Se movermos a data da queima dois anos para trás, para
+        quando nada aconteceu, e refizermos a conta, a curva ainda cai nas primeiras
+        composições, porque a data fictícia cai na mesma estação seca: os pixels que vão
+        queimar já perdiam um pouco mais de folha que os controles na seca, antes do fogo.
+        Por isso a linha de base passa a ser sazonal, a diferença do mesmo mês nos dois anos
+        anteriores, e não a média do ano anterior. Um segundo placebo troca o pixel
+        queimado por um dos seus controles e mede o que a mesma conta dá quando não houve
+        fogo nenhum. A Figura 5 mostra as curvas do LAI.
+        """),
+        book.figure(plot_memory(), "memoria",
+                    "Figura 5. Δ(k) do LAI depois do fogo com a linha de base sazonal (mesmo "
+                    "mês nos dois anos anteriores) e com a média do ano anterior, e os dois "
+                    "placebos com a base sazonal: a queima posta dois anos antes (de −46 a +46 "
+                    "composições em torno da data fictícia) e um controle no lugar do pixel "
+                    "queimado. Faixas: IC 95% por bootstrap de células do ERA5 (999)."),
+        mo.md(r"""
+        O placebo de unidade fica em zero ao longo de toda a janela. O de data também,
+        com duas exceções pequenas diante do efeito do fogo: uma queda de cerca de 0,2 nos
+        primeiros meses no Xingu, resto do ciclo sazonal que a base não tirou por inteiro, e
+        um pico isolado e ruidoso no Tapajós. A curva do fogo fica longe dos dois durante
+        os três anos. A
+        diferença entre as duas linhas de base é pequena depois do primeiro ano: o déficit
+        das estações secas seguintes é, em boa parte, do fogo, e não do ciclo anterior. Para
+        resumir cada episódio em números, usamos o déficit acumulado A, a área entre a
+        curva e o zero quando ela está abaixo dele nos três anos, em LAI vezes ano; o mesmo
+        no primeiro ano, A₁; e a diferença residual R, a média de Δ nos anos 2 e 3. Como o
+        ruído sozinho já produz algum déficit, o placebo de unidade dá o piso de cada medida.
+        A Tabela 9 traz as médias.
+        """),
+        book.table(memory_table(), "memoria",
+                   "Tabela 9. Déficit acumulado em três anos (A, em LAI·ano ou NDMI·ano), no "
+                   "primeiro ano (A₁) e diferença residual nos anos 2 e 3 (R), média dos "
+                   "episódios com IC 95% por bootstrap de células do ERA5, para o fogo com as "
+                   "duas linhas de base e para o placebo de unidade.", selection=None),
+        mo.md(r"""
+        O fogo custa à floresta, em três anos, o equivalente a perder entre 1,2 e 1,5 unidade
+        de LAI durante um ano inteiro, contra 0,5 a 0,7 do placebo; o excedente, perto de
+        0,7 a 0,8, é o que o fogo tira. Mais da metade vem do primeiro ano. Nos anos 2 e 3, o
+        LAI dos queimados ainda fica 0,12 a 0,17 abaixo do dos controles, enquanto o placebo
+        fica em zero. A diferença de estado persiste, com qualquer das duas linhas de base,
+        com controles sorteados em vez de pareados e com a regra antiga do tempo. Ela é um
+        pouco maior nas queimas de 2003 a 2009 que nas mais recentes, mas os intervalos se
+        sobrepõem.
+
+        Resta a segunda pergunta. Com a diferença δ como resposta, ajustamos
+
+        $$\delta(t+1) = \alpha_e + \varphi\,\delta(t) + \beta H(t) + \gamma D(t) +
+        P\,[\varphi_P\,\delta(t) + \theta_H H(t) + \theta_D D(t)] + f(k) + s(\text{mês}) +
+        P\,s_P(\text{mês}),$$
+
+        em que P vale 1 depois do fogo, H e D são as anomalias da chuva de 96 dias e do VPD,
+        f(k) acompanha a recuperação média e s(mês) e P·s_P(mês) retiram o ciclo do ano
+        antes e depois do fogo. Assim, θ_D não mede o déficit típico da estação seca, mas
+        quanto uma seca do ar maior que a normal aprofunda a diferença entre o queimado e
+        os seus controles. A Tabela 10 traz os coeficientes e as variantes.
+        """),
+        book.table(_s, "sensibilidade",
+                   "Tabela 10. Mudança, depois do fogo, da resposta da diferença de LAI "
+                   "queimado − controles ao VPD (θ_D) e à chuva de 96 dias (θ_H) e da sua "
+                   "persistência (φ_P), com IC 95% e p por bootstrap de células do ERA5 (499), "
+                   "efeitos fixos de episódio e o ciclo do ano antes e depois do fogo; Holm "
+                   "nos quatro testes principais.", selection=None, float_format="%.3f"),
+        mo.md(nb.pt(f"""
+        O coeficiente do VPD é negativo e quase igual nas duas bacias,
+        {_main.loc['Xingu', 'θ_D (VPD)'].split()[0]} no Xingu e
+        {_main.loc['Tapajós', 'θ_D (VPD)'].split()[0]} no Tapajós: depois do fogo, uma
+        anomalia de VPD de um desvio aprofunda a diferença do queimado em cerca de 0,03 de LAI
+        por composição. Ele resiste à margem em torno da queima, à regra antiga do tempo, aos
+        controles sorteados e à chuva de 32 dias, e some nos dois placebos. Mas é pequeno,
+        enfraquece depois do primeiro ano e, com a correção de Holm para os quatro testes
+        principais, fica em {_main.loc['Xingu', 'Holm θ_D']:.2f} e
+        {_main.loc['Tapajós', 'Holm θ_D']:.2f}, acima de 0,05. A resposta à chuva não muda
+        (θ_H perto de zero no Tapajós e incerto no Xingu): a sensibilidade maior à chuva que o
+        painel da Tabela 8 mostrava vem do ciclo sazonal da recuperação, que o modelo da
+        diferença retira. A persistência aumenta, mas os placebos também se afastam de zero
+        nesse termo, e ele não é lido como efeito do fogo.
+
+        Por último, perguntamos se a seca antes do fogo prevê o tamanho do dano. A Tabela 11
+        relaciona o déficit e a diferença residual com a anomalia do VPD nos 60 dias antes
+        da queima e, como alternativa, com a da chuva nos 96 dias antes, com as bacias
+        juntas, controlando o ano, a estação e o LAI antes da queima.
+        """)),
+        book.table(drought_table(), "seca_antes",
+                   "Tabela 11. Déficit (A, A₁) e diferença residual (R) do LAI contra a seca "
+                   "antes da queima, por desvio-padrão da seca, com bacia, ano da queima, "
+                   "estação seca e LAI do ano anterior como controles; IC 95% e p por "
+                   "bootstrap de células do ERA5 (999). O VPD é o teste principal.",
+                   selection=None, float_format="%.3f"),
+        mo.md(r"""
+        O ar mais seco nos dois meses antes da queima não se associa a um dano maior. A
+        chuva dos três meses anteriores talvez sim, no déficit total, mas não no resíduo nem
+        no primeiro ano, e essa é uma das alternativas, não o teste fixado. O tamanho do dano
+        parece depender mais do que o satélite não mede, como a intensidade da queima e o
+        combustível acumulado, que do tempo que a antecedeu.
+        """),
+        mo.callout(mo.md(
+            "O fogo deixa memória no estado da floresta: três anos depois, os pixels "
+            "queimados ainda têm menos folha que os controles, além do que os placebos "
+            "explicam. Há um indício de que eles também passam a sofrer mais com o ar seco, "
+            "com o mesmo tamanho nas duas bacias e sem sinal nos placebos, mas pequeno demais "
+            "para passar a correção de testes múltiplos. Nada disso é caos, histerese ou "
+            "troca de atrator: é a perturbação deixando marca na trajetória do sistema."),
+            kind="success"),
+        mo.callout(mo.md(
+            "A amostra só tem queimas em floresta que continua floresta por dois anos e não "
+            "queima de novo em três; as conclusões valem para esse tipo de fogo, de sub-"
+            "bosque, e não para as queimas que abrem caminho ao desmatamento. A versão "
+            "estrita da qualidade do LAI (só o algoritmo principal sem saturação) deixou "
+            "menos de 50 episódios por bacia, porque a saturação é a regra na floresta "
+            "densa, e não serve como sensibilidade; no NDMI, ela confirma os resultados."),
+            kind="warn"),
     ])
     return
 
@@ -894,14 +1145,16 @@ def _():
     estocástico, em que a não linearidade, se existe, fica abaixo do que esses dados
     conseguem mostrar.
 
-    O fogo é outra história. Ele deixa uma marca grande, imediata e duradoura, e muda a
-    forma como a floresta queimada responde à chuva e à secura do ar. A perturbação que o
+    O fogo é outra história. Ele deixa uma marca grande, imediata e duradoura: três anos
+    depois, a floresta queimada ainda tem menos folha que a vizinha que não queimou, além
+    do que os placebos explicam, e há indício de que ela passe a sofrer mais com o ar seco.
+    A perturbação que o
     clima diário do ERA5 não conseguia registrar no tempo aparece com clareza na
     vegetação, porque é na vegetação que ela acontece. Para a pergunta socioespacial do
     trabalho, esse é o elo: as queimas que o capítulo do fogo mostrou concentradas na
     estação seca e nas frentes de ocupação deixam florestas que, três anos depois, ainda
-    dependem mais da chuva e sofrem mais com o ar seco, justamente as condições que as
-    secas recentes tornaram mais frequentes.
+    não voltaram ao estado anterior e talvez sofram mais com o ar seco, justamente a
+    condição que as secas recentes tornaram mais frequente.
     """)
     return
 

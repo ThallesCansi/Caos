@@ -6,7 +6,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/ccm.csv",
     "tex": "reports/tables/12_floresta_atmosfera/ccm.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
   },
   {
     "name": "escalas",
@@ -15,7 +15,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/escalas.csv",
     "tex": "reports/tables/12_floresta_atmosfera/escalas.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
   },
   {
     "name": "escalas_outras",
@@ -24,7 +24,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/escalas_outras.csv",
     "tex": "reports/tables/12_floresta_atmosfera/escalas_outras.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
   },
   {
     "name": "janelas",
@@ -33,7 +33,16 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/janelas.csv",
     "tex": "reports/tables/12_floresta_atmosfera/janelas.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
+  },
+  {
+    "name": "memoria",
+    "region": null,
+    "caption": "Tabela 9. Déficit acumulado em três anos (A, em LAI·ano ou NDMI·ano), no primeiro ano (A₁) e diferença residual nos anos 2 e 3 (R), média dos episódios com IC 95% por bootstrap de células do ERA5, para o fogo com as duas linhas de base e para o placebo de unidade.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/memoria.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/memoria.tex",
+    "commit": "775af23+modificado"
   },
   {
     "name": "painel",
@@ -42,7 +51,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/painel.csv",
     "tex": "reports/tables/12_floresta_atmosfera/painel.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
   },
   {
     "name": "perda",
@@ -51,7 +60,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/perda.csv",
     "tex": "reports/tables/12_floresta_atmosfera/perda.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
   },
   {
     "name": "portao",
@@ -60,7 +69,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/portao.csv",
     "tex": "reports/tables/12_floresta_atmosfera/portao.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
   },
   {
     "name": "rejeicao",
@@ -69,6 +78,24 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/rejeicao.csv",
     "tex": "reports/tables/12_floresta_atmosfera/rejeicao.tex",
-    "commit": "0a1ba4e+modificado"
+    "commit": "775af23+modificado"
+  },
+  {
+    "name": "seca_antes",
+    "region": null,
+    "caption": "Tabela 11. Déficit (A, A₁) e diferença residual (R) do LAI contra a seca antes da queima, por desvio-padrão da seca, com bacia, ano da queima, estação seca e LAI do ano anterior como controles; IC 95% e p por bootstrap de células do ERA5 (999). O VPD é o teste principal.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/seca_antes.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/seca_antes.tex",
+    "commit": "775af23+modificado"
+  },
+  {
+    "name": "sensibilidade",
+    "region": null,
+    "caption": "Tabela 10. Mudança, depois do fogo, da resposta da diferença de LAI queimado − controles ao VPD (θ_D) e à chuva de 96 dias (θ_H) e da sua persistência (φ_P), com IC 95% e p por bootstrap de células do ERA5 (499), efeitos fixos de episódio e o ciclo do ano antes e depois do fogo; Holm nos quatro testes principais.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/sensibilidade.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/sensibilidade.tex",
+    "commit": "775af23+modificado"
   }
 ]
