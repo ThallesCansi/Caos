@@ -10,7 +10,7 @@ Regiões: bacias do **Xingu** (779 células ERA5) e do **Tapajós** (762). Perí
 
 O pré-registro (D-010), o gate congelado `1c2fb37657` e o lote `81333bb007` são o resultado principal. As extensões da revisão crítica de 29/10/2026 (D-027: grade de atrasos, mínima e máxima, temperatura + umidade, Wolf e Kantz, temperatura de pele do ERA5, gate com nulas realistas, S-map, Cao e dither da chuva) são comparativos, apresentados ao lado do resultado principal nos capítulos em que cabem, sem substituí-lo. A reanálise de 30/10/2026 corrigiu a leitura das nulas realistas, que passa a ser por variável (D-029), e acrescentou a sazonalidade como explicação alternativa, blocos espaciais maiores, nulas ajustadas nas células, a auditoria dos comparativos e a separação entre ocorrência e intensidade da chuva (D-030).
 
-A metodologia de 31/10/2026 (D-031) acrescenta a floresta como variável dinâmica: a vegetação do MODIS (LAI e NDMI, composições de 8 dias) sozinha, junto com a atmosfera e depois do fogo, com o seu próprio portão e pré-registro (`configs/analysis/vegetation.yaml`).
+A metodologia de 31/10/2026 (D-031) acrescenta a floresta como variável dinâmica: a vegetação do MODIS (LAI e NDMI, composições de 8 dias) sozinha, junto com a atmosfera e depois do fogo, com o seu próprio portão e pré-registro (`configs/analysis/vegetation.yaml`). A D-032 (07/11/2026) amplia a comparação com a atmosfera para horizontes de 8 a 64 dias, estados compactos com atrasos escolhidos no treino, modelos lineares e não lineares e a direção inversa, com validação em blocos cronológicos e anos permutados como controle.
 
 ### O que os resultados dizem
 
@@ -41,7 +41,7 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `09_chuva` | a chuva do ERA5 e do CHIRPS diante da perturbação, o dither das substitutas e a ocorrência × intensidade (D-021, D-023, D-027, D-030) | pronto |
 | `10_fogo` | o tempo antes do início dos episódios de fogo, com o contraste direto entre paisagens e bootstrap de anos × blocos (pergunta secundária, D-025, D-030) | pronto |
 | `11_territorio` | Terras Indígenas e Unidades de Conservação diante do clima e do fogo (D-026) | pronto |
-| `12_floresta_atmosfera` | a vegetação do MODIS (LAI e NDMI, 8 dias) como sistema dinâmico: portão de 8 dias, descritores, previsão e CCM com a atmosfera, associação com a perda e a floresta depois do fogo (D-031) | pronto |
+| `12_floresta_atmosfera` | a vegetação do MODIS (LAI e NDMI, 8 dias) como sistema dinâmico: portão de 8 dias, descritores, previsão e CCM com a atmosfera, horizontes de 8 a 64 dias com estado compacto e direção inversa (D-032), associação com a perda e a floresta depois do fogo (D-031) | pronto |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 

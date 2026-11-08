@@ -2,11 +2,11 @@
   {
     "name": "delta",
     "region": null,
-    "caption": "Figura 3. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao ano anterior à queima, menos a mesma mudança da média dos seus 3 controles pareados, por composição de 8 dias depois do mês da queima, com IC 95% por bootstrap de células do ERA5 (999 reamostragens).",
+    "caption": "Figura 4. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao ano anterior à queima, menos a mesma mudança da média dos seus 3 controles pareados, por composição de 8 dias depois do mês da queima, com IC 95% por bootstrap de células do ERA5 (999 reamostragens).",
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/delta.png",
     "pdf": "reports/figures/12_floresta_atmosfera/delta.pdf",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
   },
   {
     "name": "descritores",
@@ -15,7 +15,16 @@
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/descritores.png",
     "pdf": "reports/figures/12_floresta_atmosfera/descritores.pdf",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
+  },
+  {
+    "name": "escalas",
+    "region": null,
+    "caption": "Figura 3. Ganho G(h) da previsão da anomalia do LAI quando a chuva e o VPD entram no estado compacto, mediana entre as células principais (até 20% de lacunas), para os três modelos, em função do horizonte. Validação cronológica em três blocos de quatro anos. Faixa: 5% a 95% das medianas das 39 permutações de anos inteiros da atmosfera, modelo linear.",
+    "overleaf": true,
+    "png": "reports/figures/12_floresta_atmosfera/escalas.png",
+    "pdf": "reports/figures/12_floresta_atmosfera/escalas.pdf",
+    "commit": "0a1ba4e+modificado"
   },
   {
     "name": "previsao",
@@ -24,6 +33,6 @@
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/previsao.png",
     "pdf": "reports/figures/12_floresta_atmosfera/previsao.pdf",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
   }
 ]

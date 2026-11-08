@@ -605,6 +605,20 @@ def vegetation_dynamics(
                    report=reporter(notify)))
 
 
+@vegetation_app.command("scales")
+def vegetation_scales(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    limit: Annotated[int | None, typer.Option(help="só as primeiras células (teste)")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """D-032: horizontes, estado compacto, linear × S-map e direção inversa na subamostra."""
+    from amazon_chaos.nonlinear.vegetation_scales import run
+
+    typer.echo(run(load_region(region), workers=workers, limit=limit,
+                   report=reporter(notify)))
+
+
 @vegetation_app.command("episodes")
 def vegetation_episodes(
     region: Region,

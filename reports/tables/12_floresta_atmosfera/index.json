@@ -6,34 +6,52 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/ccm.csv",
     "tex": "reports/tables/12_floresta_atmosfera/ccm.tex",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
+  },
+  {
+    "name": "escalas",
+    "region": null,
+    "caption": "Tabela 4. Ganho da previsão do LAI com a atmosfera no estado compacto, por bacia e horizonte (modelo linear, células com até 20% de lacunas): mediana entre as células, mediana das 39 permutações de anos, p da bacia contra as permutações, p corrigido por Holm nos oito testes e fração das células acima do 95º percentil das suas próprias permutações.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/escalas.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/escalas.tex",
+    "commit": "0a1ba4e+modificado"
+  },
+  {
+    "name": "escalas_outras",
+    "region": null,
+    "caption": "Tabela 5. Outras leituras da D-032, mediana entre as células por horizonte: ganho da atmosfera quando o alvo é a média do LAI nas h composições seguintes; ganho do S-map sobre o linear com os mesmos preditores; ganho do LAI na previsão do VPD; e ganho da atmosfera no NDMI.",
+    "overleaf": true,
+    "csv": "reports/tables/12_floresta_atmosfera/escalas_outras.csv",
+    "tex": "reports/tables/12_floresta_atmosfera/escalas_outras.tex",
+    "commit": "0a1ba4e+modificado"
   },
   {
     "name": "janelas",
     "region": null,
-    "caption": "Tabela 5. Δ médio do LAI e do NDMI por janela depois da queima e fração das composições da janela em que o IC 95% exclui zero.",
+    "caption": "Tabela 7. Δ médio do LAI e do NDMI por janela depois da queima e fração das composições da janela em que o IC 95% exclui zero.",
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/janelas.csv",
     "tex": "reports/tables/12_floresta_atmosfera/janelas.tex",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
   },
   {
     "name": "painel",
     "region": null,
-    "caption": "Tabela 6. Mudança, depois da queima e nos pixels queimados em relação aos controles, do nível, da persistência e da resposta da anomalia da vegetação à chuva acumulada (96 dias, CHIRPS) e ao VPD (ERA5), no painel com efeitos fixos de pixel e erros agrupados por célula do ERA5 (k de −46 a 138, sem a composição da queima).",
+    "caption": "Tabela 8. Mudança, depois da queima e nos pixels queimados em relação aos controles, do nível, da persistência e da resposta da anomalia da vegetação à chuva acumulada (96 dias, CHIRPS) e ao VPD (ERA5), no painel com efeitos fixos de pixel e erros agrupados por célula do ERA5 (k de −46 a 138, sem a composição da queima).",
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/painel.csv",
     "tex": "reports/tables/12_floresta_atmosfera/painel.tex",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
   },
   {
     "name": "perda",
     "region": null,
-    "caption": "Tabela 4. Correlação de postos parcial entre a perda antecedente de floresta (até 2000) e as medidas da vegetação por célula (etapas 1 e 2), controlando latitude, fração de água e altitude, com IC 95% por bootstrap de blocos de 1°.",
+    "caption": "Tabela 6. Correlação de postos parcial entre a perda antecedente de floresta (até 2000) e as medidas da vegetação por célula (etapas 1 e 2), controlando latitude, fração de água e altitude, com IC 95% por bootstrap de blocos de 1°.",
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/perda.csv",
     "tex": "reports/tables/12_floresta_atmosfera/perda.tex",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
   },
   {
     "name": "portao",
@@ -42,7 +60,7 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/portao.csv",
     "tex": "reports/tables/12_floresta_atmosfera/portao.tex",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
   },
   {
     "name": "rejeicao",
@@ -51,6 +69,6 @@
     "overleaf": true,
     "csv": "reports/tables/12_floresta_atmosfera/rejeicao.csv",
     "tex": "reports/tables/12_floresta_atmosfera/rejeicao.tex",
-    "commit": "040f1f9"
+    "commit": "0a1ba4e+modificado"
   }
 ]

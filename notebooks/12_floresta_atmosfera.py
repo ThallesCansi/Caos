@@ -27,6 +27,7 @@ with app.setup(hide_code=True):
     from amazon_chaos.nonlinear import fire_response as FR
     from amazon_chaos.nonlinear import gate as GT
     from amazon_chaos.nonlinear import vegetation_dynamics as VD
+    from amazon_chaos.nonlinear import vegetation_scales as VS
     from amazon_chaos.nonlinear.results import NAMES
     from amazon_chaos.nonlinear.suite import load_spec
     from amazon_chaos.nonlinear.vegetation_gate import load_vegetation_spec
@@ -468,6 +469,201 @@ def _():
     return
 
 
+@app.function(hide_code=True)
+@mo.cache
+def scales(slug):
+    """Resultados da D-032 (horizontes, estado compacto e direção inversa)."""
+    return pd.read_parquet(VS.output_dir(load_region(slug)) / "resultados.parquet")
+
+
+@app.function(hide_code=True)
+def scale_medians(slug, vegetation="lai", direction=None, variant="estrita", model="linear",
+                  analysis="ganho", max_missing=VS.PRIMARY_MAX_MISSING):
+    """Mediana entre as células do ganho, nos dados (substituta 0) e em cada permutação."""
+    t = scales(slug)
+    t = t[(t.analise == analysis) & (t.vegetacao == vegetation) & (t.variante == variant)
+          & (t.modelo == model) & (t.sentido == (direction or VS.DIRECTIONS[0]))
+          & (t.lacunas <= max_missing)]
+    if analysis == "nao_linear":
+        t = t[t.preditores == "conjunto"]
+    return t.groupby(["horizonte", "substituta"]).ganho.median().unstack()
+
+
+@app.function(hide_code=True)
+def plot_scales():
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.4), sharey=True, layout="constrained")
+    days = {h: 8 * h for h in VS.HORIZONS}
+    styles = {"linear": ("o-", COLORS["ink"], "linear"), "smap": ("s--", COLORS["vpd"], "S-map"),
+              "vizinhos": ("^:", COLORS["precip"], "vizinhos")}
+    for ax, slug in zip(axes, SLUGS, strict=True):
+        null = scale_medians(slug).drop(columns=0)
+        x = [days[h] for h in null.index]
+        ax.fill_between(x, null.quantile(0.05, axis=1), null.quantile(0.95, axis=1),
+                        color=COLORS["muted"], alpha=0.3, lw=0,
+                        label="anos permutados (5% a 95%, linear)")
+        for model, (fmt, color, name) in styles.items():
+            m = scale_medians(slug, model=model)[0]
+            ax.plot([days[h] for h in m.index], m, fmt, color=color, label=name)
+        ax.axhline(0, color=COLORS["muted"], lw=1)
+        ax.set_xscale("log", base=2)
+        ax.set_xticks(list(days.values()), [f"{d} dias" for d in days.values()])
+        ax.set_title(SHORT[slug], fontsize=11)
+    axes[0].set_ylabel("ganho G(h) mediano entre as células")
+    axes[0].legend(loc="lower left", fontsize=9)
+    return fig
+
+
+@app.function(hide_code=True)
+def scales_table():
+    from statsmodels.stats.multitest import multipletests
+
+    rows = []
+    for slug in SLUGS:
+        s = VS.basin_summary(scales(slug)[lambda t: t.lacunas <= VS.PRIMARY_MAX_MISSING])
+        s = s[(s.vegetacao == "lai") & (s.sentido == VS.DIRECTIONS[0])
+              & (s.variante == "estrita") & (s.modelo == "linear")]
+        for r in s.itertuples():
+            rows.append({"Bacia": SHORT[slug], "Horizonte (dias)": 8 * r.horizonte,
+                         "Células": r.celulas, "G mediano": r.ganho_mediano,
+                         "G das permutações": r.nulo_mediano, "p da bacia": r.p_bacia,
+                         "Células acima das permutações": r.frac_celulas})
+    out = pd.DataFrame(rows)
+    out.insert(6, "p (Holm)", multipletests(out["p da bacia"], method="holm")[1])
+    return out
+
+
+@app.function(hide_code=True)
+def scales_other():
+    readings = {
+        "LAI, média das composições seguintes": dict(variant="media"),
+        "LAI, S-map contra linear (G_NL)": dict(analysis="nao_linear", model="smap"),
+        "VPD previsto com o LAI (direção inversa)": dict(direction=VS.DIRECTIONS[1]),
+        "NDMI, consistência (até 35% de lacunas)": dict(vegetation="ndmi",
+                                                         max_missing=VS.MAX_MISSING),
+    }
+    rows = []
+    for slug in SLUGS:
+        for name, kw in readings.items():
+            m = scale_medians(slug, **kw)
+            row = {"Bacia": SHORT[slug], "Leitura": name}
+            for h in VS.HORIZONS:
+                row[f"{8 * h} dias"] = m[0].get(h, np.nan)
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+@app.cell(hide_code=True)
+def _():
+    _t = scales_table()
+    _o = scales_other()
+    _lai = pd.concat([scales(s)[(scales(s).analise == "ganho") & (scales(s).substituta == 0)
+                                & (scales(s).vegetacao == "lai") & (scales(s).modelo == "linear")
+                                & (scales(s).variante == "estrita")
+                                & (scales(s).sentido == VS.DIRECTIONS[0])
+                                & (scales(s).lacunas <= VS.PRIMARY_MAX_MISSING)]
+                      for s in SLUGS])
+    _skill = (_lai.rmse_vegetacao / _lai.rmse_clima).groupby(_lai.horizonte).median()
+    _nl = _o[_o.Leitura.str.contains("G_NL")].iloc[:, 2:].to_numpy()
+    _inv = _o[_o.Leitura.str.contains("inversa")].iloc[:, 2:].to_numpy()
+    mo.vstack([
+        mo.md(nb.pt("""
+        ## 🔭 Outras escalas de tempo e um estado mais enxuto
+
+        A comparação anterior tem duas limitações que poderiam esconder um acoplamento real.
+        Ela olha só uma composição à frente, oito dias, e a resposta de uma floresta à seca
+        passa pela água guardada no solo e nas árvores, por ajustes fisiológicos e pela troca
+        de folhas, coisas que podem levar semanas para aparecer. E ela usa o mesmo número de
+        atrasos para todas as variáveis, o que monta um espaço de estados grande, em que a
+        previsão por vizinhança se perde, ainda mais com duas chuvas acumuladas que contam
+        quase a mesma história. Por isso refizemos a pergunta de outro jeito (D-032).
+
+        Para cada horizonte h de 1, 2, 4 e 8 composições, isto é, de 8 a 64 dias, comparamos
+        a previsão de V(t+h) feita só com V(t) e V(t−1) com a feita por um estado compacto de
+        quatro coordenadas, V(t), V(t−1), uma das duas chuvas, H(t−k), e o VPD, D(t−k), cada
+        uma com o seu atraso k de 0, 2, 4 ou 8 composições. O ganho G(h) = 1 −
+        RMSE do conjunto / RMSE da vegetação é positivo quando a atmosfera ajuda. Tudo o que
+        se escolhe, a chuva, os atrasos e o parâmetro θ do S-map, é escolhido só com os dados
+        de treino. A validação imita o uso real de um modelo: aprende com os anos anteriores e
+        prevê blocos de quatro anos que ele nunca viu (2013–16, 2017–20 e 2021–24), e até a
+        climatologia que define a anomalia é calculada só com os anos de treino. Os buracos
+        da série são preenchidos apenas com o passado, porque a interpolação usada antes
+        empresta um pedaço do valor seguinte, justamente o que se quer prever, e o erro é
+        medido só nas composições realmente observadas.
+
+        Falta o termo de comparação. Um modelo com mais preditores pode errar um pouco menos
+        ou um pouco mais por acaso, e a vegetação e a atmosfera dividem o mesmo ciclo do ano.
+        Então repetimos todo o procedimento 39 vezes com os anos da atmosfera embaralhados
+        inteiros: cada ano mantém a sua estação seca, a sua memória e a relação entre chuva e
+        VPD, mas deixa de estar alinhado com a vegetação daquele ano. A mesma permutação vale
+        para todas as células da bacia, de modo que a mediana das permutações carrega a mesma
+        dependência espacial dos dados. Antes de olhar os dados reais, o procedimento foi
+        testado em séries sintéticas montadas sobre a atmosfera e as lacunas reais: um ganho
+        de 2% no erro, plantado de propósito, aparece com folga, e sem acoplamento nada
+        aparece. A Figura 3 mostra o resultado no LAI.
+        """)),
+        book.figure(plot_scales(), "escalas",
+                    "Figura 3. Ganho G(h) da previsão da anomalia do LAI quando a chuva e o VPD "
+                    "entram no estado compacto, mediana entre as células principais (até 20% de "
+                    "lacunas), para os três modelos, em função do horizonte. Validação "
+                    "cronológica em três blocos de quatro anos. Faixa: 5% a 95% das medianas "
+                    "das 39 permutações de anos inteiros da atmosfera, modelo linear."),
+        mo.md(nb.pt("""
+        As três curvas ficam abaixo de zero em todos os horizontes e nas duas bacias. A do
+        modelo linear fica na faixa das permutações ou um pouco abaixo dela, sobretudo no
+        Xingu: incluir a atmosfera do próprio ano piora a previsão tanto quanto, ou até um
+        pouco mais que, incluir a atmosfera de outro ano. Uma explicação possível é que, no
+        treino, a vegetação e a atmosfera compartilham tendências lentas que não se mantêm
+        nos anos seguintes, e a permutação desfaz esse alinhamento. A Tabela 4 traz os oito
+        testes principais, com a correção de Holm.
+        """)),
+        book.table(_t, "escalas",
+                   "Tabela 4. Ganho da previsão do LAI com a atmosfera no estado compacto, por "
+                   "bacia e horizonte (modelo linear, células com até 20% de lacunas): mediana "
+                   "entre as células, mediana das 39 permutações de anos, p da bacia contra "
+                   "as permutações, p corrigido por Holm nos oito testes e fração das células "
+                   "acima do 95º percentil das suas próprias permutações.", float_format="%.3f"),
+        mo.md(nb.pt(f"""
+        Nenhum teste chega perto da significância, e a fração de células que superam as suas
+        próprias permutações fica entre {_t['Células acima das permutações'].min():.0%} e
+        {_t['Células acima das permutações'].max():.0%}, o que o acaso sozinho produz. Os
+        atrasos escolhidos também não contam história nenhuma: espalham-se pelas 32
+        combinações de chuva e VPD sem que nenhuma defasagem se destaque. O motivo aparece
+        quando se olha a vegetação sozinha. O erro do LAI previsto pelo próprio passado é de
+        {_skill.min():.2f} a {_skill.max():.2f} vezes o erro de quem chuta a climatologia,
+        do horizonte de 8 ao de 64 dias: a anomalia do LAI não guarda memória mensurável nem
+        de si mesma. A Tabela 5 reúne as outras leituras.
+        """)),
+        book.table(_o, "escalas_outras",
+                   "Tabela 5. Outras leituras da D-032, mediana entre as células por horizonte: "
+                   "ganho da atmosfera quando o alvo é a média do LAI nas h composições "
+                   "seguintes; ganho do S-map sobre o linear com os mesmos preditores; ganho "
+                   "do LAI na previsão do VPD; e ganho da atmosfera no NDMI.",
+                   float_format="%.3f"),
+        mo.md(nb.pt(f"""
+        Prever a média das próximas composições, em vez de uma só, tira parte do ruído do
+        satélite, mas o ganho da atmosfera continua negativo. O S-map, que deixa a resposta
+        depender do estado do sistema, perde para o modelo linear com os mesmos preditores,
+        de {np.nanmin(_nl):+.3f} a {np.nanmax(_nl):+.3f}: ele escolhe no treino uma
+        vizinhança mais local e erra mais nos anos seguintes, o contrário do que faria uma
+        resposta que mudasse com o estado. No sentido inverso, o passado do LAI não ajuda a
+        prever o VPD (de {np.nanmin(_inv):+.3f} a {np.nanmax(_inv):+.3f}), o que também se
+        esperava, porque o ERA5 usa uma vegetação climatológica e não o LAI de cada ano. O
+        NDMI tem alguns ganhos acima das permutações, nos dois sentidos, mas sempre abaixo de
+        meio por cento do erro, e um sinal que aparece igual nos dois sentidos combina melhor
+        com a contaminação atmosférica da reflectância do que com uma resposta da floresta.
+        """)),
+        mo.callout(mo.md(
+            "Nem horizontes de até 64 dias, nem atrasos de até dois meses, nem um estado "
+            "compacto, nem modelos não lineares, nem a direção inversa revelam informação da "
+            "atmosfera sobre a anomalia de 8 dias da vegetação, num desenho capaz de ver um "
+            "ganho de 2%. A conclusão negativa deixa de depender da escolha de um passo e de "
+            "um espaço de estados grande. O limite é o instrumento: com nuvem, a anomalia do "
+            "LAI do MODIS fica abaixo do ruído de recuperação, e é no fogo que a resposta da "
+            "floresta aparece."), kind="success"),
+    ])
+    return
+
+
 @app.cell(hide_code=True)
 def _():
     _a = association()
@@ -488,13 +684,13 @@ def _():
 
         A pergunta central do trabalho foi feita ao clima: as células com mais floresta
         convertida até 2000 têm outra dinâmica? Fazemos a mesma pergunta à vegetação que
-        restou nelas. A Tabela 4 traz a correlação de postos parcial entre a perda
+        restou nelas. A Tabela 6 traz a correlação de postos parcial entre a perda
         antecedente e cada medida das duas primeiras etapas, com os mesmos controles de
         latitude, água e altitude do capítulo da perturbação e dinâmica, e o intervalo por
         bootstrap de blocos de 1°.
         """),
         book.table(_tab, "perda",
-                   "Tabela 4. Correlação de postos parcial entre a perda antecedente de floresta "
+                   "Tabela 6. Correlação de postos parcial entre a perda antecedente de floresta "
                    "(até 2000) e as medidas da vegetação por célula (etapas 1 e 2), controlando "
                    "latitude, fração de água e altitude, com IC 95% por bootstrap de blocos de "
                    "1°.", selection=None),
@@ -568,7 +764,7 @@ def _():
         menos a mesma mudança da média dos controles. Uma seca que derrube a vegetação de
         todos ao mesmo tempo some da diferença; o que resta é o efeito do fogo. O intervalo
         reamostra as células do ERA5, e não os episódios, porque episódios da mesma célula
-        dividem o mesmo tempo. A Figura 3 mostra Δ(k) nos três anos depois da queima.
+        dividem o mesmo tempo. A Figura 4 mostra Δ(k) nos três anos depois da queima.
         """),
         mo.callout(mo.md(nb.pt(
             "Episódios pareados: " + "; ".join(
@@ -576,7 +772,7 @@ def _():
                 f"{_eps[s].cell_id.nunique()} células do ERA5, {100 * _dry[s]:.0f}% deles "
                 "entre julho e outubro" for s in SLUGS) + ".")), kind="info"),
         book.figure(plot_delta(), "delta",
-                    "Figura 3. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao "
+                    "Figura 4. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao "
                     "ano anterior à queima, menos a mesma mudança da média dos seus 3 "
                     "controles pareados, por composição de 8 dias depois do mês da queima, com "
                     "IC 95% por bootstrap de células do ERA5 (999 reamostragens)."),
@@ -598,11 +794,11 @@ def _():
         pela estação seca nos mesmos valores de k, e é nesses trechos que o déficit
         reaparece: depois do primeiro ano, o LAI dos queimados fica perto de 0,5 abaixo do dos
         controles em setembro e outubro e perto de zero de março a junho. A floresta
-        danificada perde mais folhas que a intacta justamente quando falta água. A Tabela 5
+        danificada perde mais folhas que a intacta justamente quando falta água. A Tabela 7
         resume as janelas.
         """),
         book.table(_tab, "janelas",
-                   "Tabela 5. Δ médio do LAI e do NDMI por janela depois da queima e fração das "
+                   "Tabela 7. Δ médio do LAI e do NDMI por janela depois da queima e fração das "
                    "composições da janela em que o IC 95% exclui zero.", selection=None),
         mo.callout(mo.md(
             "O fogo derruba a vegetação da floresta de uma vez, e ela se recupera em boa "
@@ -647,16 +843,16 @@ def _():
         com efeitos fixos de pixel, que retiram as diferenças permanentes entre os pixels, e
         erros agrupados por célula do ERA5. Cada termo de interação mede quanto o
         coeficiente muda no pixel queimado depois da queima, em relação ao que muda nos
-        controles. A Tabela 6 traz as interações.
+        controles. A Tabela 8 traz as interações.
         """),
         book.table(_tab, "painel",
-                   "Tabela 6. Mudança, depois da queima e nos pixels queimados em relação aos "
+                   "Tabela 8. Mudança, depois da queima e nos pixels queimados em relação aos "
                    "controles, do nível, da persistência e da resposta da anomalia da vegetação "
                    "à chuva acumulada (96 dias, CHIRPS) e ao VPD (ERA5), no painel com efeitos "
                    "fixos de pixel e erros agrupados por célula do ERA5 (k de −46 a 138, sem a "
                    "composição da queima).", selection=None),
         mo.md(r"""
-        Depois do fogo, a floresta queimada fica abaixo dos controles, como a Figura 3 já
+        Depois do fogo, a floresta queimada fica abaixo dos controles, como a Figura 4 já
         mostrava, e três coisas mudam no mesmo sentido nas duas bacias. A vegetação fica mais
         persistente: o peso da anomalia atual sobre a seguinte aumenta entre 0,13 e 0,23. Ela passa
         a responder mais à chuva acumulada, um efeito claro no Tapajós e marginal no Xingu.
@@ -664,7 +860,7 @@ def _():
         mais seco, um efeito claro no Xingu e marginal no Tapajós. É o comportamento que se
         espera de uma floresta com o dossel aberto pelo fogo e árvores feridas, que depende
         mais da água que chega e sofre mais com o ar seco [5], e é coerente com o déficit
-        que reaparece nas estações secas da Figura 3.
+        que reaparece nas estações secas da Figura 4.
         """),
         mo.callout(mo.md(
             "Parte do aumento da persistência pode ser a própria recuperação lenta: enquanto "

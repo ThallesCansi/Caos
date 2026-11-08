@@ -179,6 +179,33 @@ def cell_task(spec: dict, cell_id: str, frame: pd.DataFrame) -> pd.DataFrame | N
     return pd.concat(out, ignore_index=True)
 
 
+def joint_path(cfg) -> Path:
+    return regions.processed_dir(cfg) / "vegetacao" / "conjunto.parquet"
+
+
+def joint_table(cfg, *, cache: bool = True) -> pd.DataFrame:
+    """Células × composições com a vegetação (cobertura aplicada, sem anomalia) e a atmosfera
+    alinhada ao dia de observação, em valores brutos; guardada em `conjunto.parquet`."""
+    path = joint_path(cfg)
+    if cache and path.exists():
+        return pd.read_parquet(path)
+    table = V.with_coverage(pd.read_parquet(series_path(cfg)), RULES["min_valid"])
+    wide = full_grid(table)
+    days = table[table.variavel == "ndmi"][["cell_id", "composicao", "dia_obs"]].copy()
+    comp = pd.to_datetime(days.composicao)
+    fallback = comp + pd.Timedelta(days=4)
+    day = pd.to_datetime(comp.dt.year.astype(str), format="%Y") + pd.to_timedelta(
+        days.dia_obs - 1, unit="D")
+    days["dia"] = day.where(days.dia_obs.notna() & (day >= comp - pd.Timedelta(days=1)),
+                            fallback)
+    cells = regions.cells(cfg).set_index("cell_id").loc[table.cell_id.unique()].reset_index()
+    atm = atmosphere(cfg, cells, days).set_index(["cell_id", "composicao"])
+    wide = wide.join(atm)
+    if cache:
+        wide.to_parquet(path)
+    return wide
+
+
 def run(cfg, spec, *, workers=None, report=print) -> Path:
     """Executa (ou retoma, por célula) as etapas 1 e 2 na subamostra."""
     out = output_dir(cfg, spec)

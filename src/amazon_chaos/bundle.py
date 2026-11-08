@@ -33,6 +33,8 @@ PER_EXPERIMENT = ["summary_1990_2024.nc", "basin_grid.geojson", "era5_estatico.n
                   "perturbacao", "descritores", "substitutas_bacia",
                   # caderno 12 (D-031): resultados das etapas 1 a 3, sem as séries por ponto
                   "vegetacao/8cbbd4c044/resultados.parquet",
+                  # caderno 12 (D-032): horizontes, estado compacto e direção inversa
+                  "vegetacao/escalas_a531f9f155/resultados.parquet",
                   *(f"vegetacao/fogo_subamostra/{f}" for f in
                     ("delta.parquet", "resposta.parquet", "episodios.parquet",
                      "fogo_execucao.json"))]

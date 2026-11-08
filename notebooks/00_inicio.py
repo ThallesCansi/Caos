@@ -51,8 +51,9 @@ with app.setup(hide_code=True):
         ("Território", "Fogo das áreas preservadas exige tempo seco; o das convertidas não",
          "Controles de datas reais; bootstrap de anos e de anos × blocos", "10"),
         ("Floresta", "A vegetação do MODIS em 8 dias não tem estrutura não linear, e a "
-         "atmosfera não a prevê", "Portão de 8 dias; IAAFT com as mesmas lacunas; CCM com "
-         "substitutas sazonais", "12"),
+         "atmosfera não a prevê em horizontes de 8 a 64 dias", "Portão de 8 dias; IAAFT com "
+         "as mesmas lacunas; CCM com substitutas sazonais; estado compacto com atrasos, "
+         "validação em blocos e anos permutados (D-032)", "12"),
         ("Floresta", "O fogo derruba o LAI e o NDMI, deixa um déficit de estação seca por 3 "
          "anos e torna a floresta mais sensível à chuva e ao VPD", "Controles pareados antes "
          "e depois; IC por células do ERA5; painel com efeitos fixos", "12"),
@@ -279,7 +280,9 @@ def _():
         O último capítulo olha para a própria floresta. A vegetação vista pelo satélite a
         cada 8 dias não mostra estrutura não linear além da de um processo linear com o
         mesmo espectro, quase não se deixa prever e não fica mais previsível quando se junta
-        a atmosfera; o sinal comum com a secura do ar é fraco e aparece nos dois sentidos. O
+        a atmosfera, nem um passo à frente nem em horizontes de até 64 dias, com atrasos de
+        até dois meses da chuva e do VPD, num desenho que veria um ganho de 2%; o sinal
+        comum com a secura do ar é fraco e aparece nos dois sentidos. O
         fogo, ao contrário, deixa uma marca grande e duradoura: derruba a vegetação de uma
         vez, ela se recupera em boa parte no primeiro ano, e três anos depois ainda perde
         mais folhas que a floresta intacta em cada estação seca e responde mais à chuva e ao
