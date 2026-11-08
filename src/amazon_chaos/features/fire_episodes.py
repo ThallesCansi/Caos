@@ -208,6 +208,25 @@ def point_series(frames: list[pd.DataFrame]) -> pd.DataFrame:
     return pd.concat(out, ignore_index=True)
 
 
+REFLECTANCE_FIELDS = ("sur_refl_state_500m", "sur_refl_qc_500m", "sur_refl_vzen",
+                      "sur_refl_b02", "sur_refl_b06", "sur_refl_day_of_year")
+LAI_FIELDS = ("Lai_500m", "FparLai_QC")
+TIME_BLOCK = 50  # os cubos do AppEEARS vêm em blocos de ~50 composições no tempo
+
+
+def _point_blocks(ds, fields, rows, cols, block: int = TIME_BLOCK):
+    """(posições no tempo, {campo: tempo × ponto}) em blocos de `block` composições, lendo
+    só os pixels dos pontos: cada bloco comprimido é descomprimido uma vez, e não uma vez
+    por composição (o que levava de 5 a 12 h por bacia)."""
+    import xarray as xr
+
+    r, c = xr.DataArray(rows, dims="ponto"), xr.DataArray(cols, dims="ponto")
+    for start in range(0, ds.sizes["time"], block):
+        sl = slice(start, min(start + block, ds.sizes["time"]))
+        yield (range(sl.start, sl.stop),
+               {f: ds[f].isel(time=sl, lat=r, lon=c).values for f in fields})
+
+
 def cube_series(cfg, points: pd.DataFrame, strict: bool = False) -> pd.DataFrame:
     """LAI e NDMI filtrados de cada ponto (`id`, `lat`, `lon`) nos cubos de área das etapas 1
     e 2, no mesmo formato de `point_series`. Com `strict`, os filtros estritos da D-033."""
@@ -218,27 +237,25 @@ def cube_series(cfg, points: pd.DataFrame, strict: bool = False) -> pd.DataFrame
         points.lon.to_numpy(), refl.lon.values)
     li, lj = V._nearest(points.lat.to_numpy(), lai.lat.values), V._nearest(
         points.lon.to_numpy(), lai.lon.values)
-    lai_times = {V._when(t): k for k, t in enumerate(lai.time.values)}
+    refl_times = [V._when(t) for t in refl.time.values]
+    lai_times = [V._when(t) for t in lai.time.values]
+    keep = set(refl_times)
     ids, out = points.id.to_numpy(), []
-    for k in range(refl.sizes["time"]):
-        step = refl.isel(time=k).load()
-        when = V._when(step.time.values)
-
-        def at(name, s=step):
-            return s[name].values[ri, rj]
-
-        ok = reflectance_ok(at("sur_refl_state_500m"), at("sur_refl_qc_500m"),
-                            at("sur_refl_vzen"))
-        out.append(pd.DataFrame({"id": ids, "data": when, "variavel": "ndmi",
-                                 "valor": np.where(ok, V.ndmi(at("sur_refl_b02"),
-                                                              at("sur_refl_b06")), np.nan),
-                                 "dia_obs": at("sur_refl_day_of_year").astype(float)}))
-        if when in lai_times:
-            s = lai.isel(time=lai_times[when]).load()
-            value = s.Lai_500m.values[li, lj].astype(float)
-            ok = lai_ok(s.FparLai_QC.values[li, lj]) & (value <= 10)
-            out.append(pd.DataFrame({"id": ids, "data": when, "variavel": "lai",
-                                     "valor": np.where(ok, value, np.nan)}))
+    for steps, f in _point_blocks(refl, REFLECTANCE_FIELDS, ri, rj):
+        ok = reflectance_ok(f["sur_refl_state_500m"], f["sur_refl_qc_500m"],
+                            f["sur_refl_vzen"])
+        value = np.where(ok, V.ndmi(f["sur_refl_b02"], f["sur_refl_b06"]), np.nan)
+        for n, k in enumerate(steps):
+            out.append(pd.DataFrame({"id": ids, "data": refl_times[k], "variavel": "ndmi",
+                                     "valor": value[n],
+                                     "dia_obs": f["sur_refl_day_of_year"][n].astype(float)}))
+    for steps, f in _point_blocks(lai, LAI_FIELDS, li, lj):
+        value = f["Lai_500m"].astype(float)
+        ok = lai_ok(f["FparLai_QC"]) & (value <= 10)
+        for n, k in enumerate(steps):
+            if lai_times[k] in keep:
+                out.append(pd.DataFrame({"id": ids, "data": lai_times[k], "variavel": "lai",
+                                         "valor": np.where(ok[n], value[n], np.nan)}))
     return pd.concat(out, ignore_index=True)
 
 
