@@ -605,6 +605,20 @@ def vegetation_dynamics(
                    report=reporter(notify)))
 
 
+@vegetation_app.command("scales")
+def vegetation_scales(
+    region: Region,
+    workers: Annotated[int | None, typer.Option(help="processos; padrão: todos")] = None,
+    limit: Annotated[int | None, typer.Option(help="só as primeiras células (teste)")] = None,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """D-032: horizontes, estado compacto, linear × S-map e direção inversa na subamostra."""
+    from amazon_chaos.nonlinear.vegetation_scales import run
+
+    typer.echo(run(load_region(region), workers=workers, limit=limit,
+                   report=reporter(notify)))
+
+
 @vegetation_app.command("episodes")
 def vegetation_episodes(
     region: Region,
@@ -674,6 +688,25 @@ def vegetation_fire(
     from amazon_chaos.nonlinear.fire_response import run
 
     typer.echo(run(load_region(region), report=reporter(notify), local=local))
+
+
+@vegetation_app.command("fire-strict")
+def vegetation_fire_strict(region: Region) -> None:
+    """Pontos do fogo de novo dos cubos, com a qualidade estrita (D-033)."""
+    from amazon_chaos.nonlinear.fire_response import strict_points
+
+    typer.echo(strict_points(load_region(region)))
+
+
+@vegetation_app.command("fire-memory")
+def vegetation_fire_memory(
+    region: Region,
+    notify: Annotated[bool, typer.Option(help="avisos no Telegram")] = True,
+) -> None:
+    """Memória e sensibilidade da floresta depois do fogo, na subamostra (D-033)."""
+    from amazon_chaos.nonlinear.fire_response import memory_run
+
+    typer.echo(memory_run(load_region(region), report=reporter(notify)))
 
 
 @vegetation_app.command("gate")

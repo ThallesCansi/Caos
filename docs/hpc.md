@@ -131,6 +131,7 @@ Todos usam o cabeçalho comum (`scripts/hpc/_common.sh`: avisos no Telegram, tem
 | `vegetacao_fetch.sbatch` | espera e baixa os pedidos do AppEEARS da D-031 (LAI e refletâncias na subamostra; MCD64A1 na bacia) | horas, conforme a fila do AppEEARS (1 CPU) |
 | `vegetacao_gate.sbatch` | portão das séries de 8 dias: controles com 1.104 pontos (D-031, etapa 1) | ~1 h (14 CPUs) |
 | `vegetacao.sbatch` | cobertura MCD12Q1, séries de LAI e NDMI e etapas 1 e 2 da D-031 na subamostra | algumas horas por bacia (14 CPUs, 32 GB) |
+| `vegetacao_fogo_memoria.sbatch` | memória e sensibilidade depois do fogo na subamostra: pontos com qualidade estrita, dia da queima do MCD64A1, Δ(k), déficit e residual, modelo de sensibilidade com placebos, seca antecedente e o painel da D-031 corrigido (D-033); `FROM=memoria` reaproveita os pontos estritos | ~1–2 h por bacia (4 CPUs, 32 GB) |
 | `vegetacao_fogo.sbatch` | episódios de fogo na bacia, pedido de pontos, Δ(k) e resposta ao clima (D-031, etapa 3; complemento); `FROM=pontos` retoma da espera sem refazer os episódios | horas a dias, conforme a fila do AppEEARS (2 CPUs, 32 GB) |
 | `vegetacao_fogo_local.sbatch` | a etapa 3 na subamostra, com os pontos lidos nos cubos de área já baixados (leitura do TCC, emenda de 02/11); `FROM=fogo` reaproveita episódios e pontos | 3–6 h por bacia (4 CPUs, 32 GB) |
 

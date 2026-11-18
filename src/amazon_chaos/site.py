@@ -115,6 +115,7 @@ def build(root: Path | None = None) -> Path:
         cards.append(CARD.format(name=name, number=name[:2], title=html.escape(title),
                                  subtitle=html.escape(subtitle),
                                  molab=MOLAB.format(name=name)))
+    shutil.rmtree(site / "apresentacao", ignore_errors=True)  # slides de versões antigas
     (site / "index.html").write_text(PAGE.format(cards="\n".join(cards), repo=REPO),
                                      encoding="utf-8")
     (site / ".nojekyll").write_text("")

@@ -58,6 +58,8 @@ reports/html/
 reports/tmp/
 reports/figures/**/*.pdf
 reports/overleaf/
+reports/apresentacao/
+reports/animacoes/
 
 # PDFs de apoio à orientação (rascunhos locais)
 /docs/entregas/resultados_em_perspectiva.pdf

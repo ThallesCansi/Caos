@@ -2,11 +2,11 @@
   {
     "name": "delta",
     "region": null,
-    "caption": "Figura 3. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao ano anterior à queima, menos a mesma mudança da média dos seus 3 controles pareados, por composição de 8 dias depois do mês da queima, com IC 95% por bootstrap de células do ERA5 (999 reamostragens).",
+    "caption": "Figura 4. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao ano anterior à queima, menos a mesma mudança da média dos seus 3 controles pareados, por composição de 8 dias depois do mês da queima, com IC 95% por bootstrap de células do ERA5 (999 reamostragens).",
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/delta.png",
     "pdf": "reports/figures/12_floresta_atmosfera/delta.pdf",
-    "commit": "040f1f9"
+    "commit": "775af23+modificado"
   },
   {
     "name": "descritores",
@@ -15,7 +15,25 @@
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/descritores.png",
     "pdf": "reports/figures/12_floresta_atmosfera/descritores.pdf",
-    "commit": "040f1f9"
+    "commit": "775af23+modificado"
+  },
+  {
+    "name": "escalas",
+    "region": null,
+    "caption": "Figura 3. Ganho G(h) da previsão da anomalia do LAI quando a chuva e o VPD entram no estado compacto, mediana entre as células principais (até 20% de lacunas), para os três modelos, em função do horizonte. Validação cronológica em três blocos de quatro anos. Faixa: 5% a 95% das medianas das 39 permutações de anos inteiros da atmosfera, modelo linear.",
+    "overleaf": true,
+    "png": "reports/figures/12_floresta_atmosfera/escalas.png",
+    "pdf": "reports/figures/12_floresta_atmosfera/escalas.pdf",
+    "commit": "775af23+modificado"
+  },
+  {
+    "name": "memoria",
+    "region": null,
+    "caption": "Figura 5. Δ(k) do LAI depois do fogo com a linha de base sazonal (mesmo mês nos dois anos anteriores) e com a média do ano anterior, e os dois placebos com a base sazonal: a queima posta dois anos antes (de −46 a +46 composições em torno da data fictícia) e um controle no lugar do pixel queimado. Faixas: IC 95% por bootstrap de células do ERA5 (999).",
+    "overleaf": true,
+    "png": "reports/figures/12_floresta_atmosfera/memoria.png",
+    "pdf": "reports/figures/12_floresta_atmosfera/memoria.pdf",
+    "commit": "775af23+modificado"
   },
   {
     "name": "previsao",
@@ -24,6 +42,6 @@
     "overleaf": true,
     "png": "reports/figures/12_floresta_atmosfera/previsao.png",
     "pdf": "reports/figures/12_floresta_atmosfera/previsao.pdf",
-    "commit": "040f1f9"
+    "commit": "775af23+modificado"
   }
 ]

@@ -2,7 +2,7 @@
 REGION ?= xingu
 HTML := reports/html
 
-.PHONY: help sync test check notebooks capas bundle site publicar overleaf pull pull-gate hpc-status hpc-code
+.PHONY: help sync test check notebooks capas bundle animacoes site publicar overleaf pull pull-gate hpc-status hpc-code
 
 help:  ## lista os alvos
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
@@ -32,6 +32,10 @@ capas:  ## capas dos cadernos na galeria do Marimo (depois de make notebooks)
 
 bundle:  ## pacote de visualização (configs + dados processados) para rodar fora do repositório
 	uv run --frozen python -m amazon_chaos.bundle
+
+CLIPES ?=
+animacoes:  ## clipes animados em reports/animacoes/ (CLIPES="anomalia-t2m …"; sem nomes, lista)
+	uv run --frozen --group animacao python -m amazon_chaos.animacoes $(CLIPES) --qualidade $(or $(QUALIDADE),previa)
 
 site: capas bundle  ## galeria pública em site/ (leitura dos capítulos + molab + pacote de dados)
 	uv run --frozen python -m amazon_chaos.site
