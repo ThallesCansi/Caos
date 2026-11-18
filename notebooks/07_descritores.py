@@ -22,6 +22,7 @@ with app.setup(hide_code=True):
     from scipy.stats import spearmanr
 
     from amazon_chaos import nb, regions
+    from amazon_chaos import research_views as VIEWS
     from amazon_chaos.config import load_region
     from amazon_chaos.nonlinear import results as R
     from amazon_chaos.nonlinear.suite import load_spec
@@ -73,6 +74,40 @@ def _():
     precoces de transição. Fechamos com o que esses números autorizam e o que não autorizam
     concluir.
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    structure_variable = mo.ui.radio(options=["temperatura", "déficit de pressão de vapor"],
+                                     value="temperatura", label="Uma variável por vez", inline=True)
+    mo.vstack([
+        mo.md("""## Primeiro, a leitura final; depois, os diagnósticos completos
+
+        Rejeitar IAAFT não demonstra caos. A comparação com nulas de memória sazonal,
+        tendência, regimes e variância condicional é mais exigente. Na temperatura,
+        assimetria e dimensão de correlação persistem frente às alternativas avaliadas;
+        no VPD, grande parte da rejeição é reproduzida pela memória sazonal.
+        Os painéis completos continuam abaixo, sem mudar o pré-registro."""),
+        structure_variable,
+    ])
+    return (structure_variable,)
+
+
+@app.cell(hide_code=True)
+def _(structure_variable):
+    _summary = pd.read_csv(VIEWS.T.root() / "reports/tables/07_descritores/natureza_nulas_realistas.csv")
+    _summary = _summary[_summary["Variável"] == structure_variable.value]
+    mo.vstack([
+        mo.ui.table(_summary, selection=None),
+        mo.md("""Tabela de leitura já exportada na pesquisa, sem novo teste.
+        **▲** excede o limite mesmo considerando o IC da fração; **△** excede só
+        pontualmente; **≈** a nula rejeita em mais de 95% e a comparação não informa;
+        **·** não excede o limite.
+        A comparação por célula é uma checagem adicional. Frequências altas não são
+        votos independentes: células vizinhas compartilham estrutura espacial.
+        Consulte os critérios completos da tabela e os controles abaixo."""),
+    ])
     return
 
 

@@ -42,6 +42,7 @@ Cada capítulo é um caderno Marimo em `notebooks/`, que lê dados já produzido
 | `10_fogo` | o tempo antes do início dos episódios de fogo, com o contraste direto entre paisagens e bootstrap de anos × blocos (pergunta secundária, D-025, D-030) | pronto |
 | `11_territorio` | Terras Indígenas e Unidades de Conservação diante do clima e do fogo (D-026) | pronto |
 | `12_floresta_atmosfera` | a vegetação do MODIS (LAI e NDMI, 8 dias) como sistema dinâmico: portão de 8 dias, descritores, previsão e CCM com a atmosfera, associação com a perda e a floresta depois do fogo (D-031) | pronto |
+| `13_paisagens_e_trajetorias` | exploração local: mapas de fogo e agropecuária com TIs/UCs; recuperação por contexto; chuva anterior e meses com focos; trajetórias da Terra do Meio e do Jamanxim | exploratório |
 
 O fluxo anterior, em Jupyter, só existe no histórico do Git (tag `v0-jupyter`).
 

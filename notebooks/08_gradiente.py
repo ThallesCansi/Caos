@@ -22,6 +22,7 @@ with app.setup(hide_code=True):
 
     from amazon_chaos import gradient as G
     from amazon_chaos import nb, regions
+    from amazon_chaos import research_views as VIEWS
     from amazon_chaos.config import load_region
     from amazon_chaos.nonlinear import results as R
     from amazon_chaos.nonlinear.suite import load_spec
@@ -105,6 +106,40 @@ def _():
     a temperatura da superfície medida por satélite, uma observação independente do
     modelo. Por fim, juntamos tudo numa conclusão proporcional à evidência.
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    association_variable = mo.ui.radio(options={"Temperatura": "t2m", "VPD": "vpd"},
+                                       value="Temperatura", label="Variável", inline=True)
+    mo.vstack([
+        mo.md("""## Como ler a associação com a paisagem
+
+        Cada linha é um descritor. O ponto é a associação parcial; a haste é o IC de 95%.
+        Zero marca ausência de associação estimada. **−0,3 não significa queda de 30%**:
+        a comparação usa os postos das células. As cores são especificações distintas
+        da exposição e dos controles, não bacias nem graus de certeza.
+        Primeiro olhe o DET da temperatura; depois compare os demais.
+        A análise longitudinal abaixo pergunta se a associação também aparece no tempo.
+        """), association_variable,
+    ])
+    return (association_variable,)
+
+
+@app.cell(hide_code=True)
+def _(association_variable):
+    mo.vstack([
+        book.figure(VIEWS.association_figure(association_variable.value, model_results()),
+                    "modelos_leitura", "Leitura por variável: mesmas estimativas de model_results, "
+                    "Xingu e Tapajós lado a lado. IC por blocos de 1°. Não é efeito causal.", save=False),
+        mo.md("""**O que apareceu:** a associação do DET da temperatura é a mais consistente
+        nas checagens da pesquisa; parte das associações ordinais enfraquece com os controles
+        de sazonalidade. **Amostra:** o resultado principal usa 668 células no Xingu e 652 no
+        Tapajós, mas o número efetivo é menor devido à dependência espacial e varia por par.
+        Os intervalos e correções múltiplas da tabela pré-registrada continuam indispensáveis.
+        """),
+    ])
     return
 
 
@@ -424,12 +459,12 @@ def _():
         seu mapa fixo, o contraste entre células pode estar passando por esse mapa, e não por
         algo que as observações tenham registrado. A Figura 3 testa as duas.
         """),
-        book.figure(plot_forest(), "modelos",
+        mo.accordion({"Painel completo: todas as variáveis e descritores": book.figure(plot_forest(), "modelos",
                     "Figura 3. Correlação parcial entre perturbação e z de cada descritor "
                     "primário, com IC 95% por blocos de 1°, em três modelos: o pré-registrado "
                     "(perda antecedente, controlando latitude, água e altitude); a conversão "
                     "agropecuária em 2000, controlando também a vegetação natural não florestal; "
-                    "e a perda antecedente controlando também a vegetação alta fixa do ERA5."),
+                    "e a perda antecedente controlando também a vegetação alta fixa do ERA5.")}),
         mo.md(r"""
         Os pontos escuros repetem a Tabela 1. Os vermelhos trocam a exposição pela fração de
         agropecuária em 2000, que mede só a conversão feita pelas pessoas, e controlam a

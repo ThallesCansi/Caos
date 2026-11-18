@@ -23,6 +23,8 @@ with app.setup(hide_code=True):
 
     from amazon_chaos import gradient as G
     from amazon_chaos import nb
+    from amazon_chaos import research_views as VIEWS
+    from amazon_chaos import territorial_comparison as T
     from amazon_chaos.config import load_region
     from amazon_chaos.nonlinear import fire_response as FR
     from amazon_chaos.nonlinear import gate as GT
@@ -186,6 +188,30 @@ def _():
                                "; ".join(f"{SHORT[s]}, LAI {_n[s]['lai']} ({_main[s]['lai']}) "
                                          f"e NDMI {_n[s]['ndmi']} ({_main[s]['ndmi']})"
                                          for s in SLUGS) + ".")), kind="info"),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    _diagnostics = VIEWS.vegetation_diagnostics()
+    mo.vstack([
+        mo.md("""## O que já foi medido, além da temperatura?
+
+        **Vegetação sozinha:** LAI e NDMI já receberam assimetria, dimensões,
+        recorrência, padrões ordinais, previsão, Cao e estimadores de Lyapunov.
+        O gráfico abaixo destaca duas perguntas primárias; a tabela abre os números
+        dos diagnósticos de divergência, incluindo os sinais que os controles limitam.
+
+        **Vegetação com clima:** a etapa 2 já compara previsão pela vegetação, por VPD
+        e chuva acumulada, e por ambas juntas; inclui CCM e dependência do estado.
+        Isso não equivale a aplicar todos os descritores a um único vetor conjunto.
+        Essa extensão exigiria definir a reconstrução multivariada e nulas que
+        preservem as relações lineares entre os canais, sem somar índices de unidades distintas.
+        """),
+        VIEWS.vegetation_structure_plot(_diagnostics),
+        mo.accordion({"Contagens existentes: estrutura e divergência": mo.ui.table(
+            _diagnostics.round(2), selection=None)}),
     ])
     return
 
@@ -533,6 +559,34 @@ def plot_delta():
 
 @app.cell(hide_code=True)
 def _():
+    _selection = pd.concat([T.selection_table(s).assign(Bacia=SHORT[s]) for s in SLUGS],
+                            ignore_index=True)
+    mo.vstack([
+        mo.md("""## Quantos dados sustentam a resposta ao fogo?
+
+        O filtro de requeima atua em **episódios de pixels**, não elimina automaticamente
+        uma célula ERA5 inteira. Os dois critérios de exclusão abaixo se sobrepõem:
+        não some requeima e perda de floresta. As contagens são da subamostra usada no fogo.
+        A célula agrupa episódios que compartilham condições atmosféricas.
+        """),
+        mo.ui.table(_selection, selection=None),
+        mo.md("""Células não informadas nas primeiras etapas não significam zero: os
+        resumos recebidos guardam os totais de episódios, sem os IDs de todos os candidatos.
+        Os pareados ocupam 37 células no Xingu e 39 no Tapajós. A disponibilidade efetiva
+        varia novamente por indicador e janela; o caderno 13 explicita essa perda.
+        Estas contagens não são um cálculo de poder estatístico.
+
+        **Duas perguntas distintas:** as linhas do gráfico Δ comparam as bacias, sem um
+        teste direto da diferença. O caderno 13 acrescenta esse contraste exploratório
+        e compara contextos agropecuários e territoriais, com contagens e coorte fixa.
+        Na etapa de previsão, ganho preditivo não é prova de caos, e falta de ganho
+        não prova ausência de acoplamento físico."""),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
     _meta = {s: fire(s)[2] for s in SLUGS}
     _eps = {s: fire(s)[3] for s in SLUGS}
     _windows = [(1, 6, "até 1,5 mês"), (7, 23, "2 a 6 meses"), (24, 46, "6 a 12 meses"),
@@ -565,15 +619,15 @@ def _():
 
         A comparação é do tipo antes e depois com controles. Para cada composição k depois da
         queima, Δ(k) é a mudança do pixel queimado em relação ao seu ano anterior à queima
-        menos a mesma mudança da média dos controles. Uma seca que derrube a vegetação de
-        todos ao mesmo tempo some da diferença; o que resta é o efeito do fogo. O intervalo
+        menos a mesma mudança da média dos controles. Os controles ajudam a descontar mudanças comuns, como uma seca regional,
+        mas não garantem eliminar todos os confundidores nem identificar um efeito causal. O intervalo
         reamostra as células do ERA5, e não os episódios, porque episódios da mesma célula
         dividem o mesmo tempo. A Figura 3 mostra Δ(k) nos três anos depois da queima.
         """),
         mo.callout(mo.md(nb.pt(
             "Episódios pareados: " + "; ".join(
                 f"{SHORT[s]}, {_meta[s]['pareados']} de {_meta[s]['episodios']}, em "
-                f"{_eps[s].cell_id.nunique()} células do ERA5, {100 * _dry[s]:.0f}% deles "
+                f"{int(T.selection_table(s).iloc[-1]['Células ERA5'])} células do ERA5 nos pareados, {100 * _dry[s]:.0f}% deles "
                 "entre julho e outubro" for s in SLUGS) + ".")), kind="info"),
         book.figure(plot_delta(), "delta",
                     "Figura 3. Δ(k): mudança do LAI e do NDMI do pixel queimado em relação ao "

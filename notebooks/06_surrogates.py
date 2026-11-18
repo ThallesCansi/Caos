@@ -23,6 +23,7 @@ with app.setup(hide_code=True):
     from statsmodels.tsa.stattools import acf
 
     from amazon_chaos import nb
+    from amazon_chaos import research_views as VIEWS
     from amazon_chaos.config import load_region
     from amazon_chaos.nonlinear import basin_test as B
     from amazon_chaos.nonlinear import results as R
@@ -82,6 +83,27 @@ def _():
     nulas diferentes, e usamos o resultado como ponte para o capítulo seguinte, em que o
     mesmo teste é repetido em cada uma das 1.541 células.
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.vstack([
+        mo.md("""## Três perguntas diferentes
+
+        1. **Há estrutura além desta hipótese de comparação?** Leia a assimetria, a dimensão
+           e a previsão; compare depois com as alternativas realistas do caderno 07.
+        2. **Há organização dos padrões?** Recorrência e ordinais descrevem a sequência,
+           mas também respondem a memória estocástica.
+        3. **Há evidência de divergência compatível com caos?** Lyapunov requer controles;
+           ser positivo ou rejeitar uma substituta não basta.
+
+        Nos histogramas, as barras são substitutas e a linha é o dado observado. Distância
+        da linha indica incompatibilidade com **aquela nula**, não identificação da causa.
+        O seletor de família abaixo reduz o painel; o conjunto completo continua disponível.
+        """),
+        mo.accordion({"Guia das ferramentas": mo.ui.table(VIEWS.method_guide(), selection=None)}),
+    ])
     return
 
 
@@ -332,18 +354,24 @@ def _():
                                 value="temperatura", label="Variável", inline=True)
     null_method = mo.ui.radio(options=["IAAFT", "FT", "IAAFT sem tendência"], value="IAAFT",
                               label="Substitutas", inline=True)
-    return null_method, null_region, null_variable
+    null_family = mo.ui.dropdown(options=[*VIEWS.FAMILIES, "Painel completo"],
+                                   value="Estrutura além da nula", label="Pergunta / família")
+    return null_family, null_method, null_region, null_variable
 
 
 @app.function(hide_code=True)
-def plot_nulls(slug, variable, method):
+def plot_nulls(slug, variable, method, descriptors=None):
     table, nulls = basin_results()
     sel = (table.region == slug) & (table.variable == variable) & (table.method == method)
     rows = table[sel].set_index("descriptor")
     nul = nulls[(nulls.region == slug) & (nulls.variable == variable)
                 & (nulls.method == method)]
-    fig, axes = plt.subplots(2, 4, figsize=(15, 6.6), layout="constrained")
-    for ax, d in zip(axes.flat, ORDER, strict=True):
+    descriptors = ORDER if descriptors is None else descriptors
+    columns = min(4, len(descriptors))
+    rows_count = (len(descriptors) + columns - 1) // columns
+    fig, axes = plt.subplots(rows_count, columns, figsize=(4 * columns, 3.5 * rows_count),
+                             layout="constrained", squeeze=False)
+    for ax, d in zip(axes.flat, descriptors, strict=True):
         values = nul[nul.descriptor == d].value.dropna()
         obs = rows.loc[d, "observed"]
         ax.hist(values, bins=25, color=SERIES_COLORS[method.split()[0]], alpha=0.55)
@@ -363,7 +391,7 @@ def plot_nulls(slug, variable, method):
 
 
 @app.cell(hide_code=True)
-def _(null_method, null_region, null_variable):
+def _(null_family, null_method, null_region, null_variable):
     mo.vstack([
         mo.md(r"""
         ## 🧪 O teste nas duas bacias
@@ -376,14 +404,15 @@ def _(null_method, null_region, null_variable):
         janela de Theiler de 10 dias. A Figura 2 mostra, para cada descritor, a distribuição
         dos seus valores nas substitutas e o valor na série original.
         """),
-        mo.hstack([null_region, null_variable, null_method], justify="start", gap=1),
-        book.figure(plot_nulls(null_region.value, null_variable.value, null_method.value),
+        mo.hstack([null_region, null_variable, null_method, null_family], justify="start", gap=1),
+        book.figure(plot_nulls(null_region.value, null_variable.value, null_method.value,
+                               VIEWS.FAMILIES.get(null_family.value, ORDER)),
                     "nulas",
                     "Figura 2. Distribuição de cada descritor nas 199 substitutas (barras) e "
                     "valor na série observada (linha), com o escore z e o p de Monte Carlo. "
                     "Na versão impressa, temperatura do Xingu com substitutas IAAFT.",
                     save=(null_region.value, null_variable.value, null_method.value)
-                    == ("xingu", "t2m", "IAAFT")),
+                    == ("xingu", "t2m", "IAAFT") and null_family.value == "Painel completo"),
         mo.md(r"""
         Na temperatura do Xingu, a figura separa os descritores em três grupos. No primeiro, o
         valor original está muito longe das substitutas: o determinismo e a laminaridade da

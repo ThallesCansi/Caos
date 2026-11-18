@@ -22,6 +22,7 @@ with app.setup(hide_code=True):
     import pandas as pd
 
     from amazon_chaos import nb
+    from amazon_chaos import research_views as VIEWS
     from amazon_chaos.nonlinear.dimension import correlation_dimension
     from amazon_chaos.nonlinear.gate import GATE_DIR, rejection_rates, verdict
     from amazon_chaos.nonlinear.lyapunov import rosenstein
@@ -77,6 +78,25 @@ def _():
     tratamos da armadilha que mais pesa sobre séries climáticas, a sazonalidade, e da
     decisão que ela motivou. Fechamos com a calibração dos sinais precoces de transição.
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.vstack([
+        mo.md("""## Qual pergunta cada ferramenta responde?
+
+        Não precisamos ler todos os números de uma vez. Recorrência e ordenação
+        descrevem padrões; assimetria, dimensão e previsão confrontam hipóteses de
+        estrutura; Lyapunov investiga divergência, relevante ao diagnóstico de caos.
+        Essas famílias se complementam, mas nenhuma medida é exclusiva de caos.
+        """),
+        mo.ui.table(VIEWS.method_guide(), selection=None),
+        mo.md("""**Como avaliar um método:** ele precisa reconhecer os controles positivos
+        e evitar respostas semelhantes nos negativos. Uma rejeição em um controle
+        estocástico realista não transforma esse controle em caos; revela uma ambiguidade
+        do diagnóstico. Alta taxa de rejeição, isoladamente, não é vantagem."""),
+    ])
     return
 
 

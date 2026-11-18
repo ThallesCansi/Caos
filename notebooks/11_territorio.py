@@ -21,6 +21,7 @@ with app.setup(hide_code=True):
 
     from amazon_chaos import gradient as G
     from amazon_chaos import nb, regions
+    from amazon_chaos import research_views as VIEWS
     from amazon_chaos.config import load_region
     from amazon_chaos.features import fire_weather as F
     from amazon_chaos.features.territory import protection
@@ -89,9 +90,24 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md("""
+    ## Primeiro identifique os territórios
+
+    TI significa Terra Indígena; UC, Unidade de Conservação (aqui, federal).
+    O terceiro mapa da figura separa TI (verde), UC federal (roxo) e sobreposição (ocre),
+    sobre fundo branco. Os mesmos limites aparecem nos mapas de perda e temperatura.
+    As categorias descrevem a situação cartográfica atual, não a história jurídica de cada ano.
+    A tabela informa o número de células por classe: muitas células vizinhas não equivalem
+    ao mesmo número de observações independentes. Presença humana não é sinônimo de conversão.
+    """)
+    return
+
+
 @app.function(hide_code=True)
 def plot_maps():
-    fig, axes = plt.subplots(1, 2, figsize=(14, 8.2), layout="constrained")
+    fig, axes = plt.subplots(1, 3, figsize=(18, 8.2), layout="constrained")
     fields = {}
     for slug in SLUGS:
         c = cells(slug).reset_index().set_index(["latitude", "longitude"])
@@ -99,13 +115,14 @@ def plot_maps():
         fields[slug] = (c.perda_2000_2024.to_xarray(), lst.to_xarray())
     specs = [("Perda de floresta 2000–2024 (fração)", "OrRd", 0, 0.6),
              ("LST diurno na estação seca, anomalia na bacia (°C)", "RdBu_r", -5, 5)]
-    for k, (ax, (title, cmap, vmin, vmax)) in enumerate(zip(axes, specs, strict=True)):
+    for k, (ax, (title, cmap, vmin, vmax)) in enumerate(zip(axes[:2], specs, strict=True)):
         map_basins(ax, [(basin(s)["cells"], fields[s][k], basin(s)["limit"]) for s in SLUGS],
                    cmap, title, vmin=vmin, vmax=vmax)
         for s in SLUGS:
-            basin(s)["tis"].boundary.plot(ax=ax, color="#3b1f12", lw=0.8)
-            basin(s)["ucs"].boundary.plot(ax=ax, color="#0f4d2a", lw=0.8, ls="--")
+            basin(s)["tis"].boundary.plot(ax=ax, color="#2e7d4f", lw=0.8)
+            basin(s)["ucs"].boundary.plot(ax=ax, color="#7462ac", lw=0.8, ls="--")
         ax.set_title(title)
+    VIEWS.draw_territories(axes[2])
     return fig
 
 

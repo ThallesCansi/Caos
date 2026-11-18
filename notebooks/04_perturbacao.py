@@ -22,6 +22,7 @@ with app.setup(hide_code=True):
 
     from amazon_chaos import gradient as G
     from amazon_chaos import nb, regions
+    from amazon_chaos import research_views as VIEWS
     from amazon_chaos.config import load_region
     from amazon_chaos.features.disturbance import out_dir
     from amazon_chaos.viz import COLORS, map_basins
@@ -116,6 +117,30 @@ def _():
     que ela mede que vai reaparecer no capítulo 8. Os mapas mostram as duas bacias
     juntas, como estão no território: o Tapajós a oeste e o Xingu a leste.
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.vstack([
+        mo.md("""## O que mudou de 2000 para 2024?
+
+        Duas fotografias nas mesmas escalas: floresta, agropecuária e redução líquida
+        de floresta desde 1990. **2024 é a data mais recente neste pacote**, não 2025.
+        A redução líquida pode ser negativa onde a fração florestal aumentou.
+        Pouca floresta também pode ser vegetação natural aberta, como o Cerrado.
+        """),
+        book.figure(VIEWS.coverage_comparison(), "cobertura_2000_2024",
+                    "Leitura comparativa. MapBiomas em 2000 e 2024, mesmas escalas por coluna; "
+                    "fração da área terrestre das células nas duas bacias."),
+        book.figure(VIEWS.coverage_change(), "mudanca_2000_2024",
+                    "Mudança líquida 2024 menos 2000. Positivo: aumento da fração de cobertura; "
+                    "não mede a área bruta convertida e recuperada dentro da célula."),
+        mo.md("""**O que olhar:** compare primeiro cada coluna entre as datas; depois
+        os mapas de diferença. O aumento da agropecuária acompanha a redução da floresta?
+        **Limite:** mudança de classe e desmatamento oficial não são medidas idênticas.
+        O seletor abaixo mantém a exploração das quatro datas originais."""),
+    ])
     return
 
 

@@ -27,6 +27,7 @@ __marimo__/
 reports/html/
 
 # Research data: NEVER commit raw or intermediate datasets
+/data/*.zip
 /data/raw/*
 !/data/raw/.gitkeep
 /data/external/*
@@ -57,6 +58,18 @@ reports/html/
 reports/tmp/
 reports/figures/**/*.pdf
 reports/overleaf/
+
+# PDFs de apoio à orientação (rascunhos locais)
+/docs/entregas/resultados_em_perspectiva.pdf
+/docs/entregas/resultados_com_figuras_originais.pdf
+/docs/entregas/resultados_em_perspectiva.tex
+/docs/entregas/resultados_com_figuras_originais.tex
+
+# Anotações e scripts locais de preparação da conversa e dos PDFs
+/docs/analise_13.md
+/scripts/build_research_story.py
+/scripts/build_reading_revision.py
+/scripts/build_context_followup.py
 
 # Slurm / execução no HPC
 logs/

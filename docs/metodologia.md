@@ -169,6 +169,83 @@ fontes ─► CLI amazon-chaos (download explícito, manifesto SHA-256)
 - A mesma biblioteca roda localmente e no HPC ([hpc.md](hpc.md)).
 - Cada região é definida por um YAML em `configs/regions/`.
 
+## Comparações exploratórias do caderno 13
+
+O caderno `13_paisagens_e_trajetorias.py` aproxima os resultados do fogo dos contextos
+territoriais das duas bacias. Usa os arquivos locais já disponíveis e mantém as
+análises anteriores. Os cálculos estão em `territorial_comparison.py` e
+`context_followup.py`, no pacote `amazon_chaos`. Para abrir:
+
+```bash
+uv run marimo edit notebooks/13_paisagens_e_trajetorias.py
+```
+
+**Paisagem e território.** Os mapas combinam fogo, agropecuária e limites atuais de
+Terras Indígenas e UCs federais. As tabelas por categoria territorial classificam
+células pela predominância de área e ponderam pela área terrestre. Não medem o fogo
+exatamente dentro de cada território. Presença humana e conversão agropecuária não
+são categorias equivalentes.
+
+**Resposta depois do fogo.** Reutilizamos os episódios e controles pareados do
+caderno 12, sem refazer o pareamento. A seleção exclui requeima nos três anos
+seguintes e perda da classe florestal nos dois seguintes; os critérios se sobrepõem.
+Cada observação compara o ponto queimado à média de pelo menos dois controles
+válidos. A referência é a diferença média nos dois anos anteriores, exigindo 24
+composições pareadas; a sensibilidade sazonal usa o mesmo período do calendário.
+A composição da queima é excluída e não há interpolação adicional.
+
+As janelas posteriores são de 1–6, 7–23, 24–46, 47–92 e 93–138 composições de oito
+dias, além de dois períodos anuais prévios. Exige-se metade dos valores esperados
+por janela. Calculamos primeiro a média por episódio e depois entre episódios.
+Os intervalos pontuais de 95% reamostram células ERA5 inteiras (499 sorteios);
+menos de cinco células permite apenas média e contagem, sem curva ou intervalo.
+Uma opção mantém os mesmos episódios nas sete janelas; outra usa os disponíveis
+em cada janela. Nesta última, a linha conecta amostras parcialmente diferentes.
+O contraste Xingu menos Tapajós reamostra células em cada bacia (999 sorteios),
+exige cinco células por bacia e não ajusta diferenças de clima ou dano inicial.
+
+O contexto agropecuário usa a fotografia de 2000 ou 2012 estritamente anterior à
+queima; pode estar defasada. Os grupos até 10%, 10–30% e acima de 30% são divisões
+descritivas. A secura anterior é a média do VPD padronizado nos 60 dias anteriores,
+com pelo menos quatro registros de oito dias. As contagens acompanham as comparações;
+não equivalem a um cálculo de poder estatístico.
+
+**Comparação dos mesmos episódios em duas janelas.** Comparamos o déficit inicial
+(até 1,5 mês) e o de 6–12 meses, com LAI como indicador principal. A diferença entre
+essas janelas mede o estreitamento ou aumento do déficit diante dos controles.
+Mostramos os contrastes brutos e o ajuste por ano, VPD anterior e vegetação anterior,
+comparando também os resultados brutos nos mesmos casos completos. O ajuste inclui
+intercepto e duas indicadoras de contexto, totalizando seis parâmetros; não ajusta
+pelo dano inicial pós-fogo. O bootstrap reamostra conjuntamente as células para
+todos os grupos e respostas (999 sorteios, semente 20261117).
+Exigimos cinco células em cada grupo; para o ajuste, dez células totais, pelo menos
+cinco casos por parâmetro e desenho de posto completo. Só há intervalo se 95% das
+réplicas forem válidas. Os intervalos são pontuais, sem correção múltipla.
+NDMI e referência sazonal são sensibilidades. Sobreposição e disponibilidade das
+covariáveis aparecem nas tabelas; o ajuste pode extrapolar e continua associativo.
+
+**Chuva e focos.** De junho a outubro de 2003–2024, comparamos a presença de focos
+por célula-mês com a chuva do mês anterior, ranqueada dentro da mesma célula e mês
+do calendário. Exigimos todos os dias válidos nesse mês anterior e usamos a
+paisagem de 2000. Os intervalos reamostram anos inteiros (999 sorteios). A análise
+não mede área queimada, causa da ignição ou capacidade preditiva fora da amostra.
+
+**Trajetórias territoriais.** A Esec da Terra do Meio (decreto de 17/02/2005) e a
+Flona do Jamanxim (13/02/2006) são comparadas aos respectivos entornos de 25 km.
+Contamos os pontos originais de focos por 100 km² nos polígonos atuais, recortados
+à bacia; o entorno pode incluir outras áreas protegidas. As janelas antes/depois
+excluem o ano do decreto e variam de um a dois anos por lado na Terra do Meio e
+de um a três no Jamanxim. Retiradas de um ano avaliam a sensibilidade aos picos;
+as hastes mostram a amplitude dos cenários, não intervalos de confiança.
+Chuva anual do CHIRPS e VPD médio anual do ERA5 usam ponderação pela área de
+interseção, exigindo 90% dos dias por célula e 90% da área válida por ano.
+
+Essas comparações não identificam efeitos da proteção ou da agropecuária. Datas
+de decreto não representam necessariamente implantação ou fiscalização imediata.
+Recuperação de LAI ou NDMI também não implica recuperação de biomassa, composição
+de espécies ou relações sociais e ecológicas. O acompanhamento de três anos é
+uma janela da análise, não uma estimativa da duração total dos impactos.
+
 ## Referências metodológicas
 
 - Theiler et al. (1992), [doi:10.1016/0167-2789(92)90102-S](https://doi.org/10.1016/0167-2789(92)90102-S); Schreiber e Schmitz (2000), [doi:10.1016/S0167-2789(00)00043-9](https://doi.org/10.1016/S0167-2789(00)00043-9); Schreiber (1999), [doi:10.1016/S0370-1573(98)00035-0](https://doi.org/10.1016/S0370-1573(98)00035-0).
