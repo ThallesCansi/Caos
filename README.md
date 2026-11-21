@@ -87,8 +87,6 @@ O trabalho está organizado em **13 capítulos e um caderno exploratório** ([Ma
 
 ## Como o trabalho foi feito
 
-<img src="configs/configs_github/mapa_repositorio.png" alt="Mapa do repositório." width="100%">
-
 ```mermaid
 flowchart LR
     A["🛰️ Dados<br><sub>ERA5 · MODIS · CHIRPS<br>PRODES · MapBiomas</sub>"] --> B["📈 Séries diárias<br><sub>uma por ponto<br>da grade</sub>"]
@@ -112,6 +110,8 @@ Três cuidados atravessam todo o trabalho:
 Para os detalhes do método: [docs/metodologia.md](docs/metodologia.md). Para as decisões tomadas ao longo do caminho e suas justificativas: [docs/decisoes.md](docs/decisoes.md).
 
 ## Onde está cada coisa
+
+<img src="configs/configs_github/mapa_repositorio.png" alt="Mapa do repositório." width="100%">
 
 ```text
 Caos/
